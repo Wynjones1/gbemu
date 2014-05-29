@@ -24,6 +24,5 @@
 
 #ROM files
 *.gb
-
-./build/*
-./bin/*
+build/
+bin/
