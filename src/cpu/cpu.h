@@ -60,21 +60,6 @@ union REG_INPUT
 	enum REG16 r16;
 };
 
-typedef void (*cpu_opcode)(
-				struct cpu_state *state,
-				enum ARG_TYPE arg0,
-				union REG_INPUT i0,
-				enum ARG_TYPE arg1,
-				union REG_INPUT i1);
-
-struct opcode
-{
-	cpu_opcode       op;
-	enum  ARG_TYPE   arg0;
-	union REG_INPUT  i0;
-	enum  ARG_TYPE   arg1;
-	union REG_INPUT  i1;
-};
 
 struct cpu_state
 {
@@ -110,6 +95,22 @@ struct cpu_state
 	reg16_t sp;
 	reg16_t pc;
 	reg_t   memory[65536];
+};
+
+typedef void (*cpu_opcode)(
+				struct cpu_state *state,
+				enum  ARG_TYPE    arg0,
+				union REG_INPUT   i0,
+				enum  ARG_TYPE    arg1,
+				union REG_INPUT   i1);
+
+struct opcode
+{
+	cpu_opcode       op;
+	enum  ARG_TYPE   arg0;
+	union REG_INPUT  i0;
+	enum  ARG_TYPE   arg1;
+	union REG_INPUT  i1;
 };
 
 extern struct opcode op_table[];

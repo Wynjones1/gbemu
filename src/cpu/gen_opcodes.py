@@ -2,6 +2,8 @@
 from HTMLParser import HTMLParser
 import re
 
+DATA_FILE = "../data/opcodes_8bit.html"
+
 class Temp(HTMLParser):
 	def __init__(self):
 		HTMLParser.__init__(self)
@@ -119,7 +121,7 @@ def write_op(op, f):
 	gen_struct(op, f)
 
 def gen_list():
-	f = open("./data/opcodes_8bit.html")
+	f = open(DATA_FILE)
 	t = ""
 	for i in f:
 		t += i
