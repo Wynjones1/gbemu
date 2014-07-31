@@ -34,7 +34,7 @@ const char *ARG_TYPE_s[] =
 	"ARG_TYPE_NONE"
 };
 
-#if 1
+#if 0
 #define CPU_ERROR(state, arg0, i0, arg1, i1)\
 	fprintf(stderr, "%s %s %d %s %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16);\
 	exit(-1)
@@ -84,6 +84,21 @@ static reg16_t cpu_add16(struct cpu_state *state, reg16_t a0, reg16_t a1)
 {
 }
 
+/* Add two values together (sets the appropriate flags in state) */
+static reg_t cpu_add8(struct cpu_state *state, reg_t a0, reg_t a1)
+{
+}
+
+/* Subtract two values together (sets the appropriate flags in state) */
+static reg16_t cpu_sub16(struct cpu_state *state, reg16_t a0, reg16_t a1)
+{
+}
+
+/* Subtract two values together (sets the appropriate flags in state) */
+static reg_t cpu_sub8(struct cpu_state *state, reg_t a0, reg_t a1)
+{
+}
+
 static reg_t cpu_get_reg8(struct cpu_state *state, int r8)
 {
 	return state->registers[r8];
@@ -118,6 +133,7 @@ static void cpu_dec(struct cpu_state *state, int r16)
 // the third argument containes the index to the register that it references, the same is true for
 // the fourth and fifth argument. If the argument is a immediate argument type then the data can
 // be found with the FIRST/SECOND_ARG macro.
+/*
 
 void NOP( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -139,6 +155,12 @@ void INC( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum 
 		d = cpu_add16(state, d, 1);
 		cpu_write_reg16(state, i0.r16, d);
 	}
+	else if(ARGS_MATCH(REG8, NONE))
+	{
+		reg_t d = cpu_get_reg8(state, i0.r8);
+		d = cpu_add8(state, d, 1);
+		cpu_write_reg16(state, i0.r8, d);
+	}
 	else
 	{
 		CPU_ERROR(state,arg0, i0, arg1, i1);
@@ -146,10 +168,58 @@ void INC( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum 
 }
 void DEC( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1)
 {
-	CPU_ERROR(state,arg0, i0, arg1, i1);
+	if(ARGS_MATCH(REG16, NONE))
+	{
+		reg16_t d = cpu_get_reg16(state, i0.r16);
+		d = cpu_sub16(state, d, 1);
+		cpu_write_reg16(state, i0.r16, d);
+	}
+	else if(ARGS_MATCH(REG8, NONE))
+	{
+		reg_t d = cpu_get_reg8(state, i0.r8);
+		d = cpu_sub8(state, d, 1);
+		cpu_write_reg16(state, i0.r8, d);
+	}
+	else
+	{
+		CPU_ERROR(state,arg0, i0, arg1, i1);
+	}
 }
 void ADD( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1)
 {
+	if(ARGS_MATCH(REG16, REG16))
+	{
+		reg16_t a0 = cpu_get_reg16(state, i0.r16);
+		reg16_t a1 = cpu_get_reg16(state, i1.r16);
+		a0 = cpu_add16(state, a0, a1);
+		cpu_write_reg16(state, i0.r16, a0);
+	}
+	else if(ARGS_MATCH(REG8, REG8))
+	{
+		reg_t a0 = cpu_get_reg8(state, i0.r8);
+		reg_t a1 = cpu_get_reg8(state, i1.r8);
+		a0 = cpu_add8(state, a0, a1);
+		cpu_write_reg8(state, i0.r8, a0);
+	}
+	else if(ARGS_MATCH(REG8, REG16_INDIRECT))
+	{
+		reg16_t l = cpu_get_reg16(state, i1.r16);
+		reg_t a0 = cpu_get_reg8(state, i0.r8);
+		reg_t a1 = cpu_load_16(state, l);
+		a0 = cpu_add8(state, a0, a1);
+		cpu_write_reg8(state, i0.r8, a0);
+	}
+	else if(ARGS_MATCH(REG8, DATA8))
+	{
+		reg_t a0 = cpu_get_reg8(state, i0.r8);
+		reg_t a1 = FIRST_ARG8(state);
+		a0 = cpu_add8(state, a0, a1);
+		cpu_write_reg8(state, i0.r8, a0);
+	}
+	else
+	{
+		ERR();
+	}
 	CPU_ERROR(state,arg0, i0, arg1, i1);
 }
 
@@ -336,5 +406,7 @@ void PREFIX_CB( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0,
 }
 void INVALID( struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1)
 {
-	CPU_ERROR(state,arg0, i0, arg1, i1);
+	//TODO: Add error checking for if this is actually called.
+	//CPU_ERROR(state,arg0, i0, arg1, i1);
 }
+*/

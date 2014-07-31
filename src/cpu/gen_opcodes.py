@@ -2,7 +2,7 @@
 from HTMLParser import HTMLParser
 import re
 
-DATA_FILE = "../data/opcodes_8bit.html"
+DATA_FILE = "./data/opcodes_8bit.html"
 
 class Temp(HTMLParser):
 	def __init__(self):
@@ -113,12 +113,26 @@ def gen_struct(op, f):
 	count += 1
 	f.write(out)
 
+template = {}
+
+"""
+op_name => first_arg => second_arg
+"""
+def add_to_template(op):
+	if op[0] not in template:
+		template[op[0]] = {}
+	d = template[op[0]]
+	if op[1] not in d:
+		d[op[1]] = set()
+	d[op[1]].add(op[3])
+
 """ Write op will create a definition for a the op structure in the
 	C code, it has the form: func, arg0, reg0, arg1, reg1
 """
 def write_op(op, f):
 	op = gen_op(op)
 	gen_struct(op, f)
+	add_to_template(op)
 
 def gen_list():
 	f = open(DATA_FILE)
@@ -131,19 +145,47 @@ def gen_list():
 	out = [i for i in parser.out if filter_ops(i)]
 	return out[1:]
 
+def gen_templates():
+	for i in sorted(template.keys()): # Each of the instructon names
+		f = open("./src/cpu/instructions/" + i.lower() + ".c", "w")
+		f.write("#include \"cpu.h\"\n\n");
+		sig = "struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1"
+		f.write("void " + i + "(" + sig + ")\n{\n")
+		print(i)
+		count0 = 0
+		for j in sorted(template[i].keys()): # Each of the possible arg0
+			print("\t" + str(j))
+			if count0 == 0:
+				mod = "if"
+				count0 = 1
+			else:
+				mod = "else if"
+			f.write("\t" + mod + "(arg0 == " + str(j) + ")\n\t{\n")
+			count1 = 0
+			for k in sorted(template[i][j]): # Each of the arg1
+				if count1 == 0:
+					mod = "if"
+					count1 = 1
+				else:
+					mod = "else if"
+				f.write("\t\t" + mod + "(arg1 == " + str(k) + ")\n\t\t{\n\t\t}\n")
+				print("\t\t" + str(k))
+			f.write("\t}\n")
+		f.write("}")
+		f.close()
+
 def main():
 	l = gen_list()
 
-	out = open("./src/opcodes.h", "w")
+	out = open("./src/cpu/opcodes.h", "w")
 	out.write("struct opcode op_table[] = {\n")
 	for i in l:
 		write_op(i, out)
 		out.write(",\n")
 	out.write("\n};")
-	"""
-	for i in t:
-		print(i)
-	"""
+
+	gen_templates();
+
 
 	out.close()
 
