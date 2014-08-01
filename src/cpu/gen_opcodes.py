@@ -66,7 +66,7 @@ def arg_type(arg):
 	elif(arg == "a16"):
 		out += "DATA16_UNSIGNED"
 	elif(arg == "(a8)"):
-		out += "DATA16_UNSIGNED_INDIRECT"
+		out += "DATA8_UNSIGNED_INDIRECT"
 	elif(arg == "(a16)"):
 		out += "DATA16_UNSIGNED_INDIRECT"
 	elif(arg == "0"):

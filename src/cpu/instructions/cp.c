@@ -1,25 +1,21 @@
 #include "cpu.h"
 
 void CP(struct cpu_state *state,
-		enum ARG_TYPE arg0, union REG_INPUT i0,
-		enum ARG_TYPE arg1, union REG_INPUT i1)
+		const enum ARG_TYPE arg0, const union REG_INPUT i0,
+		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
+	reg_t d0;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		d0 = state->memory[state->pc + 1];
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		d0 = cpu_load8_indirect(state, i0);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		d0 = cpu_load_reg8(state, i0);
 	}
+	cpu_cmp(state, d0);
 }

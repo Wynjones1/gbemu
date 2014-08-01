@@ -1,15 +1,15 @@
-adc.c
-add.c
-and.c
-call.c
-cp.c
-dec.c
-inc.c
+adc.c  X
+add.c  X
+and.c  X
+call.c X
+cp.c   X
+dec.c  X
+inc.c  X
 invalid.c
-jp.c
-jr.c
-ld.c
-ldh.c
+jp.c   X
+jr.c   X
+ld.c   X
+ldh.c  X
 nop.c
 or.c
 pop.c

@@ -113,12 +113,56 @@ void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 	*(reg16_t*)&state->memory[addr] = data;
 }
 
-void cpu_dec(struct cpu_state *state, REG_INPUT reg)
+void cpu_dec8(struct cpu_state *state, REG_INPUT reg)
 {
 	//TODO: Implement.
 }
 
-void cpu_inc(struct cpu_state *state, REG_INPUT reg)
+void cpu_inc8(struct cpu_state *state, REG_INPUT reg)
 {
 	//TODO: Implement.
 }
+
+void cpu_dec16(struct cpu_state *state, REG_INPUT reg)
+{
+	//TODO: Implement.
+}
+
+void cpu_inc16(struct cpu_state *state, REG_INPUT reg)
+{
+	//TODO: Implement.
+}
+
+reg_t cpu_and(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	//TODO: Implement.
+}
+
+reg_t cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	//TODO: Implement.
+}
+
+reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
+{}
+
+reg_t cpu_add16(struct cpu_state *state, reg_t d0, reg_t d1)
+{}
+
+void  cpu_push(struct cpu_state *state, reg16_t d0)
+{}
+
+void  cpu_jump(struct cpu_state *state, reg16_t addr)
+{}
+
+void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
+{}
+
+void cpu_cmp(struct cpu_state *state, reg_t d0)
+{}
+
+int cpu_carry(struct cpu_state *state)
+{}
+
+int cpu_zero(struct cpu_state *state)
+{}

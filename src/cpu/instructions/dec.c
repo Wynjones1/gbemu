@@ -1,25 +1,19 @@
 #include "cpu.h"
 
 void DEC(struct cpu_state *state,
-		enum ARG_TYPE arg0, union REG_INPUT i0,
-		enum ARG_TYPE arg1, union REG_INPUT i1)
+		const enum ARG_TYPE arg0, const union REG_INPUT i0,
+		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
 	if(arg0 == ARG_TYPE_REG16)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		cpu_dec16(state, i0);
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		//TODO: immediate decrement.
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		cpu_dec8(state, i0);
 	}
 }
