@@ -149,7 +149,7 @@ def gen_templates():
 	for i in sorted(template.keys()): # Each of the instructon names
 		f = open("./src/cpu/instructions/" + i.lower() + ".c", "w")
 		f.write("#include \"cpu.h\"\n\n");
-		sig = "struct cpu_state *state, enum ARG_TYPE arg0, union REG_INPUT i0, enum ARG_TYPE arg1, union REG_INPUT i1"
+		sig = "struct cpu_state *state,\n\t\tenum ARG_TYPE arg0, union REG_INPUT i0,\n\t\tenum ARG_TYPE arg1, union REG_INPUT i1"
 		f.write("void " + i + "(" + sig + ")\n{\n")
 		print(i)
 		count0 = 0
