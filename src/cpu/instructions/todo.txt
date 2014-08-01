@@ -2,23 +2,35 @@ adc.c  X
 add.c  X
 and.c  X
 call.c X
+ccf.c  X
 cp.c   X
+cpl.c  X
+daa.c
 dec.c  X
+di.c   X
+ei.c   X
+halt.c 
 inc.c  X
 invalid.c
 jp.c   X
 jr.c   X
 ld.c   X
 ldh.c  X
-nop.c
-or.c
-pop.c
+nop.c  X
+or.c   X
+pop.c  X
 prefix_cb.c
-push.c
-ret.c
-rst.c
-sbc.c
-stop.c
-sub.c
+push.c X
+ret.c  X
+reti.c X
+rla.c  X
+rlca.c X
+rra.c  X
+rrca.c X
+rst.c  X
+sbc.c  X
+scf.c  X
+stop.c X
+sub.c  X
 todo.txt
 xor.c

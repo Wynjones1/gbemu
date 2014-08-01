@@ -1,8 +1,10 @@
 #include "cpu.h"
 
-void STOP(struct cpu_state *state,
+void CPL(struct cpu_state *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
-	//TODO: Implement Stop
+	state->half_carry = 1;
+	state->subtract   = 1;
+	state->a = ~state->a;
 }

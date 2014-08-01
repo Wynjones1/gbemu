@@ -84,8 +84,8 @@ def arg_type(arg):
 def gen_op(op):
 	if(len(op)):
 		s = re.split(" |,", op[0])
-		if(s[0] == "NOP"):
-			return ("NOP", "ARG_TYPE_NONE", "REG_A", "ARG_TYPE_NONE", "REG_A")
+		if(len(s) == 1):
+			return (s[0], "ARG_TYPE_NONE", "REG_A", "ARG_TYPE_NONE", "REG_A")
 		if(s[0] == "PREFIX"):
 			return ("PREFIX_CB", "ARG_TYPE_NONE", "REG_A", "ARG_TYPE_NONE", "REG_A")
 		if(len(s) == 2):

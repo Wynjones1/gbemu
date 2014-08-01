@@ -138,6 +138,11 @@ reg_t cpu_and(struct cpu_state *state, reg_t d0, reg_t d1)
 	//TODO: Implement.
 }
 
+reg_t   cpu_or(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	//TODO: Implement.
+}
+
 reg_t cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1)
 {
 	//TODO: Implement.
@@ -152,10 +157,19 @@ reg_t cpu_add16(struct cpu_state *state, reg_t d0, reg_t d1)
 void  cpu_push(struct cpu_state *state, reg16_t d0)
 {}
 
+void cpu_pop(struct cpu_state *state, REG_INPUT reg)
+{}
+
 void  cpu_jump(struct cpu_state *state, reg16_t addr)
 {}
 
 void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
+{}
+
+void    cpu_ret(struct cpu_state *state)
+{}
+
+void    cpu_reti(struct cpu_state *state)
 {}
 
 void cpu_cmp(struct cpu_state *state, reg_t d0)
@@ -165,4 +179,28 @@ int cpu_carry(struct cpu_state *state)
 {}
 
 int cpu_zero(struct cpu_state *state)
+{}
+
+void cpu_xor(struct cpu_state *state, reg_t d0)
+{}
+
+void    cpu_sbc(struct cpu_state *state, reg_t d0)
+{}
+
+void    cpu_sub(struct cpu_state *state, reg_t d0)
+{}
+
+void    cpu_rst(struct cpu_state *state, reg_t d0)
+{}
+
+void    cpu_rra(struct cpu_state *state)
+{}
+
+void    cpu_rlca(struct cpu_state *state)
+{}
+
+void    cpu_rla(struct cpu_state *state)
+{}
+
+void    cpu_rrca(struct cpu_state *state)
 {}
