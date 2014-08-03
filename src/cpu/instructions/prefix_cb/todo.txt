@@ -1,0 +1,12 @@
+bit.c X
+res.c
+rl.c
+rlc.c
+rr.c
+rrc.c
+set.c
+sla.c
+sra.c
+srl.c
+swap.c
+todo.txt

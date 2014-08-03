@@ -2,7 +2,7 @@
 from HTMLParser import HTMLParser
 import re
 
-DATA_FILE = "./data/opcodes_8bit.html"
+DATA_FILE = "./data/opcodes_prefix_cb.html"
 
 class Temp(HTMLParser):
 	def __init__(self):
@@ -23,15 +23,7 @@ def start_with_list(x, l):
 	return 0
 
 def filter_ops(x):
-	l = ["NOP", "LD",  "INC", "DEC",
-		 "RLCA","ADD", "RRCA","STOP",
-		 "RLA", "XOR", "JR" , "HALT",
-		 "RST", "CALL","SUB", "PUSH",
-		 "CP",  "RST", "POP", "ADC",
-		 "SBC", "AND", "DI",  "EI",
-		 "LDH", "CCF", "DAA", "SCF",
-		 "JP", "RET", "OR", "RRA",
-		 "PREFIX"]
+	l = ["RLC", "RRC", "RL", "RR", "SLA", "SRA", "SWAP", "SRL", "BIT", "RES", "SET"]
 	if(len(x) == 0):
 		return 1
 	if(start_with_list(x[0], l)):
@@ -77,6 +69,8 @@ def arg_type(arg):
 		out += "HL_INDIRECT_INC"
 	elif(arg == "(HL-)"):
 		out += "HL_INDIRECT_DEC"
+	elif(re.match("^\d", arg)):
+		out += arg
 	else:
 		raise Exception("Invalid arg type", arg)
 	return (out, reg)
@@ -147,7 +141,7 @@ def gen_list():
 
 def gen_templates():
 	for i in sorted(template.keys()): # Each of the instructon names
-		f = open("./src/cpu/instructions/" + i.lower() + ".c", "w")
+		f = open("./src/cpu/instructions/prefix_cb/" + i.lower() + ".c", "w")
 		f.write("#include \"cpu.h\"\n\n");
 		sig = "struct cpu_state *state,\n\t\tenum ARG_TYPE arg0, union REG_INPUT i0,\n\t\tenum ARG_TYPE arg1, union REG_INPUT i1"
 		f.write("void " + i + "(" + sig + ")\n{\n")
@@ -177,7 +171,7 @@ def gen_templates():
 def main():
 	l = gen_list()
 
-	out = open("./src/cpu/opcodes.h", "w")
+	out = open("./src/cpu/prefix_cb_opcodes.h", "w")
 	out.write("struct opcode op_table[] = {\n")
 	for i in l:
 		write_op(i, out)

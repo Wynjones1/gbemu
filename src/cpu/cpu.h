@@ -47,6 +47,13 @@ enum ARG_TYPE
 	ARG_TYPE_28H,
 	ARG_TYPE_30H,
 	ARG_TYPE_38H,
+	ARG_TYPE_1,
+	ARG_TYPE_2,
+	ARG_TYPE_3,
+	ARG_TYPE_4,
+	ARG_TYPE_5,
+	ARG_TYPE_6,
+	ARG_TYPE_7,
 	ARG_TYPE_Z,
 	ARG_TYPE_NC,
 	ARG_TYPE_NZ,
@@ -197,3 +204,4 @@ int     cpu_zero(struct cpu_state *state);
 void    cpu_cmp(struct cpu_state *state, reg_t d0);
 void    cpu_enable_interrupts(struct cpu_state *state);
 void    cpu_disable_interrupts(struct cpu_state *state);
+void    cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0);

@@ -5,6 +5,7 @@ file(GLOB SRC
 	"./src/*.c" "./src/*.h"
 	"./src/cpu/*.c" "./src/cpu/*.h"
 	"./src/cpu/instructions/*.c" "./src/cpu/instructions/*.h"
+	"./src/cpu/instructions/prefix_cb/*.c" "./src/cpu/instructions/prefix_cb/*.h"
 	"./src/display/*.c" "./src/display/*.h")
 
 include_directories("./src" "./src/cpu" "./src/display")
