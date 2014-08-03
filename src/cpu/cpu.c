@@ -267,7 +267,7 @@ void cpu_sbc(struct cpu_state *state, reg_t d0)
 	state->carry      = state->a < t0;
 	state->half_carry = (state->a & 0xf) < (t0 & 0xf);
 	state->a          = (state->a - (reg_t)t0);
-	state->zero       = (state-a == 0);
+	state->zero       = (state->a == 0);
 }
 
 void cpu_sub(struct cpu_state *state, reg_t d0)
@@ -328,4 +328,11 @@ void cpu_rrca(struct cpu_state *state)
 	state->zero       = state->a == 0;
 	state->half_carry = 0;
 	state->subtract   = 0;
+}
+
+void cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0)
+{
+	state->zero = (d0 >> pos) & 0x1;
+	state->subtract = 0;
+	state->half_carry = 1;
 }
