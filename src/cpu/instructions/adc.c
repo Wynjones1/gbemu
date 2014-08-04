@@ -10,7 +10,7 @@ void ADC(struct cpu_state *state,
 		reg_t d1;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			d1 = state->memory[state->pc + 1];
+			d1 = cpu_load8(state, state->pc + 1);
 		}
 		else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 		{

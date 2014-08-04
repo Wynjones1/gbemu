@@ -41,7 +41,7 @@ void LD(struct cpu_state *state,
 		reg16_t data;
 		if(arg1 == ARG_TYPE_DATA16)
 		{
-			data = *(reg16_t*)&state->memory[state->pc + 1];
+			data = cpu_load16(state, state->pc + 1);
 		}
 		else if(arg1 == ARG_TYPE_REG16)
 		{
@@ -50,7 +50,7 @@ void LD(struct cpu_state *state,
 		else if(arg1 == ARG_TYPE_REL8_ADD_SP)
 		{
 			//TODO:Check that the signed addition is correct.
-			reg_t d = state->memory[state->pc + 1];
+			reg_t d = cpu_load8(state, state->pc + 1);
 			reg16_t addr    = cpu_add8(state, state->sp, d);
 			state->zero     = 0;
 			state->subtract = 0;
@@ -63,7 +63,7 @@ void LD(struct cpu_state *state,
 		reg_t data;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->memory[state->pc + 1];
+			data = cpu_load8(state, state->pc + 1);
 		}
 		else if(arg1 == ARG_TYPE_REG8)
 		{
@@ -76,12 +76,12 @@ void LD(struct cpu_state *state,
 		reg_t data;
 		if(arg1 == ARG_TYPE_DATA16_UNSIGNED_INDIRECT)
 		{
-			reg16_t addr = *(reg16_t*)&state->memory[state->pc + 1];
+			reg16_t addr = cpu_load16(state, state->pc + 1);
 			data = cpu_load8(state, addr);
 		}
 		else if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->memory[state->pc + 1];
+			data = cpu_load8(state, state->pc + 1);
 		}
 		else if(arg1 == ARG_TYPE_HL_INDIRECT_DEC)
 		{

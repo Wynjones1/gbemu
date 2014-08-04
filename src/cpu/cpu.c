@@ -70,45 +70,45 @@ void cpu_store_reg16(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 /* Basic memory access functions */
 reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
 {
-	return state->memory[addr];
+	return memory_load8(state->memory, addr);
 }
 reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
 {
-	return *(reg16_t*)&state->memory[addr];
+	return memory_load16(state->memory, addr);
 }
 
 reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
-	return state->memory[addr];
+	return memory_load8(state->memory, addr);
 }
 
 reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
-	return *(reg16_t*)&state->memory[addr];
+	return memory_load16(state->memory, addr);
 }
 
 void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
 {
-	state->memory[addr] = data;
+	memory_store8(state->memory, addr, data);
 }
 
 void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
 {
-	*(reg16_t*)&state->memory[addr] = data;
+	memory_store16(state->memory, addr, data);
 }
 
 void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
-	state->memory[addr] = data;
+	memory_store8(state->memory, addr, data);
 }
 
 void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
-	*(reg16_t*)&state->memory[addr] = data;
+	memory_store16(state->memory, addr, data);
 }
 
 void cpu_dec8(struct cpu_state *state, REG_INPUT reg)
@@ -192,12 +192,12 @@ reg_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
 void  cpu_push(struct cpu_state *state, reg16_t d0)
 {
 	state->sp -= 2;
-	*(reg16_t*)&state->memory[state->sp] = d0;
+	memory_store16(state->memory, state->sp, d0);
 }
 
 void cpu_pop(struct cpu_state *state, REG_INPUT reg)
 {
-	state->registers16[reg.r16] = *(reg16_t*)&state->memory[state->sp];
+	state->registers16[reg.r16] = memory_load16(state->memory, state->sp);
 	state->sp += 2;
 }
 

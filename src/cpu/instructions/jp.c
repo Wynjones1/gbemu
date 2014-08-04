@@ -4,7 +4,7 @@ void JP(struct cpu_state *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
-	reg16_t addr = *(reg16_t*)&state->memory[state->pc + 1];
+	reg16_t addr = cpu_load16(state, state->pc + 1);
 	if(arg0 == ARG_TYPE_DATA16_UNSIGNED
 		|| (arg0 == ARG_TYPE_NC    && !cpu_carry(state))
 		|| (arg0 == ARG_TYPE_NZ    && !cpu_zero(state))
