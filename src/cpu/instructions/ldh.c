@@ -4,7 +4,7 @@ void LDH(struct cpu_state *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
-	reg_t addr = state->memory[state->pc + 1];
+	reg_t addr = cpu_load8(state, state->pc + 1);
 	addr += 0xff00;
 	if(arg0 == ARG_TYPE_DATA8_UNSIGNED_INDIRECT)
 	{

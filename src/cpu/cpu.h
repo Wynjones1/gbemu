@@ -1,8 +1,6 @@
 #pragma once
-#include <stdint.h>
-
-typedef uint8_t  reg_t;
-typedef uint16_t reg16_t;
+#include "memory.h"
+#include "types.h"
 
 enum REG
 {
@@ -99,9 +97,9 @@ struct cpu_state
 			reg_t h;
 		};
 	};
-	reg16_t sp;
-	reg16_t pc;
-	reg_t   memory[65536];
+	reg16_t   sp;
+	reg16_t   pc;
+	memory_t *memory;
 };
 
 typedef void (*cpu_opcode)(

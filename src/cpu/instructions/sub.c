@@ -7,7 +7,7 @@ void SUB(struct cpu_state *state,
 	reg_t data;
 	if(arg1 == ARG_TYPE_DATA8)
 	{
-		data = state->memory[state->pc + 1];
+		data = cpu_load8(state, state->pc + 1);
 	}
 	else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 	{
