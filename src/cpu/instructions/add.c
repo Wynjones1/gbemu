@@ -14,7 +14,6 @@ void ADD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8)
 		{
-			//TODO: This needs to be treates as a signed value
 			d1 = state->memory[state->pc + 1];
 		}
 		reg16_t out = cpu_add16(state, d0, d1);
