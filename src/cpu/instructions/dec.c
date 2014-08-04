@@ -10,7 +10,12 @@ void DEC(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		//TODO: immediate decrement.
+		reg_t res                = cpu_load8_indirect(state, i0);
+		state->half_carry        = (res & 0xf) != 0;
+		res -= 1;
+		state->zero              = (res == 0);
+		state->subtract          = 1;
+		cpu_store8_indirect(state, i0, res);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{

@@ -114,9 +114,9 @@ void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 void cpu_dec8(struct cpu_state *state, REG_INPUT reg)
 {
 	reg_t res                = state->registers[reg.r8] - 1;
-	state->zero              = res == 0;
+	state->zero              = (res == 0);
 	state->subtract          = 1;
-	state->half_carry        = state->registers[reg.r8] & 0xf == 0;
+	state->half_carry        = ((state->registers[reg.r8] & 0xf) != 0);
 	state->registers[reg.r8] = res;
 }
 
@@ -124,7 +124,7 @@ void cpu_inc8(struct cpu_state *state, REG_INPUT reg)
 {
 	int old_carry = state->carry;
 	state->registers[reg.r8] = cpu_add8(state, state->registers[reg.r8], 1);
-	state->carry = old_carry;
+	state->carry             = old_carry;
 }
 
 void cpu_dec16(struct cpu_state *state, REG_INPUT reg)
@@ -185,7 +185,7 @@ reg_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
 	state->zero       = (t0 & 0xffff) == 0;
 	state->subtract   = 0;
 	state->carry      = t0 > 0xffff;
-	state->half_carry = (d0 & 0xff) + (d1 & 0xff) > 0xff;
+	state->half_carry = (d0 & 0xfff) + (d1 & 0xfff) > 0xfff;
 	return t0 & 0xffff;
 }
 
@@ -289,50 +289,116 @@ void cpu_rst(struct cpu_state *state, reg_t d0)
 //TODO:Check if these actually set the zero flag.
 void cpu_rla(struct cpu_state *state)
 {
-	int old_carry     = state->carry;
-	state->carry      = (state->a >> 7) & 0x1;;
-	state->a          <<= 1;
-	state->a          |= old_carry;
-	state->zero       = state->a == 0;
-	state->half_carry = 0;
-	state->subtract   = 0;
+	state->a = cpu_rl(state, state->a);
 }
 
 void cpu_rlca(struct cpu_state *state)
 {
-	state->carry      = (state->a >> 7) & 0x1;;
-	state->a          <<= 1;
-	state->a          |= state->carry;
-	state->zero       = state->a == 0;
-	state->half_carry = 0;
-	state->subtract   = 0;
+	state->a = cpu_rlc(state, state->a);
 }
 
 void cpu_rra(struct cpu_state *state)
 {
-	int old_carry     = state->carry;
-	state->carry      = state->a & 0x1;
-	state->a          >>= 1;
-	state->a          |= old_carry << 7;
-	state->zero       = state->a == 0;
-	state->half_carry = 0;
-	state->subtract   = 0;
+	state->a = cpu_rr(state, state->a);
 }
 
 /* Rotate A right, store bit 0 in carry flag */
 void cpu_rrca(struct cpu_state *state)
 {
-	state->carry      = state->a & 0x1;
-	state->a          >>= 1;
-	state->a          |= state->carry << 7;
-	state->zero       = state->a == 0;
-	state->half_carry = 0;
-	state->subtract   = 0;
+	state->a = cpu_rrc(state, state->a);
 }
 
 void cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0)
 {
-	state->zero = (d0 >> pos) & 0x1;
+	state->zero = !((d0 >> pos) & 0x1);
 	state->subtract = 0;
 	state->half_carry = 1;
+}
+
+reg_t cpu_res(struct cpu_state *state, reg_t pos, reg_t d0)
+{
+	reg_t mask = ~((reg_t)1 << pos);
+	return d0 & mask;
+}
+
+reg_t cpu_set(struct cpu_state *state, reg_t pos, reg_t d0)
+{
+	return d0 | 1 << pos;
+}
+
+reg_t   cpu_rl(struct cpu_state *state, reg_t d0)
+{
+	reg_t old_carry = state->carry;
+	state->carry = (d0 >> 7) & 0x1;
+	d0 =  (d0 << 1) | old_carry;
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_rlc(struct cpu_state *state, reg_t d0)
+{
+	state->carry = (d0 >> 7) & 0x1;
+	d0 =  (d0 << 1) | state->carry;
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_rr(struct cpu_state *state, reg_t d0)
+{
+	reg_t old_carry = state->carry;
+	state->carry = d0 & 0x1;
+	d0 = (d0 >> 1) | (old_carry << 7);
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_rrc(struct cpu_state *state, reg_t d0)
+{
+	state->carry = d0 & 0x1;
+	d0 = (d0 >> 1) | (state->carry << 7);
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_sra(struct cpu_state *state, reg_t d0)
+{
+	state->carry = d0 & 0x1;
+	d0 = (d0 >> 1) | ((d0 >> 7) << 7);
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_sla(struct cpu_state *state, reg_t d0)
+{
+	state->carry = (d0 >> 7) & 0x1;
+	d0 <<= 1;
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t   cpu_srl(struct cpu_state *state, reg_t d0)
+{
+	state->carry = d0 & 0x1;
+	d0 >>= 1;
+	state->zero       = (d0 == 0);
+	state->half_carry = 0;
+	state->subtract   = 0;
+	return d0;
+}
+
+reg_t cpu_swap(struct cpu_state *state, reg_t d0)
+{
+	return (d0 << 4) & (d0 >> 4);
 }

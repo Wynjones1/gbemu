@@ -1,79 +1,38 @@
 #include "cpu.h"
 
+#define X(n) case ARG_TYPE_ ## n: d0 = cpu_set(state, n, d0); break;
 void SET(struct cpu_state *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
-	if(arg0 == ARG_TYPE_1)
+	if(arg1 == ARG_TYPE_REG16_INDIRECT)
 	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
+		reg_t d0 = cpu_load8_indirect(state, i1);
+		switch(arg0)
 		{
+			X(1);
+			X(2);
+			X(3);
+			X(4);
+			X(5);
+			X(6);
+			X(7);
 		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
+		cpu_store8_indirect(state, i1, d0);
 	}
-	else if(arg0 == ARG_TYPE_2)
+	else if(arg1 == ARG_TYPE_REG8)
 	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
+		reg_t d0 = cpu_load_reg8(state, i1);
+		switch(arg0)
 		{
+			X(1);
+			X(2);
+			X(3);
+			X(4);
+			X(5);
+			X(6);
+			X(7);
 		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_3)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_4)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_5)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_6)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_7)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
-	}
-	else if(arg0 == ARG_TYPE_DATA8)
-	{
-		if(arg1 == ARG_TYPE_REG16_INDIRECT)
-		{
-		}
-		else if(arg1 == ARG_TYPE_REG8)
-		{
-		}
+		cpu_store_reg8(state, i1, d0);
 	}
 }

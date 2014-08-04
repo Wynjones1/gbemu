@@ -6,14 +6,14 @@ void RRC(struct cpu_state *state,
 {
 	if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		reg_t d0 = cpu_load8_indirect(state, i0);
+		d0 = cpu_rrc(state, d0);
+		cpu_store8_indirect(state, i0, d0);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		if(arg1 == ARG_TYPE_NONE)
-		{
-		}
+		reg_t d0 = cpu_load_reg8(state, i0);
+		d0 = cpu_rrc(state, d0);
+		cpu_store_reg8(state, i0, d0);
 	}
 }

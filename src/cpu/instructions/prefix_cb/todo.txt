@@ -1,12 +1,12 @@
 bit.c X
-res.c
-rl.c
-rlc.c
-rr.c
-rrc.c
-set.c
-sla.c
-sra.c
-srl.c
-swap.c
+res.c X
+rl.c  X
+rlc.c X
+rr.c  X
+rrc.c X
+set.c X
+sla.c X
+sra.c X
+srl.c X
+swap.c X
 todo.txt
