@@ -27,7 +27,7 @@ else()
 
 	message(STATUS "SDL Libs:  " ${sdl_libs})
 	message(STATUS "SDL Flags: " ${sdl_cflags})
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -Wall -Werror -Wno-missing-braces")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -Wall -Werror -Wno-missing-braces -fmax-errors=1")
 
 	target_link_libraries(gbemu ${sdl_libs})
 endif()

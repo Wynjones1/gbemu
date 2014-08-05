@@ -23,6 +23,7 @@ struct opcode
 };
 
 extern struct opcode op_table[];
+extern struct opcode cb_op_table[];
 
 void NOP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
 void STOP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
@@ -60,3 +61,14 @@ void RRA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INP
 void RLA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
 void RRCA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
 void RLCA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void RLC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void RRC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void RL( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void RR( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void SLA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void SRA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void SWAP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void SRL( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void BIT( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void RES( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
+void SET( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
