@@ -22,3 +22,18 @@ void DEC(struct cpu_state *state,
 		cpu_dec8(state, i0);
 	}
 }
+
+void cpu_dec8(struct cpu_state *state, REG_INPUT reg)
+{
+	reg_t res                = state->registers[reg.r8] - 1;
+	state->zero              = (res == 0);
+	state->subtract          = 1;
+	state->half_carry        = ((state->registers[reg.r8] & 0xf) != 0);
+	state->registers[reg.r8] = res;
+}
+
+void cpu_dec16(struct cpu_state *state, REG_INPUT reg)
+{
+	//No flags are affected with the 16bit decrement.
+	state->registers16[reg.r16] -= 1;
+}

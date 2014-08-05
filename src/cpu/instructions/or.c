@@ -22,3 +22,13 @@ void OR(struct cpu_state *state,
 	d0 = cpu_or(state, d0, d1);
 	cpu_store_reg8(state, A_REG, d0);
 }
+
+reg_t cpu_or(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	reg_t res         = d0 | d1;
+	state->zero       = res == 0;
+	state->half_carry = 0;
+	state->carry      = 0;
+	state->subtract   = 0;
+	return res;
+}

@@ -19,3 +19,8 @@ void JP(struct cpu_state *state,
 		cpu_jump(state, addr);
 	}
 }
+
+void  cpu_jump(struct cpu_state *state, reg16_t addr)
+{
+	state->pc = addr;
+}

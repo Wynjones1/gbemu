@@ -23,3 +23,13 @@ void ADC(struct cpu_state *state,
 		cpu_adc(state, d0, d1);
 	}
 }
+
+reg_t cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	uint16_t res      = ((uint16_t)d0 + d1) + state->carry;
+	state->zero       = (d0 & 0xff) == 0;
+	state->subtract   = 0;
+	state->half_carry = ((d0 & 0xf) + (d1 & 0xf) + state->carry) > 0xf;
+	state->carry      = res > 0xff;
+	return res & 0xff;
+}

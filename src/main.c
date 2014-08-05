@@ -10,13 +10,16 @@
 int main(int argc, char **argv)
 {
 #if 1
-	struct cpu_state state;
-	memset(&state, 0x00, sizeof(struct cpu_state));
-	for(int i = 0; i < 0xff; i++)
-	{
-		struct opcode code = op_table[i];
-		code.op(&state, code.arg0, code.i0, code.arg1, code.i1);
-	}
+	struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin");
+	#if 0
+		cpu_load_rom(state, "/home/stuart/tetris.gb");
+	#elif 1
+		cpu_load_rom(state, "/home/stuart/mario.gb");
+	#else
+		cpu_load_rom(state, "/home/stuart/pokemon_blue.gb");
+	#endif
+	cpu_start(state);
+	cpu_delete(state);
 #else
 	display_t *dis = display_init();
 	char rgb[3] = {0xff, 0xff, 0xff};

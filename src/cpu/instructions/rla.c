@@ -6,3 +6,9 @@ void RLA(struct cpu_state *state,
 {
 	cpu_rla(state);
 }
+
+//TODO:Check if these actually set the zero flag.
+void cpu_rla(struct cpu_state *state)
+{
+	state->a = cpu_rl(state, state->a);
+}

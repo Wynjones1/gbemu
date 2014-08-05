@@ -6,3 +6,9 @@ void RRCA(struct cpu_state *state,
 {
 	cpu_rrca(state);
 }
+
+/* Rotate A right, store bit 0 in carry flag */
+void cpu_rrca(struct cpu_state *state)
+{
+	state->a = cpu_rrc(state, state->a);
+}

@@ -1,72 +1,11 @@
 #pragma once
 #include "memory.h"
+#include "rom.h"
 #include "types.h"
+#include "common.h"
+#include "arg_defs.h"
 
-enum REG
-{
-	REG_F,REG_A, 
-	REG_C,REG_B, 
-	REG_E,REG_D, 
-	REG_L,REG_H, 
-	NUM_REGISTERS
-};
-
-enum REG16
-{
-	REG16_AF,
-	REG16_BC,
-	REG16_DE,
-	REG16_HL,
-	REG16_SP,
-	NUM_REGISTERS16
-};
-
-enum ARG_TYPE
-{
-	ARG_TYPE_REG8,
-	ARG_TYPE_REG8_INDIRECT,
-	ARG_TYPE_REG16,
-	ARG_TYPE_REG16_INDIRECT,
-	ARG_TYPE_DATA8,
-	ARG_TYPE_DATA8_UNSIGNED,
-	ARG_TYPE_DATA8_UNSIGNED_INDIRECT,
-	ARG_TYPE_DATA16,
-	ARG_TYPE_DATA16_UNSIGNED,
-	ARG_TYPE_DATA16_UNSIGNED_INDIRECT,
-	ARG_TYPE_REL8,
-	ARG_TYPE_REL8_ADD_SP,
-	ARG_TYPE_HL_INDIRECT_DEC,
-	ARG_TYPE_HL_INDIRECT_INC,
-	ARG_TYPE_00H,
-	ARG_TYPE_08H,
-	ARG_TYPE_10H,
-	ARG_TYPE_18H,
-	ARG_TYPE_20H,
-	ARG_TYPE_28H,
-	ARG_TYPE_30H,
-	ARG_TYPE_38H,
-	ARG_TYPE_1,
-	ARG_TYPE_2,
-	ARG_TYPE_3,
-	ARG_TYPE_4,
-	ARG_TYPE_5,
-	ARG_TYPE_6,
-	ARG_TYPE_7,
-	ARG_TYPE_Z,
-	ARG_TYPE_NC,
-	ARG_TYPE_NZ,
-	ARG_TYPE_NONE
-};
-
-
-typedef union REG_INPUT
-{
-	enum REG   r8;
-	enum REG16 r16;
-}REG_INPUT;
-
-
-struct cpu_state
+typedef struct cpu_state
 {
 	union
 	{
@@ -100,65 +39,13 @@ struct cpu_state
 	reg16_t   sp;
 	reg16_t   pc;
 	memory_t *memory;
-};
+	rom_t     rom;
+}cpu_state_t;
 
-typedef void (*cpu_opcode)(
-				struct cpu_state *state,
-				enum  ARG_TYPE    arg0,
-				union REG_INPUT   i0,
-				enum  ARG_TYPE    arg1,
-				union REG_INPUT   i1);
-
-struct opcode
-{
-	cpu_opcode       op;
-	enum  ARG_TYPE   arg0;
-	union REG_INPUT  i0;
-	enum  ARG_TYPE   arg1;
-	union REG_INPUT  i1;
-};
-
-extern struct opcode op_table[];
-
-void NOP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void STOP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void JR( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void INC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void DEC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void ADD( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void LD( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void LDH( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RST( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void PUSH( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void POP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void CP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void OR( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void CALL( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void SBC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void AND( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void JP( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void ADC( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void XOR( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void SUB( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RET( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RET_Z( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void PREFIX_CB( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void INVALID( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void EI( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void DI( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RETI( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void HALT( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void CCF( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void SCF( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void CPL( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void DAA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RRA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RLA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RRCA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-void RLCA( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1);
-
-static const REG_INPUT A_REG  = {.r8  = REG_A};
-static const REG_INPUT AF_REG = {.r16 = REG16_AF};
+cpu_state_t *cpu_init(const char *boot_rom_filename);
+void cpu_start(struct cpu_state *state);
+void cpu_load_rom(struct cpu_state *state, const char *filename);
+void cpu_delete(cpu_state_t *state);
 
 reg_t   cpu_load_reg8(struct cpu_state *state, REG_INPUT reg);
 reg16_t cpu_load_reg16(struct cpu_state *state, REG_INPUT reg);
@@ -213,3 +100,5 @@ reg_t   cpu_sra(struct cpu_state *state, reg_t d0);
 reg_t   cpu_sla(struct cpu_state *state, reg_t d0);
 reg_t   cpu_srl(struct cpu_state *state, reg_t d0);
 reg_t   cpu_swap(struct cpu_state *state, reg_t d0);
+
+const char *cpu_get_arg_type_string(enum ARG_TYPE type);

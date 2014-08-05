@@ -19,3 +19,11 @@ void CP(struct cpu_state *state,
 	}
 	cpu_cmp(state, d0);
 }
+
+void cpu_cmp(struct cpu_state *state, reg_t d0)
+{
+	state->carry      = state->a < d0;
+	state->zero       = state->a == d0;
+	state->half_carry = (state->a & 0xf) < (d0 & 0xf);
+	state->subtract   = 1;
+}

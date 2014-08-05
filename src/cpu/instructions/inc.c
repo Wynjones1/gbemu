@@ -22,3 +22,16 @@ void INC(struct cpu_state *state,
 		cpu_inc8(state, i0);
 	}
 }
+
+void cpu_inc8(struct cpu_state *state, REG_INPUT reg)
+{
+	int old_carry = state->carry;
+	state->registers[reg.r8] = cpu_add8(state, state->registers[reg.r8], 1);
+	state->carry             = old_carry;
+}
+
+void cpu_inc16(struct cpu_state *state, REG_INPUT reg)
+{
+	//No flags are affected with the 16bit increment.
+	state->registers16[reg.r16] += 1;
+}

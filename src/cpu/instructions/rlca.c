@@ -6,3 +6,8 @@ void RLCA(struct cpu_state *state,
 {
 	cpu_rlca(state);
 }
+
+void cpu_rlca(struct cpu_state *state)
+{
+	state->a = cpu_rlc(state, state->a);
+}
