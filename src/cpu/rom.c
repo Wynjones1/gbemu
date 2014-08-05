@@ -20,14 +20,31 @@ static int verify(FILE *fp)
 	return 1;
 }
 
-void rom_read(const char *filename)
+rom_t rom_read(const char *filename)
 {
 	FILE *fp = fopen(filename, "r");
 	fseek(fp, 0x0134, SEEK_SET);
-	char title[16];
-	fread(title, 1, 16, fp);
+	rom_t out;
+	fread(out.title,             1, 0x144 - 0x134, fp); // 0x134 - 0x143
+	fread(out.licensee_code,     1, 0x146 - 0x144, fp); // 0x144 - 0x145
+	fread(&out.sgb_flag,         1, 1,             fp); // 0x146
+	fread(&out.cart_type,        1, 1,             fp); // 0x147
+	fread(&out.rom_size,         1, 1,             fp); // 0x148
+	fread(&out.ram_size,         1, 1,             fp); // 0x149
 
-	printf("game title: %s\n", title);
-	printf("game OK   : %d\n", verify(fp));
+	out.title[16]             = 0;
+	out.manufacturer_code[4]  = 0;
+	out.licensee_code[3]      = 0;
+
+	printf("Game title        : %s\n",       out.title);
+	/*
+	printf("Manufacturer code : %s\n",       out.manufacturer_code);
+	printf("Licensee code     : %s\n",       out.licensee_code);
+	*/
+	printf("Cart type         : 0x%x\n",     out.cart_type);
+	printf("ROM size          : %dKBytes\n", 32 <<  out.rom_size );
+	printf("RAM size          : %d\n",       out.ram_size );
+	printf("Game OK           : %d\n",       verify(fp));
 	fclose(fp);
+	return out;
 }

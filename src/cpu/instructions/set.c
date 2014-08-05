@@ -1,7 +1,7 @@
 #include "cpu.h"
 
-#define X(n) case ARG_TYPE_ ## n: d0 = cpu_res(state, n, d0); break;
-void RES(struct cpu_state *state,
+#define X(n) case ARG_TYPE_ ## n: d0 = cpu_set(state, n, d0); break;
+void SET(struct cpu_state *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -17,6 +17,9 @@ void RES(struct cpu_state *state,
 			X(5);
 			X(6);
 			X(7);
+			default:
+				Error("Invalid argument type");
+				break;
 		}
 		cpu_store8_indirect(state, i1, d0);
 	}
@@ -32,7 +35,16 @@ void RES(struct cpu_state *state,
 			X(5);
 			X(6);
 			X(7);
+			default:
+				Error("Invalid argument type");
+				break;
 		}
 		cpu_store_reg8(state, i1, d0);
 	}
+}
+#undef X
+
+reg_t cpu_set(struct cpu_state *state, reg_t pos, reg_t d0)
+{
+	return d0 | 1 << pos;
 }

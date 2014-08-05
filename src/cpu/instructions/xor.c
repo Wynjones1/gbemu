@@ -19,3 +19,12 @@ void XOR(struct cpu_state *state,
 	}
 	cpu_xor(state, data);
 }
+
+void cpu_xor(struct cpu_state *state, reg_t d0)
+{
+	state->a ^= d0;
+	state->zero       = (state->a == 0);
+	state->half_carry = 0;
+	state->carry      = 0;
+	state->subtract   = 0;
+}

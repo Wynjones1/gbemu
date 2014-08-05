@@ -37,3 +37,9 @@ void RST(struct cpu_state *state,
 		cpu_rst(state,0x38);
 	}
 }
+
+void cpu_rst(struct cpu_state *state, reg_t d0)
+{
+	cpu_push(state, state->pc);
+	state->pc = d0;
+}

@@ -120,3 +120,47 @@ void LD(struct cpu_state *state,
 		}
 	}
 }
+
+/* Basic memory access functions */
+reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
+{
+	return memory_load8(state->memory, addr);
+}
+reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
+{
+	return memory_load16(state->memory, addr);
+}
+
+reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
+{
+	reg16_t addr = state->registers16[reg.r16];
+	return memory_load8(state->memory, addr);
+}
+
+reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
+{
+	reg16_t addr = state->registers16[reg.r16];
+	return memory_load16(state->memory, addr);
+}
+
+void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
+{
+	memory_store8(state->memory, addr, data);
+}
+
+void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
+{
+	memory_store16(state->memory, addr, data);
+}
+
+void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
+{
+	reg16_t addr = state->registers16[reg.r16];
+	memory_store8(state->memory, addr, data);
+}
+
+void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
+{
+	reg16_t addr = state->registers16[reg.r16];
+	memory_store16(state->memory, addr, data);
+}

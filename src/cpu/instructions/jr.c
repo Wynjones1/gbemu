@@ -14,3 +14,8 @@ void JR(struct cpu_state *state,
 		cpu_jump_rel(state, rel);
 	}
 }
+
+void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
+{
+	state->pc += addr;
+}

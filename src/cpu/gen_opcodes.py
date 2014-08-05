@@ -2,7 +2,11 @@
 from HTMLParser import HTMLParser
 import re
 
-DATA_FILE = "./data/opcodes_prefix_cb.html"
+gen_prefix = False
+
+DATA_FILE = "./data/opcodes_8bit.html"
+if(gen_prefix):
+	DATA_FILE = "./data/opcodes_prefix_cb.html"
 
 class Temp(HTMLParser):
 	def __init__(self):
@@ -23,7 +27,19 @@ def start_with_list(x, l):
 	return 0
 
 def filter_ops(x):
-	l = ["RLC", "RRC", "RL", "RR", "SLA", "SRA", "SWAP", "SRL", "BIT", "RES", "SET"]
+	l = ["NOP", "LD", "INC", "DEC",
+		"RLCA","ADD", "RRCA","STOP",
+		"RLA", "XOR", "JR" , "HALT",
+		"RST", "CALL","SUB", "PUSH",
+		"CP", "RST", "POP", "ADC",
+		"SBC", "AND", "DI", "EI",
+		"LDH", "CCF", "DAA", "SCF",
+		"JP", "RET", "OR", "RRA",
+		"PREFIX"]
+
+	if(gen_prefix):
+		l = ["RLC", "RRC", "RL", "RR", "SLA", "SRA", "SWAP", "SRL", "BIT", "RES", "SET"]
+
 	if(len(x) == 0):
 		return 1
 	if(start_with_list(x[0], l)):
@@ -75,7 +91,7 @@ def arg_type(arg):
 		raise Exception("Invalid arg type", arg)
 	return (out, reg)
 
-def gen_op(op):
+def gen_op_base(op):
 	if(len(op)):
 		s = re.split(" |,", op[0])
 		if(len(s) == 1):
@@ -95,14 +111,33 @@ def gen_op(op):
 			return (s[0], a0[0], a0[1], a1[0], a1[1])
 	return ("INVALID", "ARG_TYPE_NONE", "REG_A", "ARG_TYPE_NONE", "REG_A")
 
+def gen_op(op):
+	try:
+		size = int(op[1])
+		splt = op[2].split("/")
+		success = splt[0]
+		try:
+			fail = splt[1]
+		except:
+			fail = 0
+	except:
+		size    = 0
+		success = 0
+		fail    = 0
+
+	return gen_op_base(op) + (size, success, fail)
+
 count = 0
 def gen_struct(op, f):
 	global count
-	out = "{ .op = (cpu_opcode)"   + op[0] +\
-		  ", .arg0 = " + op[1] +\
-		  ", .i0 = "   + op[2] +\
-		  ", .arg1 = " + op[3] +\
-		  ", .i1 = "   + op[4] +\
+	out = "{ .op = (cpu_opcode)" + op[0] +\
+		  ", .arg0 = "           + op[1] +\
+		  ", .i0 = "             + op[2] +\
+		  ", .arg1 = "           + op[3] +\
+		  ", .i1 = "             + op[4] +\
+		  ", .size = "           + str(op[5]) +\
+		  ", .success = "        + str(op[6]) +\
+		  ", .fail = "           + str(op[7]) +\
 		  "}/*opcode " + hex(count) + "*/"
 	count += 1
 	f.write(out)
@@ -141,7 +176,9 @@ def gen_list():
 
 def gen_templates():
 	for i in sorted(template.keys()): # Each of the instructon names
-		f = open("./src/cpu/instructions/prefix_cb/" + i.lower() + ".c", "w")
+		f = open("./src/cpu/instructions/new/" + i.lower() + ".c", "w")
+		if(gen_prefix):
+			f = open("./src/cpu/instructions/new/prefix_cb/" + i.lower() + ".c", "w")
 		f.write("#include \"cpu.h\"\n\n");
 		sig = "struct cpu_state *state,\n\t\tenum ARG_TYPE arg0, union REG_INPUT i0,\n\t\tenum ARG_TYPE arg1, union REG_INPUT i1"
 		f.write("void " + i + "(" + sig + ")\n{\n")
@@ -171,14 +208,17 @@ def gen_templates():
 def main():
 	l = gen_list()
 
-	out = open("./src/cpu/prefix_cb_opcodes.h", "w")
+	out = open("./src/cpu/opcodes.c", "w")
+	out.write("#include \"opcodes.h\"\n\n")
+	if(gen_prefix):
+		out = open("./src/cpu/prefix_cb_opcodes.g", "w")
 	out.write("struct opcode op_table[] = {\n")
 	for i in l:
 		write_op(i, out)
 		out.write(",\n")
 	out.write("\n};")
 
-	gen_templates();
+	#gen_templates();
 
 
 	out.close()

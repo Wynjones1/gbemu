@@ -18,6 +18,9 @@ void BIT(struct cpu_state *state,
 			X(5);
 			X(6);
 			X(7);
+			default:
+				Error("Invalid argument type");
+				break;
 		}
 	}
 	else if(arg1 == ARG_TYPE_REG8)
@@ -32,7 +35,17 @@ void BIT(struct cpu_state *state,
 			X(5);
 			X(6);
 			X(7);
+			default:
+				Error("Invalid argument type in bit command");
+				break;
 		}
 	}
 }
 #undef X
+
+void cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0)
+{
+	state->zero = !((d0 >> pos) & 0x1);
+	state->subtract = 0;
+	state->half_carry = 1;
+}

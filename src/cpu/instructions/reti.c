@@ -6,3 +6,10 @@ void RETI(struct cpu_state *state,
 {
 	cpu_reti(state);
 }
+
+void cpu_reti(struct cpu_state *state)
+{
+	REG_INPUT t0 = {.r16 = REG16_SP};
+	cpu_pop(state, t0);
+	cpu_enable_interrupts(state);
+}

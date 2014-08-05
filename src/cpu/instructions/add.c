@@ -39,3 +39,23 @@ void ADD(struct cpu_state *state,
 		cpu_store_reg8(state, i0, out);
 	}
 }
+
+reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
+{
+	uint16_t t0       = (uint16_t)d0 + (uint16_t)d1;
+	state->zero       = (t0 & 0xff) == 0;
+	state->subtract   = 0;
+	state->half_carry = (d0 & 0xf) + (d1 & 0xf) > 0xf;
+	state->carry      = t0 > 0xff;
+	return t0 & 0xff;
+}
+
+reg_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
+{
+	uint32_t t0       = (uint32_t)d0 + (uint32_t)d1;
+	state->zero       = (t0 & 0xffff) == 0;
+	state->subtract   = 0;
+	state->carry      = t0 > 0xffff;
+	state->half_carry = (d0 & 0xfff) + (d1 & 0xfff) > 0xfff;
+	return t0 & 0xffff;
+}

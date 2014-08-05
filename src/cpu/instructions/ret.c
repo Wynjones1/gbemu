@@ -13,3 +13,9 @@ void RET(struct cpu_state *state,
 		cpu_ret(state);
 	}
 }
+
+void cpu_ret(struct cpu_state *state)
+{
+	REG_INPUT t0 = {.r16 = REG16_SP};
+	cpu_pop(state, t0);
+}

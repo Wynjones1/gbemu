@@ -6,3 +6,8 @@ void DI(struct cpu_state *state,
 {
 	cpu_disable_interrupts(state);
 }
+
+void cpu_disable_interrupts(struct cpu_state *state)
+{
+	//TODO:Implement
+}

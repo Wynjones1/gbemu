@@ -7,3 +7,9 @@ void PUSH(struct cpu_state *state,
 	reg16_t d = cpu_load_reg16(state, i0);
 	cpu_push(state, d);
 }
+
+void  cpu_push(struct cpu_state *state, reg16_t d0)
+{
+	state->sp -= 2;
+	memory_store16(state->memory, state->sp, d0);
+}

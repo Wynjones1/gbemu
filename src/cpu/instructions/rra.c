@@ -6,3 +6,8 @@ void RRA(struct cpu_state *state,
 {
 	cpu_rra(state);
 }
+
+void cpu_rra(struct cpu_state *state)
+{
+	state->a = cpu_rr(state, state->a);
+}
