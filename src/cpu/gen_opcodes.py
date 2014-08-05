@@ -2,7 +2,7 @@
 from HTMLParser import HTMLParser
 import re
 
-gen_prefix = False
+gen_prefix = True
 
 DATA_FILE = "./data/opcodes_8bit.html"
 if(gen_prefix):
@@ -211,8 +211,8 @@ def main():
 	out = open("./src/cpu/opcodes.c", "w")
 	out.write("#include \"opcodes.h\"\n\n")
 	if(gen_prefix):
-		out = open("./src/cpu/prefix_cb_opcodes.g", "w")
-	out.write("struct opcode op_table[] = {\n")
+		out = open("./src/cpu/prefix_cb_opcodes.c", "w")
+	out.write("struct opcode cb_op_table[] = {\n")
 	for i in l:
 		write_op(i, out)
 		out.write(",\n")
