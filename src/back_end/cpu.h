@@ -1,6 +1,7 @@
 #pragma once
 #include "memory.h"
-#include "rom.h"
+#include "display.h"
+#include "events.h"
 #include "types.h"
 #include "common.h"
 #include "arg_defs.h"
@@ -38,8 +39,12 @@ typedef struct cpu_state
 	};
 	reg16_t   sp;
 	reg16_t   pc;
-	memory_t *memory;
-	rom_t     rom;
+	memory_t  *memory;
+	display_t *display;
+	events_t  events;
+	int       jump;
+	int       success;
+	int       cycles;
 }cpu_state_t;
 
 cpu_state_t *cpu_init(const char *boot_rom_filename);
@@ -100,5 +105,3 @@ reg_t   cpu_sra(struct cpu_state *state, reg_t d0);
 reg_t   cpu_sla(struct cpu_state *state, reg_t d0);
 reg_t   cpu_srl(struct cpu_state *state, reg_t d0);
 reg_t   cpu_swap(struct cpu_state *state, reg_t d0);
-
-const char *cpu_get_arg_type_string(enum ARG_TYPE type);

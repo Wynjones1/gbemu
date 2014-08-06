@@ -206,6 +206,8 @@ def gen_templates():
 		f.close()
 
 def main():
+	print("Need to change opcode 0xe2 to be 1 byte not 2")
+	return
 	l = gen_list()
 
 	out = open("./src/cpu/opcodes.c", "w")
