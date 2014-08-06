@@ -3,12 +3,12 @@ project(gbemu)
 
 file(GLOB SRC
 	"./src/*.c" "./src/*.h"
-	"./src/cpu/*.c" "./src/cpu/*.h"
-	"./src/cpu/instructions/*.c" "./src/cpu/instructions/*.h"
-	"./src/cpu/instructions/prefix_cb/*.c" "./src/cpu/instructions/prefix_cb/*.h"
-	"./src/display/*.c" "./src/display/*.h")
+	"./src/back_end/*.c" "./src/back_end/*.h"
+	"./src/back_end/instructions/*.c" "./src/back_end/instructions/*.h"
+	"./src/back_end/instructions/prefix_cb/*.c" "./src/back_end/instructions/prefix_cb/*.h"
+	"./src/front_end/*.c" "./src/front_end/*.h")
 
-include_directories("./src" "./src/cpu" "./src/display")
+include_directories("./src" "./src/back_end" "./src/front_end")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
 

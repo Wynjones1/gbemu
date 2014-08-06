@@ -13,9 +13,21 @@ void JR(struct cpu_state *state,
 		reg_t rel = cpu_load8(state, state->pc + 1);
 		cpu_jump_rel(state, rel);
 	}
+	else
+	{
+		state->success = 0;
+	}
 }
 
 void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
 {
-	state->pc += addr;
+	// We need to perform addition on a unsigned 16 bit
+	// value and a signed 8 bir value, we perform this
+	// by expanding both to 32 bits, performing the
+	// subtraction and casting back to 16 bits.
+	addr += 2;
+	int32_t t = (int32_t)*(int8_t*)&addr;
+	int32_t pc = state->pc;
+	state->jump = 1;
+	state->pc = pc + t;
 }

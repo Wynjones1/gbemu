@@ -18,9 +18,14 @@ void JP(struct cpu_state *state,
 		addr = cpu_load16_indirect(state, i0);
 		cpu_jump(state, addr);
 	}
+	else
+	{
+		state->success = 0;
+	}
 }
 
 void  cpu_jump(struct cpu_state *state, reg16_t addr)
 {
+	state->jump = 1;
 	state->pc = addr;
 }

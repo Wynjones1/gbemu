@@ -12,10 +12,15 @@ void RET(struct cpu_state *state,
 	{
 		cpu_ret(state);
 	}
+	else
+	{
+		state->success = 0;
+	}
 }
 
 void cpu_ret(struct cpu_state *state)
 {
-	REG_INPUT t0 = {.r16 = REG16_SP};
-	cpu_pop(state, t0);
+	state->jump  = 1;
+	state->pc    = memory_load16(state->memory, state->sp);
+	state->sp   += 2;
 }

@@ -15,9 +15,14 @@ void CALL(struct cpu_state *state,
 		|| (arg0 == ARG_TYPE_REG8 &&  cpu_carry(state)) //Actually the carry flag.
 		|| (arg0 == ARG_TYPE_Z    &&  cpu_zero(state)))
 	{
+		state->jump = 1;
 		reg16_t next_instruction = state->pc + 3;
 		reg16_t jump = cpu_load16(state, state->pc + 1);
 		cpu_push(state, next_instruction);
 		cpu_jump(state, jump);
+	}
+	else
+	{
+		state->success = 0;
 	}
 }

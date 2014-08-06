@@ -1,7 +1,7 @@
 #pragma once
 
-#define DISPLAY_WIDTH  10
-#define DISPLAY_HEIGHT 10
+#define DISPLAY_WIDTH  256
+#define DISPLAY_HEIGHT 256
 
 typedef struct display display_t;
 

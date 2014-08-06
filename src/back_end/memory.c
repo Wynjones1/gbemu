@@ -20,7 +20,11 @@ typedef struct memory
 	reg_t flags;                          // 0xFFFE -> 0xFFFF
 
 	//Boot Rom.
+	int boot_locked;
 	reg_t boot[0x100];
+
+	FILE *temp;
+
 }memory_t;
 
 memory_t *memory_init(const char *filename)
@@ -30,6 +34,13 @@ memory_t *memory_init(const char *filename)
 	FILE *fp = fopen(filename, "r");
 	fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
+
+	fp = fopen("/home/stuart/mario.gb", "r");
+	fseek(fp, 0x100, SEEK_SET);
+	fread(out->rom, 1, 0x50, fp);
+	fclose(fp);
+
+	out->boot_locked = 0;
 	return out;
 }
 
@@ -41,23 +52,48 @@ void memory_delete(memory_t *mem)
 reg_t   memory_load8(memory_t *mem, reg16_t addr)
 {
 	//TODO:Implement
-	return mem->boot[addr];
+	if(addr == 0xff44)
+	{
+		return 0x90;
+	}
+	else if(addr < 0x100)
+	{
+		return mem->boot[addr];
+	}
+	else
+	{
+		fseek(mem->temp, addr, SEEK_SET);
+		return getc(mem->temp);
+	}
+}
+
+void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
+{
+	//TODO:Implement
+	if(addr == 0xff50)
+	{
+	
+	}
+	else
+	{
+		mem->boot[addr] = data;
+	}
 }
 
 reg16_t memory_load16(memory_t *mem, reg16_t addr)
 {
-	//TODO:Implement
-	return *(reg16_t*)&mem->boot[addr];
+	reg16_t out = memory_load8(mem, addr);
+	out |= memory_load8(mem, addr + 1) << 8;
+	return out;
 }
 
-void    memory_store8(memory_t *mem, reg16_t addr, reg_t data)
+void memory_store16(memory_t *mem, reg16_t addr, reg16_t data)
 {
-	//TODO:Implement
-	mem->boot[addr] = data;
+	memory_store8(mem, addr,     data & 0xff);
+	memory_store8(mem, addr + 1, data >> 8);
 }
 
-void    memory_store16(memory_t *mem, reg16_t addr, reg16_t data)
+void memory_load_rom(memory_t *mem, const char *filename)
 {
-	//TODO:Implement
-	*(reg16_t*)&mem->boot[addr] = data;
+	mem->temp = fopen(filename, "r");
 }

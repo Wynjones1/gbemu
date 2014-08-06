@@ -227,7 +227,7 @@ struct opcode op_table[] = {
 { .op = (cpu_opcode)RST, .arg0 = ARG_TYPE_18H, .i0 = REG_A, .arg1 = ARG_TYPE_NONE, .i1 = REG_A, .size = 1, .success = 16, .fail = 0}/*opcode 0xdf*/,
 { .op = (cpu_opcode)LDH, .arg0 = ARG_TYPE_DATA8_UNSIGNED_INDIRECT, .i0 = REG_A, .arg1 = ARG_TYPE_REG8, .i1 = REG_A, .size = 2, .success = 12, .fail = 0}/*opcode 0xe0*/,
 { .op = (cpu_opcode)POP, .arg0 = ARG_TYPE_REG16, .i0 = REG16_HL, .arg1 = ARG_TYPE_NONE, .i1 = REG_A, .size = 1, .success = 12, .fail = 0}/*opcode 0xe1*/,
-{ .op = (cpu_opcode)LD, .arg0 = ARG_TYPE_REG8_INDIRECT, .i0 = REG_C, .arg1 = ARG_TYPE_REG8, .i1 = REG_A, .size = 2, .success = 8, .fail = 0}/*opcode 0xe2*/,
+{ .op = (cpu_opcode)LD, .arg0 = ARG_TYPE_REG8_INDIRECT, .i0 = REG_C, .arg1 = ARG_TYPE_REG8, .i1 = REG_A, .size = 1, .success = 8, .fail = 0}/*opcode 0xe2*/,
 { .op = (cpu_opcode)INVALID, .arg0 = ARG_TYPE_NONE, .i0 = REG_A, .arg1 = ARG_TYPE_NONE, .i1 = REG_A, .size = 0, .success = 0, .fail = 0}/*opcode 0xe3*/,
 { .op = (cpu_opcode)INVALID, .arg0 = ARG_TYPE_NONE, .i0 = REG_A, .arg1 = ARG_TYPE_NONE, .i1 = REG_A, .size = 0, .success = 0, .fail = 0}/*opcode 0xe4*/,
 { .op = (cpu_opcode)PUSH, .arg0 = ARG_TYPE_REG16, .i0 = REG16_HL, .arg1 = ARG_TYPE_NONE, .i1 = REG_A, .size = 1, .success = 16, .fail = 0}/*opcode 0xe5*/,

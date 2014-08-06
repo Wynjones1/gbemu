@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 30
+#define PIXEL_SCALE 3
 
 struct display
 {
@@ -22,7 +22,7 @@ display_t *display_init(void)
 	out->window = SDL_CreateWindow("Window", 0, 0, 
 									PIXEL_SCALE * DISPLAY_WIDTH,
 									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
-	out->render = SDL_CreateRenderer(out->window, -1, 0);
+	out->render  = SDL_CreateRenderer(out->window, -1, 0);
 	out->texture = SDL_CreateTexture(out->render,
 								SDL_PIXELFORMAT_ARGB8888,
 								SDL_TEXTUREACCESS_STATIC,

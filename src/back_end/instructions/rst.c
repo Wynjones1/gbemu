@@ -41,5 +41,6 @@ void RST(struct cpu_state *state,
 void cpu_rst(struct cpu_state *state, reg_t d0)
 {
 	cpu_push(state, state->pc);
+	state->jump = 1;
 	state->pc = d0;
 }
