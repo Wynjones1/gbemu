@@ -78,12 +78,9 @@ void cpu_start(struct cpu_state *state)
 //		events_handle(&state->events);
 		if(state->events.quit) exit(0);
 		//Load instruction and execute it.
+		printf("0x%04x\n", state->pc);
 		reg_t instruction = cpu_load8(state, state->pc);
 		struct opcode *op = &op_table[instruction];
-		if(state->pc == 0xfe)
-		{
-			printf("0x%x %x\n", state->pc, state->h);
-		}
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
 		if(!state->jump && instruction != 0xCB)
