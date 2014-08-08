@@ -3,10 +3,8 @@ project(gbemu)
 
 file(GLOB SRC
 	"./src/*.c" "./src/*.h"
-	"./src/back_end/*.c" "./src/back_end/*.h"
-	"./src/back_end/instructions/*.c" "./src/back_end/instructions/*.h"
-	"./src/back_end/instructions/prefix_cb/*.c" "./src/back_end/instructions/prefix_cb/*.h"
-	"./src/front_end/*.c" "./src/front_end/*.h")
+	"./src/instructions/*.c" "./src/instructions/*.h"
+	"./src/instructions/prefix_cb/*.c" "./src/instructions/prefix_cb/*.h")
 
 include_directories("./src" "./src/back_end" "./src/front_end")
 
@@ -27,7 +25,7 @@ else()
 
 	message(STATUS "SDL Libs:  " ${sdl_libs})
 	message(STATUS "SDL Flags: " ${sdl_cflags})
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -Wall -Werror -Wno-missing-braces -fmax-errors=1")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -Wall -Werror -Wno-missing-braces -Wno-unused-variable")
 
 	target_link_libraries(gbemu ${sdl_libs} pthread)
 endif()
