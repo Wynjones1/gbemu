@@ -63,14 +63,22 @@ static void write_tile(display_t *d, int tx, int ty)
 	int tile_num = ty * 32 + tx;
 	uint8_t  tile = d->mem->video_ram[0x1800 + tile_num];
 	uint8_t *tile_data = &d->mem->video_ram[tile * 16];
+	uint8_t scx = d->mem->scx;
+	uint8_t scy = d->mem->scy;
 	for(int j = 0; j < 8; j++)
 	{
 		for(int i = 0; i < 8; i++)
 		{
-			uint8_t lsb = tile_data[0];
-			uint8_t msb = tile_data[1];
-			uint8_t shade = ((msb >> i) & 0x1) << 1 | ((lsb >> i) & 0x1);
-			write_pixel(d, tx * 8 + (7 - i), ty * 8 + j, GET_SHADE(d->mem->bgp, shade));
+			uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+							((tile_data[0] >> i) & 0x1);
+			uint8_t x = tx * 8 + (7 - i);
+			uint8_t y = ty * 8 + j;
+			x = x - scx;
+			y = y - scy;
+			if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
+			{
+				write_pixel(d, x, y , GET_SHADE(d->mem->bgp, shade));
+			}
 		}
 		tile_data += 2;
 	}

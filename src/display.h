@@ -1,8 +1,10 @@
 #pragma once
 #include "memory.h"
 
-#define DISPLAY_WIDTH  256
-#define DISPLAY_HEIGHT 256
+#define DISPLAY_WIDTH  160
+#define DISPLAY_HEIGHT 144
+#define DISPLAY_BUFFER_WIDTH  256
+#define DISPLAY_BUFFER_HEIGHT 256
 
 typedef struct display display_t;
 

@@ -4,9 +4,6 @@
 #include "cpu.h"
 #include "opcodes.h"
 
-#include <SDL2/SDL.h>//TODO: Remove
-
-
 #if 0
 #define CPU_ERROR(state, arg0, i0, arg1, i1)\
 	fprintf(stderr, "%s %s %d %s %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16);\
@@ -81,6 +78,7 @@ void cpu_start(struct cpu_state *state)
 		//printf("0x%04x\n", state->pc);
 		reg_t instruction = cpu_load8(state, state->pc);
 		struct opcode *op = &op_table[instruction];
+	//	printf("0x%04x: \n", state->pc);
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
 		if(!state->jump && instruction != 0xCB)
