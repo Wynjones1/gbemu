@@ -40,19 +40,11 @@ void display_delete(display_t *disp)
 
 static void write_pixel(display_t *d, int x, int y, uint8_t col)
 {
-			d->pixel_data[x][y][0] = col;
-			d->pixel_data[x][y][1] = col;
-			d->pixel_data[x][y][2] = col;
-			d->pixel_data[x][y][3] = 255;
+	d->pixel_data[x][y][0] = col;
+	d->pixel_data[x][y][1] = col;
+	d->pixel_data[x][y][2] = col;
+	d->pixel_data[x][y][3] = 255;
 }
-
-struct bgp_palette
-{
-	uint8_t col0 : 2;
-	uint8_t col1 : 2;
-	uint8_t col2 : 2;
-	uint8_t col3 : 2;
-};
 
 uint8_t shade_table[4] =
 {
@@ -66,13 +58,19 @@ uint8_t shade_table[4] =
 
 static void write_tile(display_t *d, int tx, int ty)
 {
-	uint8_t col  = d->mem->video_ram[ty * 32 + tx];
-	uint8_t shade = d->mem->bgp;
-	for(int i = 0; i < 8; i++)
+	//Tile map is located at address 0x9800 or 0x9c00
+	int tile_num = ty * 32 + tx;
+	uint8_t  tile = d->mem->video_ram[0x1800 + tile_num];
+	uint8_t *tile_data = &d->mem->video_ram[tile * 16];
+	for(int j = 0; j < 8; j++)
 	{
-		for(int j = 0; j < 8; j++)
+		tile_data += 2;
+		for(int i = 0; i < 8; i++)
 		{
-			write_pixel(d, tx * 8 + i, ty * 8 + j, GET_SHADE(shade, col));
+			uint8_t lsb = tile_data[0];
+			uint8_t msb = tile_data[1];
+			uint8_t shade = ((msb >> i) & 0x1) << 1 | ((lsb >> i) & 0x1);
+			write_pixel(d, tx * 8 + i, ty * 8 + j, GET_SHADE(d->mem->bgp, shade));
 		}
 	}
 }
