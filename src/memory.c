@@ -256,6 +256,10 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0x8000,0x9fff))
 	{
+		if(X(0x9800, 0x9bff))
+		{
+		//	printf("Writing to background tile map.\n");
+		}
 		mem->video_ram[addr - 0x8000] = data;
 	}
 	else if(X(0xa000,0xbfff))

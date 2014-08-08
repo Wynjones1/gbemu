@@ -15,7 +15,7 @@ void LD(struct cpu_state *state,
 		else if(arg1 == ARG_TYPE_REG8)
 		{
 			reg_t   data = cpu_load_reg8(state, i1);
-			reg16_t addr = cpu_load16(state, state->sp + 1);
+			reg16_t addr = cpu_load16(state, state->pc + 1);
 			cpu_store8(state, addr, data);
 		}
 	}

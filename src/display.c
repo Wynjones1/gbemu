@@ -40,10 +40,10 @@ void display_delete(display_t *disp)
 
 static void write_pixel(display_t *d, int x, int y, uint8_t col)
 {
-	d->pixel_data[x][y][0] = col;
-	d->pixel_data[x][y][1] = col;
-	d->pixel_data[x][y][2] = col;
-	d->pixel_data[x][y][3] = 255;
+	d->pixel_data[y][x][0] = col;
+	d->pixel_data[y][x][1] = col;
+	d->pixel_data[y][x][2] = col;
+	d->pixel_data[y][x][3] = 255;
 }
 
 uint8_t shade_table[4] =
@@ -54,6 +54,7 @@ uint8_t shade_table[4] =
 	0
 };
 
+//TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
 static void write_tile(display_t *d, int tx, int ty)
@@ -64,14 +65,14 @@ static void write_tile(display_t *d, int tx, int ty)
 	uint8_t *tile_data = &d->mem->video_ram[tile * 16];
 	for(int j = 0; j < 8; j++)
 	{
-		tile_data += 2;
 		for(int i = 0; i < 8; i++)
 		{
 			uint8_t lsb = tile_data[0];
 			uint8_t msb = tile_data[1];
 			uint8_t shade = ((msb >> i) & 0x1) << 1 | ((lsb >> i) & 0x1);
-			write_pixel(d, tx * 8 + i, ty * 8 + j, GET_SHADE(d->mem->bgp, shade));
+			write_pixel(d, tx * 8 + (7 - i), ty * 8 + j, GET_SHADE(d->mem->bgp, shade));
 		}
+		tile_data += 2;
 	}
 }
 
