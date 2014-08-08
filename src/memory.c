@@ -25,6 +25,7 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->current_bank = 1;
 	out->io_registers[0x44] = 0x90;
 	out->cart_type = out->bank_0[0x147];
+	out->boot_locked = 0;
 	fread(out->bank_0, 1, to_read, fp);
 	fclose(fp);
 	for(int i = 0; i < 0x2000; i++)
