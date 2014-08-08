@@ -1,7 +1,6 @@
 #pragma once
 #include "memory.h"
 #include "display.h"
-#include "events.h"
 #include "types.h"
 #include "common.h"
 #include "arg_defs.h"
@@ -41,13 +40,12 @@ typedef struct cpu_state
 	reg16_t   pc;
 	memory_t  *memory;
 	display_t *display;
-	events_t  events;
 	int       jump;
 	int       success;
 	int       cycles;
 }cpu_state_t;
 
-cpu_state_t *cpu_init(const char *boot_rom_filename);
+cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);
 void cpu_start(struct cpu_state *state);
 void cpu_load_rom(struct cpu_state *state, const char *filename);
 void cpu_delete(cpu_state_t *state);

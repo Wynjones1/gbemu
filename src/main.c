@@ -9,14 +9,14 @@
 
 int main(int argc, char **argv)
 {
-	struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin");
 	#if 0
-		cpu_load_rom(state, "/home/stuart/tetris.gb");
+		const char *rom = "/home/stuart/tetris.gb";
 	#elif 1
-		cpu_load_rom(state, "/home/stuart/mario.gb");
+		const char *rom = "/home/stuart/mario.gb";
 	#else
-		cpu_load_rom(state, "/home/stuart/pokemon_blue.gb");
+		const char *rom = "/home/stuart/pokemon_blue.gb";
 	#endif
+	struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin", rom);
 	cpu_start(state);
 	cpu_delete(state);
 	return 0;
