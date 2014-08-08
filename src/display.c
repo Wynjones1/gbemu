@@ -106,6 +106,7 @@ static void *display_thread(void *display_)
 		//Check for events.
 		events_handle(&events);
 		if(events.quit) exit(0);
+		display->mem->ly = 0;
 		//Display the image.
 		for(int ty = 0; ty < 32; ty++)
 		{
@@ -115,6 +116,7 @@ static void *display_thread(void *display_)
 			}
 		}
 		display_present(display);
+		display->mem->ly = 0x90;
 		SDL_Delay(17);
 	}
 	return NULL;
@@ -123,7 +125,6 @@ static void *display_thread(void *display_)
 void display_draw_pixel(display_t *disp, int x, int y, char *rgb)
 {
 	memcpy(disp->pixel_data[x][y], rgb, PIXEL_SIZE);
-	display_present(disp);
 }
 
 void display_present(display_t *disp)
