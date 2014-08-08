@@ -3,54 +3,19 @@
 #include <stdio.h>
 #include "common.h"
 
-typedef struct memory
-{
-	reg_t *bank_0;               // 0x0000 -> 0x3fff
-	reg_t *bank_n;               // 0x4000 -> 0x7fff
-	reg_t  video_ram[0x2000];    // 0x8000 -> 0x9fff
-	reg_t *external_ram;         // 0xa000 -> 0xbfff
-	reg_t working_ram_0[0x1000]; // 0xc000 -> 0xcfff
-	reg_t working_ram_1[0x1000]; // 0xd000 -> 0xdfff //CGB: Should be switchable.
-	reg_t *echo       ;          // 0xe000 -> 0xfdff
-	reg_t OAM[0x1e00];           // 0xfe00 -> 0xfe9f
-	//unused                     // 0xfea0 -> 0xfeff
-	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
-	reg_t stack[0x60];           // 0xff80 -> 0xfffe
-	reg_t interrupt_enable;      // 0xffff
+static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
+static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
-	//Boot Rom.
-	int boot_locked;
-	reg_t boot[0x100];
-	//Banking information;
-	int current_bank;
-	int cart_type;
-	//IO Status registers.
-	int lcdc;
-	int stat;
-	int scy;
-	int scx;
-	int ly;
-	int lyc;
-	int dma;
-	int bgp;
-	int obp0;
-	int obp1;
-	int wy;
-	int wx;
 
-	FILE *temp;
-
-}memory_t;
-
-memory_t *memory_init(const char *filename)
+memory_t *memory_init(const char *boot, const char *rom)
 {
 	memory_t *out = malloc(sizeof(memory_t));
 	//TODO: Add safe read functions.
-	FILE *fp = fopen(filename, "r");
+	FILE *fp = fopen(boot, "r");
 	fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
 
-	fp = fopen("/home/stuart/mario.gb", "r");
+	fp = fopen(rom, "r");
 	fseek(fp, 0L, SEEK_END);
 	int to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
@@ -62,6 +27,8 @@ memory_t *memory_init(const char *filename)
 	out->cart_type = out->bank_0[0x147];
 	fread(out->bank_0, 1, to_read, fp);
 	fclose(fp);
+	for(int i = 0; i < 0x2000; i++)
+		out->video_ram[i] = rand();
 
 	return out;
 }
@@ -72,29 +39,55 @@ void memory_delete(memory_t *mem)
 }
 
 static void lcdc(memory_t *mem, reg_t data)
-{}
+{
+	mem->lcdc = data;
+	Warning("Not Implemented fully.\n");
+}
 static void stat(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void scy(memory_t *mem, reg_t data)
-{}
+{
+	mem->scy = data;
+}
 static void scx(memory_t *mem, reg_t data)
-{}
+{
+	mem->scx = data;
+}
 static void ly(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void lyc(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void dma(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void bgp(memory_t *mem, reg_t data)
-{}
+{
+	mem->bgp = data;
+	Warning("Not Implemented fully.\n");
+}
 static void obp0(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void obp1(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void wy(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 static void wx(memory_t *mem, reg_t data)
-{}
+{
+	Error("Not Implemented.\n");
+}
 
 #define X(min, max) addr >= min && addr <= max
 reg_t memory_load8(memory_t *mem, reg16_t addr)
@@ -142,35 +135,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0xff00,0xff7f))
 	{
-		switch(addr)
-		{
-			case 0xff40:
-				return mem->lcdc;
-			case 0xff41:
-				return mem->stat;
-			case 0xff42:
-				return mem->scx;
-			case 0xff43:
-				return mem->scy;
-			case 0xff44:
-				return mem->ly;
-			case 0xff45:
-				return mem->lyc;
-			case 0xff46:
-				return mem->dma;
-			case 0xff47:
-				return mem->bgp;
-			case 0xff48:
-				return mem->obp0;
-			case 0xff49:
-				return mem->obp1;
-			case 0xff4a:
-				return mem->wy;
-			case 0xff4b:
-				return mem->wx;
-			default:
-				Error("IO Registers not done %04x\n", addr);
-		}
+		return read_IO_registers(mem, addr);
 	}
 	else if(X(0xff80,0xfffe))
 	{
@@ -181,6 +146,100 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 		return mem->interrupt_enable;
 	}
 	return 0;
+}
+
+static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
+{
+	switch(addr)
+	{
+		case 0xff40:
+			return mem->lcdc;
+		case 0xff41:
+			return mem->stat;
+		case 0xff42:
+			return mem->scx;
+		case 0xff43:
+			return mem->scy;
+		case 0xff44:
+			return mem->ly;
+		case 0xff45:
+			return mem->lyc;
+		case 0xff46:
+			return mem->dma;
+		case 0xff47:
+			return mem->bgp;
+		case 0xff48:
+			return mem->obp0;
+		case 0xff49:
+			return mem->obp1;
+		case 0xff4a:
+			return mem->wy;
+		case 0xff4b:
+			return mem->wx;
+		default:
+			Error("IO Registers not done %04x\n", addr);
+	}
+	return 0;
+}
+
+
+static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
+{
+	//TODO:IO Registers.
+	if(X(0xff10, 0xff3f))
+	{
+		Warning("Sound function not available (addr : 0x%04x)\n", addr);
+		return;
+	}
+	switch(addr)
+	{
+		case 0xff0f:
+			Error("Interrupt Flag not implemented.\n");
+			break;
+		//Video Registers
+		case 0xff40:
+			lcdc(mem, data);
+			break;
+		case 0xff41:
+			stat(mem, data);
+			break;
+		case 0xff42:
+			scx(mem, data);
+			break;
+		case 0xff43:
+			scy(mem, data);
+			break;
+		case 0xff44:
+			ly(mem, data);
+			break;
+		case 0xff45:
+			lyc(mem, data);
+			break;
+		case 0xff46:
+			dma(mem, data);
+			break;
+		case 0xff47:
+			bgp(mem, data);
+			break;
+		case 0xff48:
+			obp0(mem, data);
+			break;
+		case 0xff49:
+			obp1(mem, data);
+			break;
+		case 0xff4a:
+			wy(mem, data);
+			break;
+		case 0xff4b:
+			wx(mem, data);
+			break;
+		case 0xff50:
+			if(data)
+				mem->boot_locked = 1;
+			break;
+		default:
+			Error("IO Registers not done %04x\n", addr);
+	}
 }
 
 void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
@@ -225,58 +284,7 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0xff00,0xff7f))
 	{
-		//TODO:IO Registers.
-		if(X(0xff10, 0xff3f))
-		{
-			Warning("Sound function not available (addr : 0x%04x)\n", addr);
-			return;
-		}
-		switch(addr)
-		{
-			//Video Registers
-			case 0xff40:
-				lcdc(mem, data);
-				break;
-			case 0xff41:
-				stat(mem, data);
-				break;
-			case 0xff42:
-				scx(mem, data);
-				break;
-			case 0xff43:
-				scy(mem, data);
-				break;
-			case 0xff44:
-				ly(mem, data);
-				break;
-			case 0xff45:
-				lyc(mem, data);
-				break;
-			case 0xff46:
-				dma(mem, data);
-				break;
-			case 0xff47:
-				bgp(mem, data);
-				break;
-			case 0xff48:
-				obp0(mem, data);
-				break;
-			case 0xff49:
-				obp1(mem, data);
-				break;
-			case 0xff4a:
-				wy(mem, data);
-				break;
-			case 0xff4b:
-				wx(mem, data);
-				break;
-			case 0xff50:
-				if(data)
-					mem->boot_locked = 1;
-				break;
-			default:
-				Error("IO Registers not done %04x\n", addr);
-		}
+		write_IO_registers(mem, addr, data);
 	}
 	else if(X(0xff80,0xfffe))
 	{
@@ -302,7 +310,6 @@ void memory_store16(memory_t *mem, reg16_t addr, reg16_t data)
 	memory_store8(mem, addr + 1, data >> 8);
 }
 
+
 void memory_load_rom(memory_t *mem, const char *filename)
-{
-	mem->temp = fopen(filename, "r");
-}
+{}

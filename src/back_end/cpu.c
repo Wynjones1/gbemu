@@ -4,6 +4,9 @@
 #include "cpu.h"
 #include "opcodes.h"
 
+#include <SDL2/SDL.h>//TODO: Remove
+
+
 #if 0
 #define CPU_ERROR(state, arg0, i0, arg1, i1)\
 	fprintf(stderr, "%s %s %d %s %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16);\
@@ -16,11 +19,11 @@
 	fprintf(stderr, "%s %s %d %s %d %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16, __LINE__);\
 	exit(-1)
 
-cpu_state_t *cpu_init(const char *boot_rom_filename)
+cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
-	out->memory      = memory_init(boot_rom_filename);
-	//out->display     = display_init();
+	out->memory      = memory_init(boot_rom_filename, rom);
+	out->display     = display_init(out->memory);
 	return out;
 }
 
@@ -74,9 +77,6 @@ void cpu_start(struct cpu_state *state)
 		//Reset status flags.
 		state->success = 1;
 		state->jump    = 0;
-		//Check for events.
-//		events_handle(&state->events);
-		if(state->events.quit) exit(0);
 		//Load instruction and execute it.
 		printf("0x%04x\n", state->pc);
 		reg_t instruction = cpu_load8(state, state->pc);
@@ -90,3 +90,4 @@ void cpu_start(struct cpu_state *state)
 		state->cycles += state->success ? op->success : op->fail;
 	}
 }
+
