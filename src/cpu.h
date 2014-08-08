@@ -5,6 +5,9 @@
 #include "common.h"
 #include "arg_defs.h"
 
+#define CPU_CLOCK_SPEED 4190000
+#define CPU_CLOCKS_PER_MS CPU_CLOCK_SPEED / 1000
+
 typedef struct cpu_state
 {
 	union
