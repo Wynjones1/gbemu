@@ -9,5 +9,5 @@ void DI(struct cpu_state *state,
 
 void cpu_disable_interrupts(struct cpu_state *state)
 {
-	//TODO:Implement
+	state->memory->IME = 0;
 }

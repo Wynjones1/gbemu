@@ -108,14 +108,17 @@ static void *display_thread(void *display_)
 		if(events.quit) exit(0);
 		display->mem->ly = 0;
 		//Display the image.
-		for(int ty = 0; ty < 32; ty++)
+		if(display->mem->lcdc.enabled)
 		{
-			for(int tx = 0; tx < 32; tx++)
+			for(int ty = 0; ty < 32; ty++)
 			{
-				write_tile(display, tx, ty);
+				for(int tx = 0; tx < 32; tx++)
+				{
+					write_tile(display, tx, ty);
+				}
 			}
+			display_present(display);
 		}
-		display_present(display);
 		display->mem->ly = 0x90;
 		SDL_Delay(17);
 	}

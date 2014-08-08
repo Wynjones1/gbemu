@@ -33,18 +33,28 @@ typedef struct memory
 	int current_bank;
 	int cart_type;
 	//IO Status registers.
-	int lcdc;
-	int stat;
-	int scy;
-	int scx;
-	int ly;
-	int lyc;
-	int dma;
-	int bgp;
-	int obp0;
-	int obp1;
-	int wy;
-	int wx;
+	struct
+	{
+		uint8_t enabled        : 1;
+		uint8_t window_map     : 1;
+		uint8_t window_display : 1;
+		uint8_t tile_select    : 1;
+		uint8_t map_select     : 1;
+		uint8_t obj_size       : 1;
+		uint8_t obj_enable     : 1;
+		uint8_t bg_display     : 1;
+	}lcdc;
+	uint8_t stat;
+	uint8_t scy;
+	uint8_t scx;
+	uint8_t ly;
+	uint8_t lyc;
+	uint8_t dma;
+	uint8_t bgp;
+	uint8_t obp0;
+	uint8_t obp1;
+	uint8_t wy;
+	uint8_t wx;
 	//Interrupt flags.
 	union
 	{

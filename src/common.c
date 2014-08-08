@@ -17,8 +17,7 @@ void common_error(const char *format, ...)
 	va_start(arg_list, format);
 	vprintf(format, arg_list);
 	va_end(arg_list);
-//	exit(-1);
-	getc(stdin);
+	exit(-1);
 #endif
 
 }

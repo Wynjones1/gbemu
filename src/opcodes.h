@@ -13,6 +13,7 @@ typedef void (*cpu_opcode)(
 struct opcode
 {
 	cpu_opcode       op;
+	const char      *name;
 	enum  ARG_TYPE   arg0;
 	union REG_INPUT  i0;
 	enum  ARG_TYPE   arg1;

@@ -79,6 +79,8 @@ void cpu_start(struct cpu_state *state)
 		//Load instruction and execute it.
 		reg_t instruction = cpu_load8(state, state->pc);
 		struct opcode *op = &op_table[instruction];
+		if(state->pc == 0x19b)
+			printf("0x%04x: \n", state->pc);
 		printf("0x%04x: \n", state->pc);
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
@@ -87,6 +89,7 @@ void cpu_start(struct cpu_state *state)
 			state->pc += op->size;
 		}
 		state->cycles += state->success ? op->success : op->fail;
+		fflush(stdout);
 	}
 }
 

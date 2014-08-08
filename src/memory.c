@@ -41,12 +41,11 @@ void memory_delete(memory_t *mem)
 
 static void lcdc(memory_t *mem, reg_t data)
 {
-	mem->lcdc = data;
-	Warning("Not Implemented fully.\n");
+	*(uint8_t*)&mem->lcdc = data;
 }
 static void stat(memory_t *mem, reg_t data)
 {
-	Error("Not Implemented.\n");
+	mem->stat = data;
 }
 static void ly(memory_t *mem, reg_t data)
 {
@@ -124,7 +123,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 	switch(addr)
 	{
 		case 0xff40:
-			return mem->lcdc;
+			return *(uint8_t*)&mem->lcdc;
 		case 0xff41:
 			return mem->stat;
 		case 0xff42:
@@ -165,7 +164,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	switch(addr)
 	{
 		case 0xff0f:
-			Error("Interrupt Flag not implemented.\n");
+			mem->IF = data;
 			break;
 		//Video Registers
 		case 0xff40:
