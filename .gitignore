@@ -26,3 +26,6 @@
 *.gb
 build/
 bin/
+
+#Log files
+log*.txt
