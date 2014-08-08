@@ -48,14 +48,6 @@ static void stat(memory_t *mem, reg_t data)
 {
 	Error("Not Implemented.\n");
 }
-static void scy(memory_t *mem, reg_t data)
-{
-	mem->scy = data;
-}
-static void scx(memory_t *mem, reg_t data)
-{
-	mem->scx = data;
-}
 static void ly(memory_t *mem, reg_t data)
 {
 	Error("Not Implemented.\n");
@@ -68,32 +60,10 @@ static void dma(memory_t *mem, reg_t data)
 {
 	Error("Not Implemented.\n");
 }
-static void bgp(memory_t *mem, reg_t data)
-{
-	mem->bgp = data;
-	Warning("Not Implemented fully.\n");
-}
-static void obp0(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
-static void obp1(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
-static void wy(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
-static void wx(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
 
 #define X(min, max) addr >= min && addr <= max
 reg_t memory_load8(memory_t *mem, reg16_t addr)
 {
-	if(addr == 0xff44) return 0x90;//TODO: Fix
 	if(X(0x0000,0x3fff))
 	{
 		if(addr < 0x100 && !mem->boot_locked)
@@ -158,9 +128,9 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		case 0xff41:
 			return mem->stat;
 		case 0xff42:
-			return mem->scx;
-		case 0xff43:
 			return mem->scy;
+		case 0xff43:
+			return mem->scx;
 		case 0xff44:
 			return mem->ly;
 		case 0xff45:
@@ -205,10 +175,10 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			stat(mem, data);
 			break;
 		case 0xff42:
-			scx(mem, data);
+			mem->scy = data;
 			break;
 		case 0xff43:
-			scy(mem, data);
+			mem->scx = data;
 			break;
 		case 0xff44:
 			ly(mem, data);
@@ -220,19 +190,19 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			dma(mem, data);
 			break;
 		case 0xff47:
-			bgp(mem, data);
+			mem->bgp = data;
 			break;
 		case 0xff48:
-			obp0(mem, data);
+			mem->obp0 = data;
 			break;
 		case 0xff49:
-			obp1(mem, data);
+			mem->obp1 = data;
 			break;
 		case 0xff4a:
-			wy(mem, data);
+			mem->wy = data;
 			break;
 		case 0xff4b:
-			wx(mem, data);
+			mem->wx = data;
 			break;
 		case 0xff50:
 			if(data)
