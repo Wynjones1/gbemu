@@ -56,6 +56,7 @@ enum ARG_TYPE
 	ARG_TYPE_NONE
 };
 
+extern const char *arg_type_strings[];
 
 typedef union REG_INPUT
 {
