@@ -130,15 +130,16 @@ def gen_op(op):
 count = 0
 def gen_struct(op, f):
 	global count
-	out = "{ .op = (cpu_opcode)" + op[0] +\
-		  ", .arg0 = "           + op[1] +\
-		  ", .i0 = "             + op[2] +\
-		  ", .arg1 = "           + op[3] +\
-		  ", .i1 = "             + op[4] +\
-		  ", .size = "           + str(op[5]) +\
-		  ", .success = "        + str(op[6]) +\
-		  ", .fail = "           + str(op[7]) +\
-		  "}/*opcode " + hex(count) + "*/"
+	if not gen_prefix and count == 0xe2:
+		op = (op[0], op[1], op[2], op[3], op[4], 1, op[6], op[7])
+	out = "X(" + str(op[0]) + "," +\
+				 str(op[1]) + "," +\
+				 str(op[2]) + "," +\
+				 str(op[3]) + "," +\
+				 str(op[4]) + "," +\
+				 str(op[5]) + "," +\
+				 str(op[6]) + "," +\
+				 str(op[7]) + ") /*opcode " + hex(count) + "*/"
 	count += 1
 	f.write(out)
 
@@ -207,14 +208,22 @@ def gen_templates():
 
 def main():
 	print("Need to change opcode 0xe2 to be 1 byte not 2")
-	return
+	#return
 	l = gen_list()
 
-	out = open("./src/cpu/opcodes.c", "w")
-	out.write("#include \"opcodes.h\"\n\n")
 	if(gen_prefix):
-		out = open("./src/cpu/prefix_cb_opcodes.c", "w")
-	out.write("struct opcode cb_op_table[] = {\n")
+		out = open("./src/prefix_cb_opcodes.c", "w")
+	else:
+		out = open("./src/opcodes.c", "w")
+
+	out.write("#include \"opcodes.h\"\n\n")
+	out.write("#define X(n, a0, d0, a1, d1, s, suc, f) " +
+			"{.op = n, .arg0 = a0, .i0 = d0, .arg1 = a1, .i1 = d1, .size = s, .success = suc, .fail = f, .name = #n}\n\n")
+	if(gen_prefix):
+		out.write("struct opcode cb_op_table[] = {\n")
+	else:
+		out.write("struct opcode op_table[] = {\n")
+
 	for i in l:
 		write_op(i, out)
 		out.write(",\n")
