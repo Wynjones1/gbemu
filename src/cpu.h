@@ -38,7 +38,15 @@ typedef struct cpu_state
 			reg_t l;
 			reg_t h;
 		};
+		struct
+		{
+			reg16_t af;
+			reg16_t bc;
+			reg16_t de;
+			reg16_t hl;
+		};
 	};
+
 	reg16_t   sp;
 	reg16_t   pc;
 	memory_t  *memory;
@@ -46,6 +54,7 @@ typedef struct cpu_state
 	int       jump;
 	int       success;
 	int       cycles;
+
 }cpu_state_t;
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);

@@ -9,8 +9,8 @@ void RETI(struct cpu_state *state,
 
 void cpu_reti(struct cpu_state *state)
 {
-	REG_INPUT t0 = {.r16 = REG16_SP};
 	state->jump  = 1;
-	cpu_pop(state, t0);
+	state->pc    = memory_load16(state->memory, state->sp);
+	state->sp   += 2;
 	cpu_enable_interrupts(state);
 }

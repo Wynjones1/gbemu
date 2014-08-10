@@ -121,6 +121,8 @@ static void *display_thread(void *display_)
 		}
 		display->mem->ly = 0x90;
 		SDL_Delay(17);
+		display->mem->ly = 0x94;
+		SDL_Delay(17);
 	}
 	return NULL;
 }

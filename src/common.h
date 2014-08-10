@@ -15,6 +15,10 @@
 	#define OUTPUT_OUTPUT 1
 #endif
 
+#ifndef WARN_LIMIT
+	#define WARN_LIMIT 100
+#endif
+
 #if 1
 #define OUTPUT_FILENAME "log.txt"
 #endif

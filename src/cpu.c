@@ -96,16 +96,16 @@ void print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TY
 	switch(arg)
 	{
 		case ARG_TYPE_REG8:
-			sprintf(buf, "%s", reg_strings[r.r8]);
+			sprintf(buf, "%s = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
 			break;
 		case ARG_TYPE_REG8_INDIRECT:
-			sprintf(buf, "(%s)", reg_strings[r.r8]);
+			sprintf(buf, "(%s) = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
 			break;
 		case ARG_TYPE_REG16:
-			sprintf(buf, "%s", reg16_strings[r.r16]);
+			sprintf(buf, "%s = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
 			break;
 		case ARG_TYPE_REG16_INDIRECT:
-			sprintf(buf, "(%s)", reg16_strings[r.r16]);
+			sprintf(buf, "(%s) = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
 			break;
 		case ARG_TYPE_DATA8:
 			sprintf(buf, "0x%02x", cpu_load8(state, state->pc + 1));
@@ -169,7 +169,9 @@ void print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 	char arg1[1024];
 	print_arg(arg0, state, op,op->arg0, op->i0);
 	print_arg(arg1, state, op,op->arg1, op->i1);
-	sprintf(buffer, "0x%04x %s %s %s", state->pc, op->name, arg0, arg1);
+	char sep;
+	sep = op->arg1  == ARG_TYPE_NONE ? ' ' : ',';
+	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, arg0, sep, arg1);
 }
 
 void cpu_start(struct cpu_state *state)
@@ -187,7 +189,7 @@ void cpu_start(struct cpu_state *state)
 #if 1
 		char buf[1024];
 		print_op(buf, state, op);
-		Output("%s %d\n", buf, state->memory->boot_locked);
+		Output("%s\n", buf);
 #endif
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.

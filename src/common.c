@@ -3,15 +3,16 @@
 #include <signal.h>
 
 uint32_t g_cycles = 0;
-
+FILE *output_fp;
 
 void common_error(const char *format, ...)
 {
 #if OUTPUT_ERRORS
 	va_list arg_list;
 	va_start(arg_list, format);
-	vprintf(format, arg_list);
+	vfprintf(stderr, format, arg_list);
 	va_end(arg_list);
+	if(output_fp) fflush(output_fp);
 	raise(SIGABRT);
 #endif
 
@@ -20,30 +21,38 @@ void common_error(const char *format, ...)
 void common_warn(const char *format, ...)
 {
 #if OUTPUT_WARNINGS
-	va_list arg_list;
-	va_start(arg_list, format);
-	vprintf(format, arg_list);
-	va_end(arg_list);
+	static int warn_count = 0;
+	if(warn_count < WARN_LIMIT)
+	{
+		va_list arg_list;
+		va_start(arg_list, format);
+		vprintf(format, arg_list);
+		va_end(arg_list);
+		warn_count++;
+		if(warn_count == WARN_LIMIT)
+		{
+			printf("Warning: Too many warnings not going to output any more.\n");
+		}
+	}
 #endif
 }
 
 void common_output(const char *format, ...)
 {
 #if OUTPUT_OUTPUT
-	static FILE *fp;
-	if(!fp)
+	if(!output_fp)
 	{
 #ifdef OUTPUT_FILENAME
-		fp = fopen(OUTPUT_FILENAME, "w");
+		output_fp = fopen(OUTPUT_FILENAME, "w");
 #else
-		fp = stdout;
+		output_fp = stdout;
 #endif
 
 	}
 	va_list arg_list;
 	va_start(arg_list, format);
-	vfprintf(fp, format, arg_list);
+	vfprintf(output_fp, format, arg_list);
 	va_end(arg_list);
-	fflush(fp);
+	fflush(output_fp);
 #endif
 }

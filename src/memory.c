@@ -1,6 +1,7 @@
 #include "memory.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "common.h"
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
@@ -62,7 +63,15 @@ static void stat(memory_t *mem, reg_t data)
 
 static void dma(memory_t *mem, reg_t data)
 {
-	Error("Not Implemented.\n");
+	//Writing to the DMA register initiates a 0x100 byte DMA transfer.
+
+	//TODO:Make this occur over multiple clock cycles.
+	//We need to restrict accesses to HRAM also.
+	reg16_t source = data * 0x100;
+	for(reg16_t i = 0; i < 100; i++)
+	{
+		mem->OAM[i] = memory_load8(mem, source + i);
+	}
 }
 
 #define X(min, max) addr >= min && addr <= max
@@ -106,7 +115,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0xfea0,0xfeff))
 	{
-		//Unused.
+		return 0xff;
 	}
 	else if(X(0xff00,0xff7f))
 	{
@@ -159,6 +168,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->serial_control;
 		default:
 			Error("IO register not finished 0x%04x\n", addr);
+			return mem->backup[addr];
 	}
 	return 0;
 }
@@ -199,8 +209,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->lyc = data;
 			break;
 		case 0xff46:
-			mem->dma = data;
-			Warning("DMA Not Implemented. 0x%02x\n", data);
+			dma(mem, data);
 			break;
 		case 0xff47:
 			mem->bgp = data;
@@ -235,6 +244,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			break;
 		default:
 			Error("IO Registers not done %04x\n", addr);
+			mem->backup[addr] = data;
 	}
 }
 

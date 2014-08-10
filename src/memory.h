@@ -25,6 +25,7 @@ typedef struct memory
 	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
 	reg_t stack[0x7f];           // 0xff80 -> 0xfffe
 	reg_t interrupt_enable;      // 0xffff
+	reg_t backup[0x10000];
 
 	//Boot Rom.
 	int boot_locked;
