@@ -9,7 +9,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
 memory_t *memory_init(const char *boot, const char *rom)
 {
-	memory_t *out = malloc(sizeof(memory_t));
+	memory_t *out = calloc(1, sizeof(memory_t));
 	//TODO: Add safe read functions.
 	FILE *fp = fopen(boot, "r");
 	fread(out->boot, 1, 0x100, fp);
@@ -20,17 +20,33 @@ memory_t *memory_init(const char *boot, const char *rom)
 	int to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
 	out->bank_0       = malloc(to_read);
+	fread(out->bank_0, 1, to_read, fp);
+
 	out->bank_n       = out->bank_0 + 0x4000;
 	out->echo         = out->working_ram_0;
 	out->current_bank = 1;
 	out->io_registers[0x44] = 0x90;
-	out->cart_type = out->bank_0[0x147];
 	out->boot_locked = 0;
-	fread(out->bank_0, 1, to_read, fp);
 	fclose(fp);
-	for(int i = 0; i < 0x2000; i++)
-		out->video_ram[i] = rand();
-
+	out->cart_type = out->bank_0[0x147];
+	out->rom_size  = out->bank_0[0x148];
+	out->ram_size  = out->bank_0[0x149];
+	switch(out->ram_size)
+	{
+		case 0:
+			break;
+		case 1:
+			out->external_ram = malloc(2 * 1024);
+			break;
+		case 2:
+			out->external_ram = malloc(4 * 1024);
+			break;
+		case 3:
+			out->external_ram = malloc(32 * 1024);
+			break;
+	}
+	out->external_ram = malloc(10 * 1024);
+	//Error("Ram Size %d\n", out->ram_size);
 	return out;
 }
 
@@ -39,22 +55,11 @@ void memory_delete(memory_t *mem)
 	free(mem);
 }
 
-static void lcdc(memory_t *mem, reg_t data)
-{
-	*(uint8_t*)&mem->lcdc = data;
-}
 static void stat(memory_t *mem, reg_t data)
 {
 	mem->stat = data;
 }
-static void ly(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
-static void lyc(memory_t *mem, reg_t data)
-{
-	Error("Not Implemented.\n");
-}
+
 static void dma(memory_t *mem, reg_t data)
 {
 	Error("Not Implemented.\n");
@@ -73,7 +78,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0x4000,0x7fff))
 	{
-		return mem->bank_n[addr - 0x4000];
+		return mem->bank_0[mem->current_bank * 0x4000 + addr];
 	}
 	else if(X(0x8000,0x9fff))
 	{
@@ -146,8 +151,14 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->wy;
 		case 0xff4b:
 			return mem->wx;
+		case 0xff00:
+			return mem->joypad;
+		case 0xff01:
+			return mem->serial_data;
+		case 0xff02:
+			return mem->serial_control;
 		default:
-			Error("IO Registers not done %04x\n", addr);
+			Error("IO register not finished 0x%04x\n", addr);
 	}
 	return 0;
 }
@@ -158,7 +169,9 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	//TODO:IO Registers.
 	if(X(0xff10, 0xff3f))
 	{
+#if 0
 		Warning("Sound function not available (addr : 0x%04x)\n", addr);
+#endif
 		return;
 	}
 	switch(addr)
@@ -168,7 +181,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			break;
 		//Video Registers
 		case 0xff40:
-			lcdc(mem, data);
+			*(uint8_t*)&mem->lcdc = data;
 			break;
 		case 0xff41:
 			stat(mem, data);
@@ -180,13 +193,14 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->scx = data;
 			break;
 		case 0xff44:
-			ly(mem, data);
+			mem->ly = data;
 			break;
 		case 0xff45:
-			lyc(mem, data);
+			mem->lyc = data;
 			break;
 		case 0xff46:
-			dma(mem, data);
+			mem->dma = data;
+			Warning("DMA Not Implemented. 0x%02x\n", data);
 			break;
 		case 0xff47:
 			mem->bgp = data;
@@ -207,6 +221,18 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			if(data)
 				mem->boot_locked = 1;
 			break;
+		case 0xff7f:
+			Warning("Undocumented register (addr : 0x%02x) 0x%04x\n", addr, data);
+			break;
+		case 0xff00: // Joypad.
+			mem->joypad = data;
+			break;
+		case 0xff01: //TODO:Implement Serial transfer.
+			mem->serial_data = data;
+			break;
+		case 0xff02:
+			mem->serial_control = data;
+			break;
 		default:
 			Error("IO Registers not done %04x\n", addr);
 	}
@@ -214,15 +240,36 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 
 void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 {
-	if(X(0x0000,0x3fff))
+	if(X(0x0000, 0x1fff))//RAM Enable
 	{
-		Error("Cannot write to ROM addr: 0x%x\n", addr);
-	//	mem->bank_0[addr] = data;
+		mem->ram_enabled = data;
 	}
-	else if(X(0x4000,0x7fff))
+	else if(X(0x2000, 0x3fff))//Select the lower 5 bits of the rom bank.
 	{
-		Error("Cannot write to ROM addr: 0x%x\n", addr);
-	//	mem->bank_n[addr - 0x4000] = data;
+		mem->lsb = data & 0x1f;
+		if(mem->current_bank == 0x00 ||
+			mem->current_bank == 0x20 ||
+			mem->current_bank == 0x40 ||
+			mem->current_bank == 0x60)
+		{
+			mem->current_bank++;
+		}
+	}
+	else if(X(0x4000, 0x5fff))//Select the upper 2 bits of the ROM bank or the RAM bank.
+	{
+		mem->msb = data & 0x3;
+		if(mem->current_bank == 0x00 ||
+			mem->current_bank == 0x20 ||
+			mem->current_bank == 0x40 ||
+			mem->current_bank == 0x60)
+		{
+			mem->current_bank++;
+		}
+	}
+	else if(X(0x6000, 0x7fff))//ROM/RAM mode select.
+	{
+		data &= 0x1;
+		mem->rom_ram_mode = data;
 	}
 	else if(X(0x8000,0x9fff))
 	{
