@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "cpu.h"
 #include "opcodes.h"
+#include "ppm.h"
 
 #include <SDL2/SDL.h>
 
@@ -163,6 +165,8 @@ void print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TY
 	}
 	
 }
+#undef X
+
 void print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 {
 	char arg0[1024];
@@ -174,8 +178,138 @@ void print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, arg0, sep, arg1);
 }
 
+#define X(n) state->memory->interrupt.n && state->memory->enabled.n
+static int check_for_interrupts(struct cpu_state *state)
+{
+	//Check if interrupts are enabled
+	reg16_t addr;
+	if(state->memory->IME && (state->memory->IF & state->memory->IE & 0x1f))
+	{
+		state->memory->IME = 0;
+		//Check each of the interrupts in priority order.
+		if(X(v_blank))
+		{
+			state->memory->interrupt.v_blank = 0;
+			addr = 0x0040;
+		}
+		else if(X(lcd_status))
+		{
+			state->memory->interrupt.lcd_status = 0;
+			addr = 0x0048;
+		}
+		else if(X(timer))
+		{
+			state->memory->interrupt.timer = 0;
+			addr = 0x0050;
+		}
+		else if(X(serial))
+		{
+			state->memory->interrupt.serial = 0;
+			addr = 0x0058;
+		}
+		else if(X(joypad))
+		{
+			state->memory->interrupt.joypad = 0;
+			addr = 0x0060;
+		}
+		Output("Interrupt 0x%04x\n", addr);
+		cpu_push(state, state->pc);
+		state->pc = addr;
+	}
+	return 0;
+}
+#undef X
+
+uint8_t shade_table_0[4][3] =
+{
+	{255, 255, 255},
+	{127,127,127},
+	{63,63,63},
+	{0,0,0},
+};
+
+void output_registers(struct cpu_state *state)
+{
+	FILE *fp = fopen("reg.txt", "w");
+	fprintf(fp, "AF  = 0x%04x\n", state->af);
+	fprintf(fp, "BC  = 0x%04x\n", state->bc);
+	fprintf(fp, "DE  = 0x%04x\n", state->de);
+	fprintf(fp, "HL  = 0x%04x\n", state->hl);
+	fprintf(fp, "SP  = 0x%04x\n", state->sp);
+	fprintf(fp, "PC  = 0x%04x\n\n", state->pc);
+
+	fprintf(fp, "SCX = 0x%04x\n", state->memory->scx);
+	fprintf(fp, "SCY = 0x%04x\n", state->memory->scy);
+	fprintf(fp, "WX  = 0x%04x\n", state->memory->wx);
+	fprintf(fp, "WY  = 0x%04x\n\n", state->memory->wy);
+
+
+	fprintf(fp, "Interrupt Flags: (val) (enabled)\n");
+	fprintf(fp, "IME      =         %u\n", state->memory->IME);
+	fprintf(fp, "VBLANK   =         %u   %u \n",
+						state->memory->interrupt.v_blank,
+						state->memory->enabled.v_blank);
+	fprintf(fp, "LCD STAT =         %u   %u \n",
+						state->memory->interrupt.lcd_status,
+						state->memory->enabled.lcd_status);
+	fprintf(fp, "TIMER    =         %u   %u \n",
+						state->memory->interrupt.timer,
+						state->memory->enabled.timer);
+	fprintf(fp, "SERIAL   =         %u   %u \n",
+						state->memory->interrupt.serial,
+						state->memory->enabled.serial);
+	fprintf(fp, "JOYPAD   =         %u   %u \n",
+						state->memory->interrupt.joypad,
+						state->memory->enabled.joypad);
+}
+
+//TODO: Properly comment this.
+#define GET_SHADE(x, n) shade_table_0[((x >> (2 * n)) & 0x3)]
+
+struct cpu_state *g_state;
+void sigabrt_handler(int x)
+{
+	int w = 32;
+	int h = 6;
+	ppm_t *ppm = ppm_new(w * 8, h * 8, "tiles.ppm");
+	memory_t *mem = g_state->memory;
+	for(int ty = 0; ty < h; ty++)
+	{
+		for(int tx = 0; tx < w; tx++)
+		{
+			//Tile map is located at address 0x9800 or 0x9c00
+			int tile_num = ty * w + tx;
+			uint8_t *tile_data = &mem->video_ram[tile_num * 16];
+			for(int j = 0; j < 8; j++)
+			{
+				for(int i = 0; i < 8; i++)
+				{
+					uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+									((tile_data[0] >> i) & 0x1);
+					uint8_t x = tx * 8 + (7 - i);
+					uint8_t y = ty * 8 + j;
+					ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
+				}
+				tile_data += 2;
+			}
+		}
+	}
+	output_registers(g_state);
+	exit(0);
+}
+
+void onexit_f(void)
+{
+	sigabrt_handler(0);
+}
+
 void cpu_start(struct cpu_state *state)
 {
+	g_state = state;
+	signal(SIGABRT, sigabrt_handler);
+	atexit(onexit_f);
+	reg_t instruction = cpu_load8(state, state->pc);
+	struct opcode *op = &op_table[instruction];
 	state->pc = 0;
 	while(1)
 	{
@@ -183,6 +317,7 @@ void cpu_start(struct cpu_state *state)
 		state->success = 1;
 		state->jump    = 0;
 		//Load instruction and execute it.
+		check_for_interrupts(state);
 		reg_t instruction = cpu_load8(state, state->pc);
 		struct opcode *op = &op_table[instruction];
 

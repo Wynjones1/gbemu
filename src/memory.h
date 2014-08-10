@@ -24,7 +24,7 @@ typedef struct memory
 	//unused                     // 0xfea0 -> 0xfeff
 	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
 	reg_t stack[0x7f];           // 0xff80 -> 0xfffe
-	reg_t interrupt_enable;      // 0xffff
+	//reg_t interrupt_enable;    // 0xffff //Further down.
 	reg_t backup[0x10000];
 
 	//Boot Rom.
@@ -75,27 +75,27 @@ typedef struct memory
 	{
 		struct
 		{
-			char v_blank    : 1;
-			char lcd_status : 1;
-			char timer      : 1;
-			char serial     : 1;
-			char joypad     : 1;
-			char            : 3;
+			uint8_t v_blank    : 1;
+			uint8_t lcd_status : 1;
+			uint8_t timer      : 1;
+			uint8_t serial     : 1;
+			uint8_t joypad     : 1;
+			uint8_t            : 3;
 		}interrupt;
-		char IF;
+		uint8_t IF;
 	};
 	union
 	{
 		struct
 		{
-			char v_blank    : 1;
-			char lcd_status : 1;
-			char timer      : 1;
-			char serial     : 1;
-			char joypad     : 1;
-			char            : 3;
+			uint8_t v_blank    : 1;
+			uint8_t lcd_status : 1;
+			uint8_t timer      : 1;
+			uint8_t serial     : 1;
+			uint8_t joypad     : 1;
+			uint8_t            : 3;
 		}enabled;
-		char IE;
+		uint8_t IE;
 	};
 	int IME;
 	//Serial Registers;

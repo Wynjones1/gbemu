@@ -4,12 +4,13 @@
 #include "rom.h"
 #include "cpu.h"
 #include "display.h"
+#include "ppm.h"
 
 #include <SDL2/SDL.h>
 
 int main(int argc, char **argv)
 {
-	#if 0
+	#if 1
 		const char *rom = "/home/stuart/tetris.gb";
 	#elif 1
 		const char *rom = "/home/stuart/mario.gb";

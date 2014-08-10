@@ -97,7 +97,9 @@ static void *display_thread(void *display_)
 								SDL_PIXELFORMAT_ARGB8888,
 								SDL_TEXTUREACCESS_STATIC,
 								DISPLAY_WIDTH, DISPLAY_HEIGHT);
+	SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff);
 	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
+	display_clear(display);
 
 	events_t events;
 	memset(&events, 0x00, sizeof(events_t));
@@ -119,6 +121,10 @@ static void *display_thread(void *display_)
 			}
 			display_present(display);
 		}
+		else
+		{
+			display_clear(display);
+		}
 		display->mem->ly = 0x90;
 		SDL_Delay(17);
 		display->mem->ly = 0x94;
@@ -130,6 +136,12 @@ static void *display_thread(void *display_)
 void display_draw_pixel(display_t *disp, int x, int y, char *rgb)
 {
 	memcpy(disp->pixel_data[x][y], rgb, PIXEL_SIZE);
+}
+
+void display_clear(display_t *disp)
+{
+	SDL_RenderClear(disp->render);
+	SDL_RenderPresent(disp->render);
 }
 
 void display_present(display_t *disp)

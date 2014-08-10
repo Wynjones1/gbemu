@@ -127,7 +127,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0xffff,0xffff))
 	{
-		return mem->interrupt_enable;
+		return mem->IE;
 	}
 	return 0;
 }
@@ -136,6 +136,8 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 {
 	switch(addr)
 	{
+		case 0xff0f:
+			return mem->IF;
 		case 0xff40:
 			return *(uint8_t*)&mem->lcdc;
 		case 0xff41:
@@ -323,7 +325,7 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0xffff,0xffff))
 	{
-		mem->interrupt_enable = data;
+		mem->IE = data;
 	}
 }
 #undef X
