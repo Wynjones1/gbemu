@@ -44,16 +44,17 @@ typedef struct cpu_state
 			reg16_t bc;
 			reg16_t de;
 			reg16_t hl;
+			reg16_t sp;
 		};
 	};
 
-	reg16_t   sp;
 	reg16_t   pc;
 	memory_t  *memory;
 	display_t *display;
-	int       jump;
 	int       success;
 	int       cycles;
+	int       DI_Pending;
+	int       EI_Pending;
 
 }cpu_state_t;
 
@@ -84,7 +85,7 @@ reg_t   cpu_and(struct cpu_state *state, reg_t d0, reg_t d1);
 reg_t   cpu_or(struct cpu_state *state, reg_t d0, reg_t d1);
 reg_t   cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1);
 reg_t   cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1);
-reg_t   cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1);
+reg16_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1);
 void    cpu_xor(struct cpu_state *state, reg_t d0);
 void    cpu_sbc(struct cpu_state *state, reg_t d0);
 void    cpu_sub(struct cpu_state *state, reg_t d0);

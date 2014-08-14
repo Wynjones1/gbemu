@@ -129,17 +129,17 @@ void print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TY
 			break;
 		case ARG_TYPE_REL8:
 			rel = cpu_load8(state, state->pc + 1);
-			sprintf(buf, "pc+ %02d", *(int8_t*)&rel + 2);
+			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
 			break;
 		case ARG_TYPE_REL8_ADD_SP:
 			rel = cpu_load8(state, state->pc + 1);
-			sprintf(buf, "sp + %02d", *(int8_t*)&rel + 2);
+			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel + 2);
 			break;
 		case ARG_TYPE_HL_INDIRECT_DEC:
-			sprintf(buf, "(HL-)");
+			sprintf(buf, "(HL-) = 0x%04x", state->hl);
 			break;
 		case ARG_TYPE_HL_INDIRECT_INC:
-			sprintf(buf, "(HL+)");
+			sprintf(buf, "(HL+) = 0x%04x", state->hl);
 			break;
 		X(00H);
 		X(08H);
@@ -149,6 +149,7 @@ void print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TY
 		X(28H);
 		X(30H);
 		X(38H);
+		X(0);
 		X(1);
 		X(2);
 		X(3);
@@ -230,7 +231,9 @@ uint8_t shade_table_0[4][3] =
 
 void output_registers(struct cpu_state *state)
 {
-	FILE *fp = fopen("reg.txt", "w");
+	static FILE *fp;
+	if(!fp) fp = fopen("reg.txt", "w");
+	fseek(fp, 0, SEEK_SET);
 	fprintf(fp, "AF  = 0x%04x\n", state->af);
 	fprintf(fp, "BC  = 0x%04x\n", state->bc);
 	fprintf(fp, "DE  = 0x%04x\n", state->de);
@@ -242,6 +245,18 @@ void output_registers(struct cpu_state *state)
 	fprintf(fp, "SCY = 0x%04x\n", state->memory->scy);
 	fprintf(fp, "WX  = 0x%04x\n", state->memory->wx);
 	fprintf(fp, "WY  = 0x%04x\n\n", state->memory->wy);
+
+	fprintf(fp, "Bank  = 0x%04x\n\n", state->memory->current_bank);
+
+	fprintf(fp, "LCDC:\n");
+	fprintf(fp, "BG Display  : %u\n", state->memory->lcdc.bg_display);
+	fprintf(fp, "OBJ Enable  : %u\n", state->memory->lcdc.obj_enable);
+	fprintf(fp, "OBJ Size    : %u\n", state->memory->lcdc.obj_size);
+	fprintf(fp, "Map Select  : %u\n", state->memory->lcdc.map_select);
+	fprintf(fp, "Tile Select : %u\n", state->memory->lcdc.tile_select);
+	fprintf(fp, "Window Disp : %u\n", state->memory->lcdc.window_display);
+	fprintf(fp, "Window Map  : %u\n", state->memory->lcdc.window_map);
+	fprintf(fp, "Enabled     : %u\n\n", state->memory->lcdc.enabled);
 
 
 	fprintf(fp, "Interrupt Flags: (val) (enabled)\n");
@@ -261,6 +276,39 @@ void output_registers(struct cpu_state *state)
 	fprintf(fp, "JOYPAD   =         %u   %u \n",
 						state->memory->interrupt.joypad,
 						state->memory->enabled.joypad);
+	fflush(fp);
+}
+
+void output_tile_maps(struct cpu_state *state)
+{
+	FILE *fp = fopen("tile_map.txt", "w");
+	for(int i = 0; i < 32; i++)
+	{
+		for(int j = 0; j < 32; j ++)
+		{
+			fprintf(fp, "%02x ", state->memory->video_ram[0x1800 + 32 * i + j]);
+		}
+		fprintf(fp, "\n");
+	}
+	fprintf(fp, "\n");
+	for(int i = 0; i < 32; i++)
+	{
+		for(int j = 0; j < 32; j ++)
+		{
+			fprintf(fp, "%02x ", state->memory->video_ram[0x1C00 + 32 * i + j]);
+		}
+		fprintf(fp, "\n");
+	}
+	fprintf(fp, "\n");
+	for(int j = 0; j < 8; j++)
+	{
+		for(int i = 0; i < 5; i++)
+		{
+			fprintf(fp,"%08x ", state->memory->OAM[j * 10 +  4]);
+		}
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
 }
 
 //TODO: Properly comment this.
@@ -288,13 +336,19 @@ void sigabrt_handler(int x)
 									((tile_data[0] >> i) & 0x1);
 					uint8_t x = tx * 8 + (7 - i);
 					uint8_t y = ty * 8 + j;
-					ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
+					#if 1
+						uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
+						ppm_write_pixel(ppm, x, y , data);
+					#else
+						ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
+					#endif
 				}
 				tile_data += 2;
 			}
 		}
 	}
 	output_registers(g_state);
+	output_tile_maps(g_state);
 	exit(0);
 }
 
@@ -308,30 +362,42 @@ void cpu_start(struct cpu_state *state)
 	g_state = state;
 	signal(SIGABRT, sigabrt_handler);
 	atexit(onexit_f);
-	reg_t instruction = cpu_load8(state, state->pc);
-	struct opcode *op = &op_table[instruction];
+	reg_t instruction;
+	struct opcode *op;
 	state->pc = 0;
 	while(1)
 	{
 		//Reset status flags.
 		state->success = 1;
-		state->jump    = 0;
 		//Load instruction and execute it.
 		check_for_interrupts(state);
-		reg_t instruction = cpu_load8(state, state->pc);
-		struct opcode *op = &op_table[instruction];
+		if(state->DI_Pending)
+		{
+			state->memory->IME = 0;
+			state->DI_Pending = 0;
+		}
+		if(state->EI_Pending)
+		{
+			state->memory->IME = 1;
+			state->EI_Pending = 0;
+		}
+		instruction = cpu_load8(state, state->pc);
+		op          = &op_table[instruction];
+		state->pc  += op->size;
 
 #if 1
 		char buf[1024];
 		print_op(buf, state, op);
-		Output("%s\n", buf);
+		if(state->memory->boot_locked)
+		{
+			Output("%s\n", buf);
+		}
+		output_registers(state);
+#endif
+#if 1
 #endif
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
-		if(!state->jump && instruction != 0xCB)
-		{
-			state->pc += op->size;
-		}
 		state->cycles += state->success ? op->success : op->fail;
 		fflush(stdout);
 	}

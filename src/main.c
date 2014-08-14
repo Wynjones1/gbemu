@@ -12,10 +12,12 @@ int main(int argc, char **argv)
 {
 	#if 1
 		const char *rom = "/home/stuart/tetris.gb";
-	#elif 1
+	#elif 0
 		const char *rom = "/home/stuart/mario.gb";
-	#else
+	#elif 0
 		const char *rom = "/home/stuart/pokemon_blue.gb";
+	#elif 1
+		const char *rom = "/home/stuart/cpu_instrs.gb";
 	#endif
 	struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin", rom);
 	cpu_start(state);

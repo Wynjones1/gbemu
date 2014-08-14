@@ -1,8 +1,13 @@
 #pragma once
 #include "memory.h"
 
+#if 0
 #define DISPLAY_WIDTH  160
 #define DISPLAY_HEIGHT 144
+#else
+#define DISPLAY_WIDTH   256
+#define DISPLAY_HEIGHT  256
+#endif
 #define DISPLAY_BUFFER_WIDTH  256
 #define DISPLAY_BUFFER_HEIGHT 256
 

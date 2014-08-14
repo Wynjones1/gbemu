@@ -10,6 +10,7 @@ void SET(struct cpu_state *state,
 		reg_t d0 = cpu_load8_indirect(state, i1);
 		switch(arg0)
 		{
+			X(0);
 			X(1);
 			X(2);
 			X(3);
@@ -28,6 +29,7 @@ void SET(struct cpu_state *state,
 		reg_t d0 = cpu_load_reg8(state, i1);
 		switch(arg0)
 		{
+			X(0);
 			X(1);
 			X(2);
 			X(3);

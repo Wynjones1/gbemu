@@ -11,6 +11,7 @@ void BIT(struct cpu_state *state,
 		d0 = cpu_load8_indirect(state, i1);
 		switch(arg0)
 		{
+			X(0);
 			X(1);
 			X(2);
 			X(3);
@@ -28,6 +29,7 @@ void BIT(struct cpu_state *state,
 		d0 = cpu_load_reg8(state, i1);
 		switch(arg0)
 		{
+			X(0);
 			X(1);
 			X(2);
 			X(3);

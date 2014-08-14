@@ -15,8 +15,8 @@ void JP(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		addr = cpu_load16_indirect(state, i0);
-		cpu_jump(state, addr);
+		//TODO:Make sure of this.
+		cpu_jump(state, state->hl);
 	}
 	else
 	{
@@ -26,6 +26,5 @@ void JP(struct cpu_state *state,
 
 void  cpu_jump(struct cpu_state *state, reg16_t addr)
 {
-	state->jump = 1;
 	state->pc = addr;
 }

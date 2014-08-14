@@ -9,5 +9,5 @@ void EI(struct cpu_state *state,
 
 void cpu_enable_interrupts(struct cpu_state *state)
 {
-	state->memory->IME = 1;
+	state->EI_Pending = 1;
 }

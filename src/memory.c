@@ -7,6 +7,8 @@
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
 static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
+#define DEBUG_DMA 0
+
 
 memory_t *memory_init(const char *boot, const char *rom)
 {
@@ -32,6 +34,7 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->cart_type = out->bank_0[0x147];
 	out->rom_size  = out->bank_0[0x148];
 	out->ram_size  = out->bank_0[0x149];
+
 	switch(out->ram_size)
 	{
 		case 0:
@@ -63,15 +66,32 @@ static void stat(memory_t *mem, reg_t data)
 
 static void dma(memory_t *mem, reg_t data)
 {
+#if DEBUG_DMA
+	static FILE *fp;
+	if(!fp) fp = fopen("dma_log.txt", "w");
+#endif
 	//Writing to the DMA register initiates a 0x100 byte DMA transfer.
 
 	//TODO:Make this occur over multiple clock cycles.
 	//We need to restrict accesses to HRAM also.
 	reg16_t source = data * 0x100;
-	for(reg16_t i = 0; i < 100; i++)
+	for(reg16_t i = 0; i < 0x100; i++)
 	{
 		mem->OAM[i] = memory_load8(mem, source + i);
+#if DEBUG_DMA
+		static int count;
+		fprintf(fp, "%02x ", mem->OAM[i]);
+		count++;
+		if(count == 0x10)
+		{
+			fprintf(fp,"\n");
+			count = 0;
+		}
+#endif
 	}
+#if DEBUG_DMA
+	fprintf(fp, "\n");
+#endif
 }
 
 #define X(min, max) addr >= min && addr <= max
@@ -87,7 +107,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0x4000,0x7fff))
 	{
-		return mem->bank_0[mem->current_bank * 0x4000 + addr];
+		return mem->bank_0[(mem->current_bank - 1) * 0x4000 + addr];
 	}
 	else if(X(0x8000,0x9fff))
 	{
@@ -136,6 +156,19 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 {
 	switch(addr)
 	{
+		//Timer Registers
+		case 0xff04:
+			return mem->div;
+			break;
+		case 0xff05:
+			return mem->tima;
+			break;
+		case 0xff06:
+			return mem->tma;
+			break;
+		case 0xff07:
+			return mem->tac;
+			break;
 		case 0xff0f:
 			return mem->IF;
 		case 0xff40:
@@ -170,7 +203,6 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->serial_control;
 		default:
 			Error("IO register not finished 0x%04x\n", addr);
-			return mem->backup[addr];
 	}
 	return 0;
 }
@@ -188,6 +220,19 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	switch(addr)
 	{
+		//Timer Registers
+		case 0xff04:
+			mem->div = 0;
+			break;
+		case 0xff05:
+			mem->tima = data;
+			break;
+		case 0xff06:
+			mem->tma = data;
+			break;
+		case 0xff07:
+			mem->tac = data;
+			break;
 		case 0xff0f:
 			mem->IF = data;
 			break;
@@ -233,7 +278,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 				mem->boot_locked = 1;
 			break;
 		case 0xff7f:
-			Warning("Undocumented register (addr : 0x%02x) 0x%04x\n", addr, data);
+			//This seems to be accessed by accident when cleaning memory.
 			break;
 		case 0xff00: // Joypad.
 			mem->joypad = data;
@@ -246,7 +291,6 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			break;
 		default:
 			Error("IO Registers not done %04x\n", addr);
-			mem->backup[addr] = data;
 	}
 }
 
@@ -285,10 +329,6 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0x8000,0x9fff))
 	{
-		if(X(0x9800, 0x9bff))
-		{
-		//	printf("Writing to background tile map.\n");
-		}
 		mem->video_ram[addr - 0x8000] = data;
 	}
 	else if(X(0xa000,0xbfff))

@@ -11,11 +11,11 @@ void XOR(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		data = cpu_load8_indirect(state, i1);
+		data = cpu_load8_indirect(state, i0);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		data = cpu_load_reg8(state, i1);
+		data = cpu_load_reg8(state, i0);
 	}
 	cpu_xor(state, data);
 }

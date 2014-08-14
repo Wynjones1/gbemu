@@ -24,9 +24,13 @@ void SUB(struct cpu_state *state,
 void cpu_sub(struct cpu_state *state, reg_t d0)
 {
 	int16_t res = state->a - d0;
+	state->carry = 0;
 	if(res < 0)
 	{
 		res += 0xff;
+		state->carry = 1;
 	}
-	state->a = res;
+	state->a        = res;
+	state->zero     = (state->a == 0);
+	state->subtract = 1;
 }

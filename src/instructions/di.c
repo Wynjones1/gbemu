@@ -9,5 +9,5 @@ void DI(struct cpu_state *state,
 
 void cpu_disable_interrupts(struct cpu_state *state)
 {
-	state->memory->IME = 0;
+	state->DI_Pending = 1;
 }

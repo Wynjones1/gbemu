@@ -25,9 +25,7 @@ void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
 	// value and a signed 8 bir value, we perform this
 	// by expanding both to 32 bits, performing the
 	// subtraction and casting back to 16 bits.
-	addr += 2;
 	int32_t t = (int32_t)*(int8_t*)&addr;
 	int32_t pc = state->pc;
-	state->jump = 1;
 	state->pc = pc + t;
 }

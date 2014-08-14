@@ -98,7 +98,12 @@ typedef struct memory
 		uint8_t IE;
 	};
 	int IME;
-	//Serial Registers;
+	//Serial Registers
 	uint8_t serial_data;
 	uint8_t serial_control;
+	//Timer Registers
+	uint8_t div;
+	uint8_t tima;
+	uint8_t tma;
+	uint8_t tac;
 }memory_t;

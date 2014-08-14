@@ -50,7 +50,7 @@ reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
 	return t0 & 0xff;
 }
 
-reg_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
+reg16_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
 {
 	uint32_t t0       = (uint32_t)d0 + (uint32_t)d1;
 	state->zero       = (t0 & 0xffff) == 0;

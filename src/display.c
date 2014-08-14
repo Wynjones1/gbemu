@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 3
+#define PIXEL_SCALE 2
 
 static void *display_thread(void *display_);
 
@@ -61,8 +61,11 @@ static void write_tile(display_t *d, int tx, int ty)
 {
 	//Tile map is located at address 0x9800 or 0x9c00
 	int tile_num = ty * 32 + tx;
-	uint8_t  tile = d->mem->video_ram[0x1800 + tile_num];
-	uint8_t *tile_data = &d->mem->video_ram[tile * 16];
+	uint8_t  tile = d->mem->video_ram[(d->mem->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
+	//Tils data is located at addresses
+	// 0x8800 -> 97FF or
+	// 0x8000 -> 8FFF
+	uint8_t *tile_data = &d->mem->video_ram[(d->mem->lcdc.tile_select ? 0x000 : 0x800) +  tile * 16];
 	uint8_t scx = d->mem->scx;
 	uint8_t scy = d->mem->scy;
 	for(int j = 0; j < 8; j++)
@@ -110,7 +113,7 @@ static void *display_thread(void *display_)
 		if(events.quit) exit(0);
 		display->mem->ly = 0;
 		//Display the image.
-		if(display->mem->lcdc.enabled)
+		if(1)//display->mem->lcdc.enabled)
 		{
 			for(int ty = 0; ty < 32; ty++)
 			{
@@ -128,6 +131,7 @@ static void *display_thread(void *display_)
 		display->mem->ly = 0x90;
 		SDL_Delay(17);
 		display->mem->ly = 0x94;
+		display->mem->interrupt.v_blank = 1;
 		SDL_Delay(17);
 	}
 	return NULL;
