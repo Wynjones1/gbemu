@@ -65,11 +65,6 @@ int cpu_zero(struct cpu_state *state)
 	return state->zero;
 }
 
-void cpu_load_rom(struct cpu_state *state, const char *filename)
-{
-	memory_load_rom(state->memory, filename);
-}
-
 const char *reg_strings[] =
 {
 	"F",
@@ -383,20 +378,23 @@ void cpu_start(struct cpu_state *state)
 		}
 		instruction = cpu_load8(state, state->pc);
 		op          = &op_table[instruction];
-		if(op->size == 2) state->arg = cpu_load8(state,  state->pc + 1);
-		if(op->size == 3) state->arg = cpu_load16(state, state->pc + 1);
-		state->pc  += op->size;
+		if(op->size == 2 || instruction == 0xCB)
+		{
+			state->arg = cpu_load8(state,  state->pc + 1);
+		}
+		else if(op->size == 3)
+		{
+			state->arg = cpu_load16(state, state->pc + 1);
+		}
 
 #if 1
 		char buf[1024];
 		print_op(buf, state, op);
-		if(state->memory->boot_locked)
-		{
-			Output("%s\n", buf);
-		}
-		output_registers(state);
+		Output("%s\n", buf);
 #endif
+		state->pc  += op->size;
 #if 1
+		output_registers(state);
 #endif
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.

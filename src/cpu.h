@@ -61,7 +61,6 @@ typedef struct cpu_state
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);
 void cpu_start(struct cpu_state *state);
-void cpu_load_rom(struct cpu_state *state, const char *filename);
 void cpu_delete(cpu_state_t *state);
 
 reg_t   cpu_load_reg8(struct cpu_state *state, REG_INPUT reg);

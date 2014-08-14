@@ -382,7 +382,3 @@ void memory_store16(memory_t *mem, reg16_t addr, reg16_t data)
 	memory_store8(mem, addr,     data & 0xff);
 	memory_store8(mem, addr + 1, data >> 8);
 }
-
-
-void memory_load_rom(memory_t *mem, const char *filename)
-{}
