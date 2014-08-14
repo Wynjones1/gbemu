@@ -16,6 +16,10 @@ void ADD(struct cpu_state *state,
 		{
 			d1 = state->arg;
 		}
+		else
+		{
+			Error("Invalid argument type.\n");
+		}
 		reg16_t out = cpu_add16(state, d0, d1);
 		cpu_store_reg16(state, i0, out);
 	}
@@ -34,6 +38,10 @@ void ADD(struct cpu_state *state,
 		else if(arg1 == ARG_TYPE_REG8)
 		{
 			d1 = cpu_load_reg8(state, i1);
+		}
+		else
+		{
+			Error("Invalid argument type.\n");
 		}
 		reg_t out = cpu_add8(state, d0, d1);
 		cpu_store_reg8(state, i0, out);

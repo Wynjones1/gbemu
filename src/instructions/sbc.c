@@ -17,6 +17,10 @@ void SBC(struct cpu_state *state,
 	{
 		data = cpu_load_reg8(state, i1);
 	}
+	else
+	{
+		Error("Invalid argument type.\n");
+	}
 	cpu_sbc(state, data);
 }
 

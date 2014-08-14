@@ -57,6 +57,10 @@ void LD(struct cpu_state *state,
 			state->subtract = 0;
 			data = cpu_load16(state, addr);
 		}
+		else
+		{
+			Error("Invalid argument type");
+		}
 		cpu_store_reg16(state, i0, data);
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
@@ -69,6 +73,10 @@ void LD(struct cpu_state *state,
 		else if(arg1 == ARG_TYPE_REG8)
 		{
 			data = cpu_load_reg8(state, i1);
+		}
+		else
+		{
+			Error("Invalid argument type");
 		}
 		cpu_store8_indirect(state, i0, data);
 	}
@@ -108,6 +116,10 @@ void LD(struct cpu_state *state,
 		{
 			reg16_t addr = state->c + 0xff00;
 			data = cpu_load8(state, addr);
+		}
+		else
+		{
+			Error("Invalid argument type.\n");
 		}
 		cpu_store_reg8(state, i0, data);
 	}

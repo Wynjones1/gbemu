@@ -15,7 +15,7 @@ memory_t *memory_init(const char *boot, const char *rom)
 	memory_t *out = calloc(1, sizeof(memory_t));
 	//TODO: Add safe read functions.
 	FILE *fp = fopen(boot, "r");
-	fread(out->boot, 1, 0x100, fp);
+	common_fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
 
 	fp = fopen(rom, "r");
@@ -23,7 +23,7 @@ memory_t *memory_init(const char *boot, const char *rom)
 	int to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
 	out->bank_0       = malloc(to_read);
-	fread(out->bank_0, 1, to_read, fp);
+	common_fread(out->bank_0, 1, to_read, fp);
 
 	out->bank_n       = out->bank_0 + 0x4000;
 	out->echo         = out->working_ram_0;

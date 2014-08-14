@@ -178,7 +178,7 @@ void print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 static int check_for_interrupts(struct cpu_state *state)
 {
 	//Check if interrupts are enabled
-	reg16_t addr;
+	reg16_t addr = 0;
 	if(state->memory->IME && (state->memory->IF & state->memory->IE & 0x1f))
 	{
 		state->memory->IME = 0;

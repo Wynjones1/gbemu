@@ -20,6 +20,10 @@ void ADC(struct cpu_state *state,
 		{
 			d1 = cpu_load_reg8(state, i1);
 		}
+		else
+		{
+			Error("Invalid argument type.\n");
+		}
 		cpu_adc(state, d0, d1);
 	}
 }

@@ -17,6 +17,10 @@ void OR(struct cpu_state *state,
 	{
 		d1 = cpu_load_reg8(state, i0);
 	}
+	else
+	{
+		Error("Invalid argument type.\n");
+	}
 	d0 = cpu_load_reg8(state, A_REG);
 	d0 = cpu_or(state, d0, d1);
 	cpu_store_reg8(state, A_REG, d0);

@@ -18,6 +18,10 @@ void SUB(struct cpu_state *state,
 	{
 		data = cpu_load_reg8(state, i0);
 	}
+	else
+	{
+		Error("Invalid argument type.\n");
+	}
 	cpu_sub(state, data);
 }
 

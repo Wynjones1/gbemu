@@ -17,6 +17,10 @@ void CP(struct cpu_state *state,
 	{
 		d0 = cpu_load_reg8(state, i0);
 	}
+	else
+	{
+		Error("Incorrect argument type.\n");
+	}
 	cpu_cmp(state, d0);
 }
 

@@ -1,5 +1,6 @@
 #include "rom.h"
 #include <stdio.h>
+#include "common.h"
 
 char nintendo_logo[] =
 {
@@ -12,7 +13,7 @@ static int verify(FILE *fp)
 {
 	char to_verify[sizeof(nintendo_logo)];
 	fseek(fp, 0x104, SEEK_SET);
-	fread(to_verify, 1, sizeof(nintendo_logo), fp);
+	common_fread(to_verify, 1, sizeof(nintendo_logo), fp);
 	for(int i = 0; i < sizeof(nintendo_logo); i++)
 	{
 		if(to_verify[i] != nintendo_logo[i]) return 0;
@@ -25,16 +26,16 @@ rom_t rom_read(const char *filename)
 	FILE *fp = fopen(filename, "r");
 	fseek(fp, 0x0134, SEEK_SET);
 	rom_t out;
-	fread(out.title,             1, 0x144 - 0x134, fp); // 0x134 - 0x143
-	fread(out.licensee_code,     1, 0x146 - 0x144, fp); // 0x144 - 0x145
-	fread(&out.sgb_flag,         1, 1,             fp); // 0x146
-	fread(&out.cart_type,        1, 1,             fp); // 0x147
-	fread(&out.rom_size,         1, 1,             fp); // 0x148
-	fread(&out.ram_size,         1, 1,             fp); // 0x149
+	common_fread(out.title,             1, 0x144 - 0x134, fp); // 0x134 - 0x143
+	common_fread(out.licensee_code,     1, 0x146 - 0x144, fp); // 0x144 - 0x145
+	common_fread(&out.sgb_flag,         1, 1,             fp); // 0x146
+	common_fread(&out.cart_type,        1, 1,             fp); // 0x147
+	common_fread(&out.rom_size,         1, 1,             fp); // 0x148
+	common_fread(&out.ram_size,         1, 1,             fp); // 0x149
 
-	out.title[16]             = 0;
+	out.title[15]             = 0;
 	out.manufacturer_code[4]  = 0;
-	out.licensee_code[3]      = 0;
+	out.licensee_code[2]      = 0;
 
 	printf("Game title        : %s\n",       out.title);
 	/*

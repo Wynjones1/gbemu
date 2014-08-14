@@ -1,6 +1,5 @@
 #include "common.h"
 #include <stdarg.h>
-#include <signal.h>
 
 uint32_t g_cycles = 0;
 FILE *output_fp;
@@ -13,9 +12,8 @@ void common_error(const char *format, ...)
 	vfprintf(stderr, format, arg_list);
 	va_end(arg_list);
 	if(output_fp) fflush(output_fp);
-	raise(SIGABRT);
 #endif
-
+	exit(-1);
 }
 
 void common_warn(const char *format, ...)
@@ -60,4 +58,10 @@ void common_output(const char *format, ...)
 	va_end(arg_list);
 	fflush(output_fp);
 #endif
+}
+
+void common_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
+{
+	int read = fread(ptr, size, nmemb, fp);
+	if(read != nmemb) Error("Could not read all data.\n");
 }

@@ -17,6 +17,10 @@ void XOR(struct cpu_state *state,
 	{
 		data = cpu_load_reg8(state, i0);
 	}
+	else
+	{
+		Error("Invalid argument type.\n");
+	}
 	cpu_xor(state, data);
 }
 

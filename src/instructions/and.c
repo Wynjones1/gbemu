@@ -18,6 +18,10 @@ void AND(struct cpu_state *state,
 	{
 		data1 = cpu_load_reg8(state, i0);
 	}
+	else
+	{
+		Error("Incorrect argument type.\n");
+	}
 	data0 = cpu_and(state, data0, data1);
 	cpu_store_reg8(state, A_REG, data0);
 }
