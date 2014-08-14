@@ -28,6 +28,11 @@ void common_warn(const char *format, ...)
 		va_start(arg_list, format);
 		vprintf(format, arg_list);
 		va_end(arg_list);
+
+		va_start(arg_list, format);
+		vfprintf(output_fp,format, arg_list);
+		va_end(arg_list);
+
 		warn_count++;
 		if(warn_count == WARN_LIMIT)
 		{
