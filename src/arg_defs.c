@@ -24,6 +24,7 @@ const char *arg_type_strings[] =
 	"ARG_TYPE_28H",
 	"ARG_TYPE_30H",
 	"ARG_TYPE_38H",
+	"ARG_TYPE_0",
 	"ARG_TYPE_1",
 	"ARG_TYPE_2",
 	"ARG_TYPE_3",
