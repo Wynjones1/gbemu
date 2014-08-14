@@ -94,7 +94,7 @@ static void dma(memory_t *mem, reg_t data)
 #endif
 }
 
-#define X(min, max) addr >= min && addr <= max
+#define X(min, max) ((addr >= min) && (addr <= max))
 reg_t memory_load8(memory_t *mem, reg16_t addr)
 {
 	if(X(0x0000,0x3fff))
