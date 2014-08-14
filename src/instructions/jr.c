@@ -10,8 +10,7 @@ void JR(struct cpu_state *state,
 		|| (arg0 == ARG_TYPE_Z     &&  cpu_zero(state))
 		|| (arg0 == ARG_TYPE_REG8  &&  cpu_carry(state)))
 	{
-		reg_t rel = cpu_load8(state, state->pc + 1);
-		cpu_jump_rel(state, rel);
+		cpu_jump_rel(state, state->arg);
 	}
 	else
 	{
@@ -25,6 +24,7 @@ void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
 	// value and a signed 8 bir value, we perform this
 	// by expanding both to 32 bits, performing the
 	// subtraction and casting back to 16 bits.
+	//TODO:Clean up to and make sure it is correct.
 	int32_t t = (int32_t)*(int8_t*)&addr;
 	int32_t pc = state->pc;
 	state->pc = pc + t;

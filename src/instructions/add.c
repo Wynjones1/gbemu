@@ -14,7 +14,7 @@ void ADD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8)//TODO: Check all REL8
 		{
-			d1 = cpu_load8(state, state->pc + 1);
+			d1 = state->arg;
 		}
 		reg16_t out = cpu_add16(state, d0, d1);
 		cpu_store_reg16(state, i0, out);
@@ -25,7 +25,7 @@ void ADD(struct cpu_state *state,
 		reg_t d1;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			d1 = cpu_load8(state, state->pc + 1);
+			d1 = state->arg;
 		}
 		else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 		{

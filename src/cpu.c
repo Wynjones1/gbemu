@@ -110,30 +110,30 @@ void print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TY
 			sprintf(buf, "(%s) = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
 			break;
 		case ARG_TYPE_DATA8:
-			sprintf(buf, "0x%02x", cpu_load8(state, state->pc + 1));
+			sprintf(buf, "0x%02x", state->arg);
 			break;
 		case ARG_TYPE_DATA8_UNSIGNED:
-			sprintf(buf, "0x%02x", cpu_load8(state, state->pc + 1));
+			sprintf(buf, "0x%02x", state->arg);
 			break;
 		case ARG_TYPE_DATA8_UNSIGNED_INDIRECT:
-			sprintf(buf, "(0x%02x)", cpu_load8(state, state->pc + 1));
+			sprintf(buf, "(0x%02x)", state->arg);
 			break;
 		case ARG_TYPE_DATA16:
-			sprintf(buf, "0x%02x", cpu_load16(state, state->pc + 1));
+			sprintf(buf, "0x%02x", state->arg);
 			break;
 		case ARG_TYPE_DATA16_UNSIGNED:
-			sprintf(buf, "0x%02x", cpu_load16(state, state->pc + 1));
+			sprintf(buf, "0x%02x", state->arg);
 			break;
 		case ARG_TYPE_DATA16_UNSIGNED_INDIRECT:
-			sprintf(buf, "(0x%02x)", cpu_load16(state, state->pc + 1));
+			sprintf(buf, "(0x%02x)", state->arg);
 			break;
 		case ARG_TYPE_REL8:
-			rel = cpu_load8(state, state->pc + 1);
-			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
+			rel = state->arg;
+			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel);
 			break;
 		case ARG_TYPE_REL8_ADD_SP:
-			rel = cpu_load8(state, state->pc + 1);
-			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel + 2);
+			rel = state->arg;
+			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel);
 			break;
 		case ARG_TYPE_HL_INDIRECT_DEC:
 			sprintf(buf, "(HL-) = 0x%04x", state->hl);
@@ -383,6 +383,8 @@ void cpu_start(struct cpu_state *state)
 		}
 		instruction = cpu_load8(state, state->pc);
 		op          = &op_table[instruction];
+		if(op->size == 2) state->arg = cpu_load8(state,  state->pc + 1);
+		if(op->size == 3) state->arg = cpu_load16(state, state->pc + 1);
 		state->pc  += op->size;
 
 #if 1

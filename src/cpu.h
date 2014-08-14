@@ -55,6 +55,7 @@ typedef struct cpu_state
 	int       cycles;
 	int       DI_Pending;
 	int       EI_Pending;
+	reg16_t   arg;
 
 }cpu_state_t;
 

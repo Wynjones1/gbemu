@@ -7,7 +7,7 @@ void XOR(struct cpu_state *state,
 	reg_t data;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		data = cpu_load8(state, state->pc + 1);
+		data = state->arg;
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
