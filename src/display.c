@@ -113,7 +113,7 @@ static void *display_thread(void *display_)
 		//Check for events.
 		events_handle(&events);
 		if(events.quit) exit(0);
-		display->mem->ly = 0;
+
 		//Display the image.
 		if(1)//display->mem->lcdc.enabled)
 		{
@@ -130,13 +130,6 @@ static void *display_thread(void *display_)
 		{
 			display_clear(display);
 		}
-		display->mem->ly = 0x90;
-		SDL_Delay(17);
-		display->mem->ly = 0x91;
-		SDL_Delay(17);
-		display->mem->ly = 0x94;
-		display->mem->interrupt.v_blank = 1;
-		SDL_Delay(17);
 	}
 	return NULL;
 }

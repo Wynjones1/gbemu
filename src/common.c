@@ -50,8 +50,18 @@ void common_output(const char *format, ...)
 #else
 		output_fp = stdout;
 #endif
-
 	}
+	va_list arg_list;
+	va_start(arg_list, format);
+	vfprintf(output_fp, format, arg_list);
+	va_end(arg_list);
+	fflush(output_fp);
+#endif
+}
+
+void common_foutput(FILE *fp, const char *format, ...)
+{
+#if OUTPUT_OUTPUT
 	va_list arg_list;
 	va_start(arg_list, format);
 	vfprintf(output_fp, format, arg_list);

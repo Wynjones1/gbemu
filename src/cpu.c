@@ -108,6 +108,24 @@ static int check_for_interrupts(struct cpu_state *state)
 }
 #undef X
 
+void simulate_display(struct cpu_state *state)
+{
+	static int count;
+	if(state->clock_counter >= 4348 * 160)
+	{
+		state->clock_counter        -= 4348 * 160;
+		state->memory->ly           += 1;
+		state->memory->ly           %= 144 + 10;
+		if(state->memory->ly == 144)
+		{
+			state->memory->interrupt.v_blank = 1;
+			int temp = SDL_GetTicks();
+			SDL_Delay(17 - (count - temp));
+			count = temp;
+		}
+	}
+}
+
 void cpu_start(struct cpu_state *state)
 {
 	reg_t instruction;
@@ -151,8 +169,8 @@ void cpu_start(struct cpu_state *state)
 #endif
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
-		state->cycles += state->success ? op->success : op->fail;
-		fflush(stdout);
+		state->clock_counter += 10 * (state->success ? op->success : op->fail);
+		simulate_display(state);
 	}
 }
 

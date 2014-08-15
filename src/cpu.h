@@ -52,10 +52,10 @@ typedef struct cpu_state
 	memory_t  *memory;
 	display_t *display;
 	int       success;
-	int       cycles;
 	int       DI_Pending;
 	int       EI_Pending;
 	reg16_t   arg;
+	uint32_t  clock_counter;
 
 }cpu_state_t;
 

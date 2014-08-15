@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "ppm.h"
+#include "common.h"
 #include <signal.h>
 
 //TODO: Properly comment this.
@@ -88,46 +89,48 @@ void debug_output_registers(struct cpu_state *state)
 	static FILE *fp;
 	if(!fp) fp = fopen("reg.txt", "w");
 	fseek(fp, 0, SEEK_SET);
-	fprintf(fp, "AF  = 0x%04x\n", state->af);
-	fprintf(fp, "BC  = 0x%04x\n", state->bc);
-	fprintf(fp, "DE  = 0x%04x\n", state->de);
-	fprintf(fp, "HL  = 0x%04x\n", state->hl);
-	fprintf(fp, "SP  = 0x%04x\n", state->sp);
-	fprintf(fp, "PC  = 0x%04x\n\n", state->pc);
+	FOutput(fp, "AF  = 0x%04x   ", state->af);
+	FOutput(fp, "BC  = 0x%04x\n", state->bc);
+	FOutput(fp, "DE  = 0x%04x   ", state->de);
+	FOutput(fp, "HL  = 0x%04x\n", state->hl);
+	FOutput(fp, "SP  = 0x%04x   ", state->sp);
+	FOutput(fp, "PC  = 0x%04x\n\n", state->pc);
 
-	fprintf(fp, "SCX = 0x%04x\n", state->memory->scx);
-	fprintf(fp, "SCY = 0x%04x\n", state->memory->scy);
-	fprintf(fp, "WX  = 0x%04x\n", state->memory->wx);
-	fprintf(fp, "WY  = 0x%04x\n\n", state->memory->wy);
+	FOutput(fp, "SCX = 0x%04x   " , state->memory->scx);
+	FOutput(fp, "SCY = 0x%04x\n"  , state->memory->scy);
+	FOutput(fp, "LX  = 0x%04x   " , state->memory->ly);
+	FOutput(fp, "LXC = 0x%04x\n"  , state->memory->lyc);
+	FOutput(fp, "WX  = 0x%04x   " , state->memory->wx);
+	FOutput(fp, "WY  = 0x%04x\n\n", state->memory->wy);
 
-	fprintf(fp, "Bank  = 0x%04x\n\n", state->memory->current_bank);
+	FOutput(fp, "Bank  = 0x%04x\n\n", state->memory->current_bank);
 
-	fprintf(fp, "LCDC:\n");
-	fprintf(fp, "BG Display  : %u\n", state->memory->lcdc.bg_display);
-	fprintf(fp, "OBJ Enable  : %u\n", state->memory->lcdc.obj_enable);
-	fprintf(fp, "OBJ Size    : %u\n", state->memory->lcdc.obj_size);
-	fprintf(fp, "Map Select  : %u\n", state->memory->lcdc.map_select);
-	fprintf(fp, "Tile Select : %u\n", state->memory->lcdc.tile_select);
-	fprintf(fp, "Window Disp : %u\n", state->memory->lcdc.window_display);
-	fprintf(fp, "Window Map  : %u\n", state->memory->lcdc.window_map);
-	fprintf(fp, "Enabled     : %u\n\n", state->memory->lcdc.enabled);
+	FOutput(fp, "LCDC:\n");
+	FOutput(fp, "BG Display  : %u   ", state->memory->lcdc.bg_display);
+	FOutput(fp, "OBJ Enable  : %u\n", state->memory->lcdc.obj_enable);
+	FOutput(fp, "OBJ Size    : %u   ", state->memory->lcdc.obj_size);
+	FOutput(fp, "Map Select  : %u\n", state->memory->lcdc.map_select);
+	FOutput(fp, "Tile Select : %u   ", state->memory->lcdc.tile_select);
+	FOutput(fp, "Window Disp : %u\n", state->memory->lcdc.window_display);
+	FOutput(fp, "Window Map  : %u   ", state->memory->lcdc.window_map);
+	FOutput(fp, "Enabled     : %u\n\n", state->memory->lcdc.enabled);
 
 
-	fprintf(fp, "Interrupt Flags: (val) (enabled)\n");
-	fprintf(fp, "IME      =         %u\n", state->memory->IME);
-	fprintf(fp, "VBLANK   =         %u   %u \n",
+	FOutput(fp, "Interrupt Flags (val/enabled):\n");
+	FOutput(fp, "IME      : %u\n", state->memory->IME);
+	FOutput(fp, "VBLANK   : %u/%u \n",
 						state->memory->interrupt.v_blank,
 						state->memory->enabled.v_blank);
-	fprintf(fp, "LCD STAT =         %u   %u \n",
+	FOutput(fp, "LCD STAT : %u/%u \n",
 						state->memory->interrupt.lcd_status,
 						state->memory->enabled.lcd_status);
-	fprintf(fp, "TIMER    =         %u   %u \n",
+	FOutput(fp, "TIMER    : %u/%u \n",
 						state->memory->interrupt.timer,
 						state->memory->enabled.timer);
-	fprintf(fp, "SERIAL   =         %u   %u \n",
+	FOutput(fp, "SERIAL   : %u/%u \n",
 						state->memory->interrupt.serial,
 						state->memory->enabled.serial);
-	fprintf(fp, "JOYPAD   =         %u   %u \n",
+	FOutput(fp, "JOYPAD   : %u/%u \n",
 						state->memory->interrupt.joypad,
 						state->memory->enabled.joypad);
 	fflush(fp);
