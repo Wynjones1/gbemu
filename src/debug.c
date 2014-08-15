@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "ppm.h"
+#include <signal.h>
 
 //TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table_0[((x >> (2 * n)) & 0x3)]
@@ -241,3 +242,16 @@ void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, arg0, sep, arg1);
 }
 
+
+void BREAK(void)
+{
+	raise(SIGINT);
+}
+
+void BREAKIF(int cond)
+{
+	if(cond)
+	{
+		raise(SIGINT);
+	}
+}

@@ -139,7 +139,7 @@ void cpu_start(struct cpu_state *state)
 		{
 			state->arg = cpu_load16(state, state->pc + 1);
 		}
-
+		
 #if 1
 		char buf[1024];
 		debug_print_op(buf, state, op);
