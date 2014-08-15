@@ -1,7 +1,7 @@
 #pragma once
 #include "memory.h"
 
-#if 0
+#if 1
 #define DISPLAY_WIDTH  160
 #define DISPLAY_HEIGHT 144
 #else

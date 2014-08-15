@@ -8,7 +8,7 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 2
+#define PIXEL_SCALE 3
 
 static void *display_thread(void *display_);
 
