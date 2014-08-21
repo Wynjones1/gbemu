@@ -6,6 +6,7 @@
 #include "opcodes.h"
 #include "ppm.h"
 #include "debug.h"
+#include "events.h"
 
 #include <SDL2/SDL.h>
 
@@ -25,7 +26,8 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(boot_rom_filename, rom);
-	out->display     = display_init(out->memory);
+	out->display     = display_init(out);
+	memset(&out->events, 0x00, sizeof(events_t));
 	return out;
 }
 
@@ -74,6 +76,7 @@ static int check_for_interrupts(struct cpu_state *state)
 	if(state->memory->IME && (state->memory->IF & state->memory->IE & 0x1f))
 	{
 		state->memory->IME = 0;
+		state->halt        = 0;
 		//Check each of the interrupts in priority order.
 		if(X(v_blank))
 		{
@@ -108,35 +111,78 @@ static int check_for_interrupts(struct cpu_state *state)
 }
 #undef X
 
+void handle_events(struct cpu_state *state)
+{
+	//Check for events.
+	events_handle(&state->events);
+	if(state->events.quit) exit(0);
+}
+
+void display_mhz(int clk)
+{
+	static FILE *fp;
+	static int count;
+	static long unsigned int clocks;
+	if(!fp)
+	{
+		fp = fopen("clock_speed.txt","w");
+	}
+
+	int temp = SDL_GetTicks();
+	clocks += clk;
+	if(temp - count > 1000)
+	{
+		count = temp;
+		fprintf(fp, "%4.2f %fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
+	}
+}
+
+int temp[] = {0, 0x90, 0x91, 0x94};
 void simulate_display(struct cpu_state *state)
 {
-	static int count;
-	if(state->clock_counter >= 4348 * 160)
+#if !DISPLAY_THREAD
+	static int time;
+#endif
+	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		state->clock_counter        -= 4348 * 160;
+		state->clock_counter        -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly           += 1;
 		state->memory->ly           %= 144 + 10;
 		if(state->memory->ly == 144)
 		{
 			state->memory->interrupt.v_blank = 1;
-			int temp = SDL_GetTicks();
-			SDL_Delay(17 - (count - temp));
-			count = temp;
 		}
+#if !DISPLAY_THREAD
+		if(state->memory->ly == 144)
+		{
+			if(state->memory->lcdc.enabled)
+			{
+				display_display(state->display);
+			}
+		}
+#endif
 	}
 }
+
 
 void cpu_start(struct cpu_state *state)
 {
 	reg_t instruction;
 	struct opcode *op;
 	state->pc = 0;
+#if !DISPLAY_THREAD
+	display_display(state->display);
+#endif
+	SDL_Delay(1000);
 	while(1)
 	{
 		//Reset status flags.
 		state->success = 1;
-		//Load instruction and execute it.
+#if !DISPLAY_THREAD
+		handle_events(state);
+#endif
 		check_for_interrupts(state);
+
 		if(state->DI_Pending)
 		{
 			state->memory->IME = 0;
@@ -147,30 +193,37 @@ void cpu_start(struct cpu_state *state)
 			state->memory->IME = 1;
 			state->EI_Pending = 0;
 		}
-		instruction = cpu_load8(state, state->pc);
-		op          = &op_table[instruction];
-		if(op->size == 2 || instruction == 0xCB)
+
+		//Load instruction and execute it.
+		if(!state->halt)
 		{
-			state->arg = cpu_load8(state,  state->pc + 1);
+			instruction = cpu_load8(state, state->pc);
+			op          = &op_table[instruction];
+			if(op->size == 2 || instruction == 0xCB)
+			{
+				state->arg = cpu_load8(state,  state->pc + 1);
+			}
+			else if(op->size == 3)
+			{
+				state->arg = cpu_load16(state, state->pc + 1);
+			}
+			
+	#if 0
+			char buf[1024];
+			debug_print_op(buf, state, op);
+			Output("%s\n", buf);
+	#endif
+			state->pc  += op->size;
+	#if 0
+			debug_output_registers(state);
+	#endif
+			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
+			//Increment program counter.
+			int temp = state->success ? op->success : op->fail;
+			state->clock_counter += temp;
+			display_mhz(temp);
+			simulate_display(state);
 		}
-		else if(op->size == 3)
-		{
-			state->arg = cpu_load16(state, state->pc + 1);
-		}
-		
-#if 1
-		char buf[1024];
-		debug_print_op(buf, state, op);
-		Output("%s\n", buf);
-#endif
-		state->pc  += op->size;
-#if 1
-		debug_output_registers(state);
-#endif
-		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
-		//Increment program counter.
-		state->clock_counter += 10 * (state->success ? op->success : op->fail);
-		simulate_display(state);
 	}
 }
 

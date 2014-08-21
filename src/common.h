@@ -12,7 +12,7 @@
 #endif
 
 #ifndef OUTPUT_OUTPUT
-	#define OUTPUT_OUTPUT 0
+	#define OUTPUT_OUTPUT 1
 #endif
 
 #ifndef WARN_LIMIT
@@ -26,7 +26,7 @@
 #define Error(M, ...) common_error("Error: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__,##__VA_ARGS__)
 #define Output(M, ...) common_output("Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __func__,##__VA_ARGS__)
-#define FOutput(fp, M, ...) common_foutput(fp, "Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __func__,##__VA_ARGS__)
+#define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
 
 void common_error(const char *format, ...) __attribute__((noreturn));
 void common_warn(const char *format, ...);

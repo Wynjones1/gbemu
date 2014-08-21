@@ -98,7 +98,7 @@ void debug_output_registers(struct cpu_state *state)
 
 	FOutput(fp, "SCX = 0x%04x   " , state->memory->scx);
 	FOutput(fp, "SCY = 0x%04x\n"  , state->memory->scy);
-	FOutput(fp, "LX  = 0x%04x   " , state->memory->ly);
+	FOutput(fp, "LY  = 0x%04x   " , state->memory->ly);
 	FOutput(fp, "LXC = 0x%04x\n"  , state->memory->lyc);
 	FOutput(fp, "WX  = 0x%04x   " , state->memory->wx);
 	FOutput(fp, "WY  = 0x%04x\n\n", state->memory->wy);

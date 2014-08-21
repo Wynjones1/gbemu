@@ -1,6 +1,7 @@
 #include "display.h"
 #include "events.h"
 #include "common.h"
+#include "cpu.h"
 #include <stdlib.h>
 #include <SDL2/SDL.h>
 #include <string.h>
@@ -10,13 +11,12 @@
 #define PIXEL_SIZE  4
 #define PIXEL_SCALE 3
 
-static void *display_thread(void *display_);
-
 struct display
 {
 	SDL_Window   *window;
 	SDL_Renderer *render;
 	SDL_Texture  *texture;
+	cpu_state_t  *state;
 	memory_t     *mem;
 	//Thread Data
 	pthread_t thread;
@@ -24,13 +24,54 @@ struct display
 	unsigned char pixel_data[DISPLAY_HEIGHT][DISPLAY_WIDTH][4];
 };
 
-display_t *display_init(memory_t *mem)
+#if DISPLAY_THREAD
+static void *display_thread(void *display_);
+#endif
+
+static void init_display(display_t *display)
 {
-	display_t *out = malloc(sizeof(display_t));
-	out->mem    = mem;
-	pthread_create(&out->thread, NULL, display_thread, out);
-	return out;
+	display->window = SDL_CreateWindow("Window", 0, 0, 
+									PIXEL_SCALE * DISPLAY_WIDTH,
+									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
+	display->render  = SDL_CreateRenderer(display->window, -1, 0);
+	display->texture = SDL_CreateTexture(display->render,
+								SDL_PIXELFORMAT_ARGB8888,
+								SDL_TEXTUREACCESS_STATIC,
+								DISPLAY_WIDTH, DISPLAY_HEIGHT);
+	SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff);
+	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
 }
+
+display_t *display_init(cpu_state_t *state)
+{
+	display_t *display = malloc(sizeof(display_t));
+	display->state  = state;
+	display->mem    = state->memory;
+	SDL_Init(SDL_INIT_VIDEO);
+#if DISPLAY_THREAD
+	pthread_t thread;
+	pthread_create(&thread, NULL, display_thread, display);
+#else
+	init_display(display);
+#endif
+	return display;
+}
+
+#if DISPLAY_THREAD
+void handle_events(struct cpu_state *state);
+static void *display_thread(void *display_)
+{
+	display_t *display = display_;
+	init_display(display);
+	while(1)
+	{
+		handle_events(display->state);
+		display_display(display);
+		SDL_Delay(17);
+	}
+	return NULL;
+}
+#endif
 
 void display_delete(display_t *disp)
 {
@@ -89,49 +130,24 @@ static void write_tile(display_t *d, int tx, int ty)
 	}
 }
 
-static void *display_thread(void *display_)
+void display_display(display_t *display)
 {
-	display_t *display = display_;
-	SDL_Init(SDL_INIT_VIDEO);
-
-	display->window = SDL_CreateWindow("Window", 0, 0, 
-									PIXEL_SCALE * DISPLAY_WIDTH,
-									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
-	display->render  = SDL_CreateRenderer(display->window, -1, 0);
-	display->texture = SDL_CreateTexture(display->render,
-								SDL_PIXELFORMAT_ARGB8888,
-								SDL_TEXTUREACCESS_STATIC,
-								DISPLAY_WIDTH, DISPLAY_HEIGHT);
-	SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff);
-	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
-	display_clear(display);
-
-	events_t events;
-	memset(&events, 0x00, sizeof(events_t));
-	while(1)
+	//Display the image.
+	if(display->mem->lcdc.enabled)
 	{
-		//Check for events.
-		events_handle(&events);
-		if(events.quit) exit(0);
-
-		//Display the image.
-		if(1)//display->mem->lcdc.enabled)
+		for(int ty = 0; ty < 32; ty++)
 		{
-			for(int ty = 0; ty < 32; ty++)
+			for(int tx = 0; tx < 32; tx++)
 			{
-				for(int tx = 0; tx < 32; tx++)
-				{
-					write_tile(display, tx, ty);
-				}
+				write_tile(display, tx, ty);
 			}
-			display_present(display);
 		}
-		else
-		{
-			display_clear(display);
-		}
+		display_present(display);
 	}
-	return NULL;
+	else
+	{
+		display_clear(display);
+	}
 }
 
 void display_draw_pixel(display_t *disp, int x, int y, char *rgb)

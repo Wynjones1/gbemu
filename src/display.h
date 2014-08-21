@@ -15,10 +15,16 @@
 #define DISPLAY_BUFFER_WIDTH  256
 #define DISPLAY_BUFFER_HEIGHT 256
 
-typedef struct display display_t;
+#define DISPLAY_MS_PER_LINE 0.111
 
-display_t *display_init(memory_t *mem);
+#define DISPLAY_THREAD 1
+
+typedef struct display display_t;
+typedef struct cpu_state cpu_state_t;
+
+display_t *display_init(cpu_state_t *state);
 void display_delete(display_t *disp);
 void display_draw_pixel(display_t *disp, int x, int y, char *rgb);
 void display_present(display_t *disp);
 void display_clear(display_t *disp);
+void display_display(display_t *display);

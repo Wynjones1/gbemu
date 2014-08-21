@@ -4,9 +4,11 @@
 #include "types.h"
 #include "common.h"
 #include "arg_defs.h"
+#include "events.h"
 
-#define CPU_CLOCK_SPEED 4190000
-#define CPU_CLOCKS_PER_MS CPU_CLOCK_SPEED / 1000
+#define CPU_CLOCK_SPEED 4194304
+#define CPU_CLOCKS_PER_MS (CPU_CLOCK_SPEED / 1000.0)
+#define CPU_CLOCKS_PER_LINE DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS
 
 typedef struct cpu_state
 {
@@ -56,6 +58,8 @@ typedef struct cpu_state
 	int       EI_Pending;
 	reg16_t   arg;
 	uint32_t  clock_counter;
+	int       halt;
+	events_t  events;
 
 }cpu_state_t;
 

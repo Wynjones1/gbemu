@@ -13,7 +13,6 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 memory_t *memory_init(const char *boot, const char *rom)
 {
 	memory_t *out = calloc(1, sizeof(memory_t));
-	//TODO: Add safe read functions.
 	FILE *fp = fopen(boot, "r");
 	common_fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
