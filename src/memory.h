@@ -10,6 +10,11 @@ void      memory_store8(memory_t *mem, reg16_t addr, reg_t data);
 reg16_t   memory_load16(memory_t *mem, reg16_t addr);
 void      memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
 
+struct OEM_data
+{
+	reg_t data[4];
+};
+
 typedef struct memory
 {
 	reg_t *bank_0;               // 0x0000 -> 0x3fff
@@ -19,10 +24,14 @@ typedef struct memory
 	reg_t working_ram_0[0x1000]; // 0xc000 -> 0xcfff
 	reg_t working_ram_1[0x1000]; // 0xd000 -> 0xdfff //CGB: Should be switchable.
 	reg_t *echo       ;          // 0xe000 -> 0xfdff
-	reg_t OAM[0x1e00];           // 0xfe00 -> 0xfe9f
+	union // 0xfe00 -> 0xfe9f
+	{
+		reg_t OAM[0xa0];
+		struct OEM_data data[40];
+	};
 	//unused                     // 0xfea0 -> 0xfeff
 	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
-	reg_t stack[0x7f];           // 0xff80 -> 0xfffe
+	reg_t stack[0x7F];           // 0xff80 -> 0xfffe
 	//reg_t interrupt_enable;    // 0xffff //Further down.
 	reg_t backup[0x10000];
 
@@ -56,7 +65,29 @@ typedef struct memory
 		uint8_t window_map     : 1;
 		uint8_t enabled        : 1;
 	}lcdc;
-	uint8_t joypad;
+	union
+	{
+		uint8_t joypad;
+		struct
+		{
+			uint8_t a        : 1;
+			uint8_t b        : 1;
+			uint8_t select   : 1;
+			uint8_t start    : 1;
+			uint8_t          : 1;
+			uint8_t buttons  : 1;
+			uint8_t          : 2;
+		};
+		struct
+		{
+			uint8_t right     : 1;
+			uint8_t left      : 1;
+			uint8_t up        : 1;
+			uint8_t down      : 1;
+			uint8_t direction : 1;
+			uint8_t           : 3;
+		};
+	};
 	//Video Registers.
 	uint8_t stat;
 	uint8_t scy;

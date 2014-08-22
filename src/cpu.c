@@ -133,16 +133,12 @@ void display_mhz(int clk)
 	if(temp - count > 1000)
 	{
 		count = temp;
-		fprintf(fp, "%4.2f %fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
+		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
 	}
 }
 
-int temp[] = {0, 0x90, 0x91, 0x94};
 void simulate_display(struct cpu_state *state)
 {
-#if !DISPLAY_THREAD
-	static int time;
-#endif
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
 		state->clock_counter        -= CPU_CLOCKS_PER_LINE;
@@ -152,28 +148,20 @@ void simulate_display(struct cpu_state *state)
 		{
 			state->memory->interrupt.v_blank = 1;
 		}
-#if !DISPLAY_THREAD
-		if(state->memory->ly == 144)
-		{
-			if(state->memory->lcdc.enabled)
-			{
-				display_display(state->display);
-			}
-		}
-#endif
 	}
 }
 
 
 void cpu_start(struct cpu_state *state)
 {
+	g_state = state;
+	atexit(debug_on_exit);
 	reg_t instruction;
 	struct opcode *op;
 	state->pc = 0;
 #if !DISPLAY_THREAD
 	display_display(state->display);
 #endif
-	SDL_Delay(1000);
 	while(1)
 	{
 		//Reset status flags.
@@ -208,14 +196,29 @@ void cpu_start(struct cpu_state *state)
 				state->arg = cpu_load16(state, state->pc + 1);
 			}
 			
+			static int start;
+	#if 1
+			if(start)
+			{
+				char buf[1024];
+				debug_print_op(buf, state, op);
+				Output("%s\n", buf);
+			}
+	#endif
+
 	#if 0
-			char buf[1024];
-			debug_print_op(buf, state, op);
-			Output("%s\n", buf);
+			if(state->pc == 0x2d3)
+			{
+				debug_output_registers(state);
+		//		BREAK();
+				start = 1;
+		//		Error("");
+			}
 	#endif
 			state->pc  += op->size;
 	#if 0
-			debug_output_registers(state);
+			if(start)
+				debug_output_registers(state);
 	#endif
 			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 			//Increment program counter.

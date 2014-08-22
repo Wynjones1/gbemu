@@ -9,6 +9,11 @@
 struct cpu_state *g_state;
 void sigabrt_handler(int x)
 {
+	debug_on_exit();
+}
+
+void debug_on_exit(void)
+{
 	int w = 32;
 	int h = 6;
 	ppm_t *ppm = ppm_new(w * 8, h * 8, "tiles.ppm");
@@ -41,7 +46,6 @@ void sigabrt_handler(int x)
 	}
 	debug_output_registers(g_state);
 	debug_output_tile_maps(g_state);
-	exit(0);
 }
 
 void debug_output_tile_maps(struct cpu_state *state)

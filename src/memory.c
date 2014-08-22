@@ -33,6 +33,8 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->cart_type = out->bank_0[0x147];
 	out->rom_size  = out->bank_0[0x148];
 	out->ram_size  = out->bank_0[0x149];
+	//Set all of the buttons to off.
+	out->joypad    = 0xff;
 
 	switch(out->ram_size)
 	{
@@ -57,6 +59,15 @@ void memory_delete(memory_t *mem)
 {
 	free(mem);
 }
+static void joypad_write(memory_t *mem, reg_t data)
+{
+	mem->joypad = (mem->joypad & 0xcf) | (data & 0x30);
+}
+
+static reg_t joypad_read(memory_t *mem)
+{
+	return mem->joypad;
+}
 
 static void stat(memory_t *mem, reg_t data)
 {
@@ -69,12 +80,12 @@ static void dma(memory_t *mem, reg_t data)
 	static FILE *fp;
 	if(!fp) fp = fopen("dma_log.txt", "w");
 #endif
-	//Writing to the DMA register initiates a 0x100 byte DMA transfer.
+	//Writing to the DMA register initiates a 0xa0 byte DMA transfer.
 
 	//TODO:Make this occur over multiple clock cycles.
 	//We need to restrict accesses to HRAM also.
 	reg16_t source = data * 0x100;
-	for(reg16_t i = 0; i < 0x100; i++)
+	for(reg16_t i = 0; i < 0xa0; i++)
 	{
 		mem->OAM[i] = memory_load8(mem, source + i);
 #if DEBUG_DMA
@@ -195,7 +206,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		case 0xff4b:
 			return mem->wx;
 		case 0xff00:
-			return mem->joypad;
+			return joypad_read(mem);
 		case 0xff01:
 			return mem->serial_data;
 		case 0xff02:
@@ -280,7 +291,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			//This seems to be accessed by accident when cleaning memory.
 			break;
 		case 0xff00: // Joypad.
-			mem->joypad = data;
+			joypad_write(mem, data);
 			break;
 		case 0xff01: //TODO:Implement Serial transfer.
 			mem->serial_data = data;

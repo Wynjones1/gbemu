@@ -10,6 +10,8 @@
 
 #define PIXEL_SIZE  4
 #define PIXEL_SCALE 3
+#define DISPLAY_ENABLED 1
+#define NUMBER_OF_OEM_ELEMENTS 40
 
 struct display
 {
@@ -24,6 +26,7 @@ struct display
 	unsigned char pixel_data[DISPLAY_HEIGHT][DISPLAY_WIDTH][4];
 };
 
+#if DISPLAY_ENABLED
 #if DISPLAY_THREAD
 static void *display_thread(void *display_);
 #endif
@@ -41,12 +44,14 @@ static void init_display(display_t *display)
 	SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff);
 	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
 }
+#endif
 
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = malloc(sizeof(display_t));
 	display->state  = state;
 	display->mem    = state->memory;
+#if DISPLAY_ENABLED
 	SDL_Init(SDL_INIT_VIDEO);
 #if DISPLAY_THREAD
 	pthread_t thread;
@@ -54,10 +59,11 @@ display_t *display_init(cpu_state_t *state)
 #else
 	init_display(display);
 #endif
+#endif
 	return display;
 }
 
-#if DISPLAY_THREAD
+#if DISPLAY_THREAD && DISPLAY_ENABLED
 void handle_events(struct cpu_state *state);
 static void *display_thread(void *display_)
 {
@@ -102,12 +108,10 @@ static void write_tile(display_t *d, int tx, int ty)
 {
 	//Tile map is located at address 0x9800 or 0x9c00
 	int tile_num = ty * 32 + tx;
-	d->mem->lcdc.map_select = 0;
 	uint8_t  tile = d->mem->video_ram[(d->mem->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
 	//Tils data is located at addresses
 	// 0x8800 -> 97FF or
 	// 0x8000 -> 8FFF
-	d->mem->lcdc.tile_select = 1;
 	uint8_t *tile_data = &d->mem->video_ram[(d->mem->lcdc.tile_select ? 0x000 : 0x800) +  tile * 16];
 	uint8_t scx = d->mem->scx;
 	uint8_t scy = d->mem->scy;
@@ -130,23 +134,45 @@ static void write_tile(display_t *d, int tx, int ty)
 	}
 }
 
+static void write_background(display_t *display)
+{
+	for(int ty = 0; ty < 32; ty++)
+	{
+		for(int tx = 0; tx < 32; tx++)
+		{
+			write_tile(display, tx, ty);
+		}
+	}
+}
+
+static void write_window(display_t *display)
+{
+}
+
+static void write_sprites(display_t *display)
+{
+	for(int i = 0; i < NUMBER_OF_OEM_ELEMENTS; i++)
+	{
+	
+	}
+}
+
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(display->mem->lcdc.enabled)
+	if(display->mem->ly < 144) //Don't update during vblank.
 	{
-		for(int ty = 0; ty < 32; ty++)
+		if(display->mem->lcdc.enabled)
 		{
-			for(int tx = 0; tx < 32; tx++)
-			{
-				write_tile(display, tx, ty);
-			}
+			write_background(display);
+			write_window(display);
+			write_sprites(display);
+			display_present(display);
 		}
-		display_present(display);
-	}
-	else
-	{
-		display_clear(display);
+		else
+		{
+			display_clear(display);
+		}
 	}
 }
 
