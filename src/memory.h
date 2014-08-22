@@ -10,9 +10,17 @@ void      memory_store8(memory_t *mem, reg16_t addr, reg_t data);
 reg16_t   memory_load16(memory_t *mem, reg16_t addr);
 void      memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
 
-struct OEM_data
+struct OAM_data
 {
-	reg_t data[4];
+	uint8_t y_pos;
+	uint8_t x_pos;
+	uint8_t tile;
+	uint8_t palette_gbc : 3; //Only used in gameboy colour, placeholder
+	uint8_t bank        : 1; //Only used in gameboy colour, placeholder
+	uint8_t palette     : 1;
+	uint8_t x_flip      : 1;
+	uint8_t y_flip      : 1;
+	uint8_t priority    : 1;
 };
 
 typedef struct memory
@@ -27,7 +35,7 @@ typedef struct memory
 	union // 0xfe00 -> 0xfe9f
 	{
 		reg_t OAM[0xa0];
-		struct OEM_data data[40];
+		struct OAM_data oam_data[40];
 	};
 	//unused                     // 0xfea0 -> 0xfeff
 	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
@@ -65,29 +73,25 @@ typedef struct memory
 		uint8_t window_map     : 1;
 		uint8_t enabled        : 1;
 	}lcdc;
-	union
+	struct
 	{
-		uint8_t joypad;
-		struct
-		{
-			uint8_t a        : 1;
-			uint8_t b        : 1;
-			uint8_t select   : 1;
-			uint8_t start    : 1;
-			uint8_t          : 1;
-			uint8_t buttons  : 1;
-			uint8_t          : 2;
-		};
-		struct
-		{
-			uint8_t right     : 1;
-			uint8_t left      : 1;
-			uint8_t up        : 1;
-			uint8_t down      : 1;
-			uint8_t direction : 1;
-			uint8_t           : 3;
-		};
-	};
+		uint8_t a        : 1;
+		uint8_t b        : 1;
+		uint8_t select   : 1;
+		uint8_t start    : 1;
+		uint8_t          : 1;
+		uint8_t enabled  : 1;
+		uint8_t          : 2;
+	}buttons;
+	struct
+	{
+		uint8_t right     : 1;
+		uint8_t left      : 1;
+		uint8_t up        : 1;
+		uint8_t down      : 1;
+		uint8_t enabled   : 1;
+		uint8_t           : 3;
+	}dpad;
 	//Video Registers.
 	uint8_t stat;
 	uint8_t scy;

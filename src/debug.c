@@ -137,6 +137,14 @@ void debug_output_registers(struct cpu_state *state)
 	FOutput(fp, "JOYPAD   : %u/%u \n",
 						state->memory->interrupt.joypad,
 						state->memory->enabled.joypad);
+
+
+	FOutput(fp, "Joypad\n");
+	FOutput(fp, "a     = %d b      = %d\n", state->memory->buttons.a, state->memory->buttons.b);
+	FOutput(fp, "start = %d select = %d\n", state->memory->buttons.start , state->memory->buttons.select);
+	FOutput(fp, "up    = %d down   = %d\n", state->memory->dpad.up, state->memory->dpad.down);
+	FOutput(fp, "left  = %d right  = %d\n", state->memory->dpad.left , state->memory->dpad.right);
+	FOutput(fp, "buttons = %d dpad = %d\n", state->memory->buttons.enabled , state->memory->dpad.enabled);
 	fflush(fp);
 }
 

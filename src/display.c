@@ -11,7 +11,7 @@
 #define PIXEL_SIZE  4
 #define PIXEL_SCALE 3
 #define DISPLAY_ENABLED 1
-#define NUMBER_OF_OEM_ELEMENTS 40
+#define NUMBER_OF_OAM_ELEMENTS 40
 
 struct display
 {
@@ -71,7 +71,7 @@ static void *display_thread(void *display_)
 	init_display(display);
 	while(1)
 	{
-		handle_events(display->state);
+		events_handle(display->state);
 		display_display(display);
 		SDL_Delay(17);
 	}
@@ -151,28 +151,45 @@ static void write_window(display_t *display)
 
 static void write_sprites(display_t *display)
 {
-	for(int i = 0; i < NUMBER_OF_OEM_ELEMENTS; i++)
+	reg_t *video_ram = display->mem->video_ram;
+	const struct OAM_data *data;
+	for(int e = 0; e < NUMBER_OF_OAM_ELEMENTS; e++)
 	{
-	
+		data = display->mem->oam_data + e;
+		uint8_t x_pos = data->x_pos - 8;
+		uint8_t y_pos = data->y_pos - 16;
+		uint8_t *tile_data = video_ram + data->tile * 16;
+		for(int j = 0; j < 8; j++)
+		{
+			for(int i = 0; i < 8; i++)
+			{
+				uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+								((tile_data[0] >> i) & 0x1);
+				uint8_t x = x_pos + (7 - i);
+				uint8_t y = y_pos + j;
+				if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
+				{
+					write_pixel(display, x, y , GET_SHADE(display->mem->bgp, shade));
+				}
+			}
+			tile_data += 2;
+		}
 	}
 }
 
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(display->mem->ly < 144) //Don't update during vblank.
+	if(display->mem->lcdc.enabled)
 	{
-		if(display->mem->lcdc.enabled)
-		{
-			write_background(display);
-			write_window(display);
-			write_sprites(display);
-			display_present(display);
-		}
-		else
-		{
-			display_clear(display);
-		}
+		write_background(display);
+		write_window(display);
+		write_sprites(display);
+		display_present(display);
+	}
+	else
+	{
+		display_clear(display);
 	}
 }
 

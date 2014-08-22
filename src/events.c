@@ -1,36 +1,44 @@
 #include "events.h"
 
-static void key(events_t *ev, SDL_Keysym sym, int down)
+static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 {
+	memory_t *mem = state->memory;
 	switch(sym.sym)
 	{
 		case SDLK_w:
-			ev->up    = down;
+			mem->dpad.up    = down;
 			break;
 		case SDLK_a:
-			ev->left  = down;
+			mem->dpad.left  = down;
 			break;
 		case SDLK_d:
-			ev->right = down;
+			mem->dpad.right = down;
 			break;
 		case SDLK_s:
-			ev->down  = down;
+			mem->dpad.down  = down;
 			break;
 		case SDLK_i:
-			ev->a     = down;
+			mem->buttons.a     = down;
 			break;
 		case SDLK_j:
-			ev->b     = down;
+			mem->buttons.b     = down;
+			break;
+		case SDLK_f:
+			mem->buttons.start = down;
+			break;
+		case SDLK_g:
+			mem->buttons.select = down;
 			break;
 		case SDLK_ESCAPE:
-			ev->quit  = down;
+			exit(0);
 			break;
 		default:
 			break;
 	}
+	if(down == 0) state->memory->interrupt.joypad = 1;
 }
 
-void events_handle(events_t *ev)
+void events_handle(cpu_state_t *state)
 {
 	SDL_Event event;
 	while(SDL_PollEvent(&event))
@@ -38,10 +46,15 @@ void events_handle(events_t *ev)
 		switch(event.type)
 		{
 			case SDL_KEYDOWN:
-				key(ev, event.key.keysym, 1);
+				key(event.key.keysym, 0, state);
 				break;
 			case SDL_KEYUP:
-				key(ev, event.key.keysym, 0);
+				key(event.key.keysym, 1, state);
+				break;
+			case SDL_QUIT:
+				exit(0);
+				break;
+			default:
 				break;
 		}
 	}

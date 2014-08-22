@@ -27,7 +27,6 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(boot_rom_filename, rom);
 	out->display     = display_init(out);
-	memset(&out->events, 0x00, sizeof(events_t));
 	return out;
 }
 
@@ -106,17 +105,11 @@ static int check_for_interrupts(struct cpu_state *state)
 		Output("Interrupt 0x%04x\n", addr);
 		cpu_push(state, state->pc);
 		state->pc = addr;
+		state->clock_counter += 5;
 	}
 	return 0;
 }
 #undef X
-
-void handle_events(struct cpu_state *state)
-{
-	//Check for events.
-	events_handle(&state->events);
-	if(state->events.quit) exit(0);
-}
 
 void display_mhz(int clk)
 {
@@ -134,6 +127,12 @@ void display_mhz(int clk)
 	{
 		count = temp;
 		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
+		fflush(fp);
+	}
+	static int scount;
+	if(scount++ % 550 == 0)
+	{
+		SDL_Delay(1);
 	}
 }
 
@@ -196,29 +195,15 @@ void cpu_start(struct cpu_state *state)
 				state->arg = cpu_load16(state, state->pc + 1);
 			}
 			
-			static int start;
-	#if 1
-			if(start)
-			{
-				char buf[1024];
-				debug_print_op(buf, state, op);
-				Output("%s\n", buf);
-			}
+	#if 0
+			char buf[1024];
+			debug_print_op(buf, state, op);
+			Output("%s\n", buf);
 	#endif
 
-	#if 0
-			if(state->pc == 0x2d3)
-			{
-				debug_output_registers(state);
-		//		BREAK();
-				start = 1;
-		//		Error("");
-			}
-	#endif
 			state->pc  += op->size;
 	#if 0
-			if(start)
-				debug_output_registers(state);
+			debug_output_registers(state);
 	#endif
 			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 			//Increment program counter.

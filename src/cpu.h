@@ -59,7 +59,6 @@ typedef struct cpu_state
 	reg16_t   arg;
 	uint32_t  clock_counter;
 	int       halt;
-	events_t  events;
 
 }cpu_state_t;
 

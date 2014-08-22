@@ -34,7 +34,8 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->rom_size  = out->bank_0[0x148];
 	out->ram_size  = out->bank_0[0x149];
 	//Set all of the buttons to off.
-	out->joypad    = 0xff;
+	*(uint8_t*)&out->buttons = 0xff;
+	*(uint8_t*)&out->dpad    = 0xff;
 
 	switch(out->ram_size)
 	{
@@ -59,14 +60,25 @@ void memory_delete(memory_t *mem)
 {
 	free(mem);
 }
+
 static void joypad_write(memory_t *mem, reg_t data)
 {
-	mem->joypad = (mem->joypad & 0xcf) | (data & 0x30);
+	*(uint8_t*)&mem->buttons |= data & 0x20;
+	*(uint8_t*)&mem->dpad    |= data & 0x10;
 }
 
 static reg_t joypad_read(memory_t *mem)
 {
-	return mem->joypad;
+	uint8_t out = 0;
+	if(mem->dpad.enabled)
+	{
+		out |= *(uint8_t*)&mem->dpad;
+	}
+	if(mem->buttons.enabled)
+	{
+		out |= *(uint8_t*)&mem->buttons;
+	}
+	return out;
 }
 
 static void stat(memory_t *mem, reg_t data)
