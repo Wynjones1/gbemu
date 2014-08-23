@@ -139,5 +139,10 @@ typedef struct memory
 	uint8_t div;
 	uint8_t tima;
 	uint8_t tma;
-	uint8_t tac;
+	struct
+	{
+		uint8_t clock_select : 2;
+		uint8_t stop         : 1;
+		uint8_t              : 5;
+	}tac;
 }memory_t;

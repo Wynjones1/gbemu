@@ -129,12 +129,60 @@ void display_mhz(int clk)
 		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
 		fflush(fp);
 	}
+	#if 0
 	static int scount;
 	if(scount++ % 550 == 0)
 	{
 		SDL_Delay(1);
 	}
+	#endif
 }
+
+/*
+* The div register increments 16384 times per second
+* which is 256 clock cycles of time.
+*/
+void increment_div(cpu_state_t *state, int clk)
+{
+	static int count;
+	count += clk;
+	if(count >= 256)
+	{
+		state->memory->div++;
+		count -= 256;
+	}
+}
+
+#define X(n) if(count >= n){\
+			count -= n;\
+			state->memory->tma++;\
+			if(state->memory->tima == 0){\
+				state->memory->tima = state->memory->tma;\
+			}}
+void increment_tima(cpu_state_t *state, int clk)
+{
+	static int count;
+	if(!state->memory->tac.stop)
+	{
+		count += clk;
+		switch(state->memory->tac.clock_select)
+		{
+			case 0x0: //4.096Khz
+				X(1024);
+				break;
+			case 0x1: //262.144Khz
+				X(16);
+				break;
+			case 0x2: //65.536Khz
+				X(64);
+				break;
+			case 0x3: //16.384Khz
+				X(256);
+				break;
+		}
+	}
+}
+#undef X
 
 void simulate_display(struct cpu_state *state)
 {
@@ -207,9 +255,11 @@ void cpu_start(struct cpu_state *state)
 	#endif
 			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 			//Increment program counter.
-			int temp = state->success ? op->success : op->fail;
-			state->clock_counter += temp;
-			display_mhz(temp);
+			int clk = state->success ? op->success : op->fail;
+			state->clock_counter += clk;
+			increment_div(state, clk);
+			increment_tima(state, clk);
+			display_mhz(clk);
 			simulate_display(state);
 		}
 	}

@@ -63,6 +63,8 @@ void memory_delete(memory_t *mem)
 
 static void joypad_write(memory_t *mem, reg_t data)
 {
+	mem->buttons.enabled = 0;
+	mem->dpad.enabled = 0;
 	*(uint8_t*)&mem->buttons |= data & 0x20;
 	*(uint8_t*)&mem->dpad    |= data & 0x10;
 }
@@ -70,11 +72,11 @@ static void joypad_write(memory_t *mem, reg_t data)
 static reg_t joypad_read(memory_t *mem)
 {
 	uint8_t out = 0;
-	if(mem->dpad.enabled)
+	if(!mem->dpad.enabled)
 	{
 		out |= *(uint8_t*)&mem->dpad;
 	}
-	if(mem->buttons.enabled)
+	if(!mem->buttons.enabled)
 	{
 		out |= *(uint8_t*)&mem->buttons;
 	}
@@ -189,7 +191,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->tma;
 			break;
 		case 0xff07:
-			return mem->tac;
+			return *(uint8_t*)&mem->tac;
 			break;
 		case 0xff0f:
 			return mem->IF;
@@ -253,7 +255,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->tma = data;
 			break;
 		case 0xff07:
-			mem->tac = data;
+			*(uint8_t*)&mem->tac = data;
 			break;
 		case 0xff0f:
 			mem->IF = data;

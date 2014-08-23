@@ -1,21 +1,27 @@
 #include "events.h"
 
+#define X(new, old) do{\
+					mem->dpad.new = down;\
+					if(down == 0 && mem->dpad.old == 0)\
+						mem->dpad.old = 1;\
+					}while(0);
+
 static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 {
 	memory_t *mem = state->memory;
 	switch(sym.sym)
 	{
 		case SDLK_w:
-			mem->dpad.up    = down;
+			X(up, down);
 			break;
 		case SDLK_a:
-			mem->dpad.left  = down;
+			X(left, right);
 			break;
 		case SDLK_d:
-			mem->dpad.right = down;
+			X(right, left);
 			break;
 		case SDLK_s:
-			mem->dpad.down  = down;
+			X(down, up);
 			break;
 		case SDLK_i:
 			mem->buttons.a     = down;
@@ -37,6 +43,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 	}
 	if(down == 0) state->memory->interrupt.joypad = 1;
 }
+#undef X
 
 void events_handle(cpu_state_t *state)
 {

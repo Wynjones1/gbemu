@@ -36,12 +36,27 @@ static void init_display(display_t *display)
 	display->window = SDL_CreateWindow("Window", 0, 0, 
 									PIXEL_SCALE * DISPLAY_WIDTH,
 									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
+	if(!display->window)
+	{
+		Error("%s\n", SDL_GetError());
+	}
 	display->render  = SDL_CreateRenderer(display->window, -1, 0);
+	if(!display->render)
+	{
+		Error("%s\n", SDL_GetError());
+	}
 	display->texture = SDL_CreateTexture(display->render,
 								SDL_PIXELFORMAT_ARGB8888,
 								SDL_TEXTUREACCESS_STATIC,
 								DISPLAY_WIDTH, DISPLAY_HEIGHT);
-	SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff);
+	if(!display->texture)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	if(SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
 	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
 }
 #endif
