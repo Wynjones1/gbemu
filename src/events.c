@@ -9,8 +9,10 @@
 static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 {
 	memory_t *mem = state->memory;
+	static int paused;
 	switch(sym.sym)
 	{
+		//DPad
 		case SDLK_w:
 			X(up, down);
 			break;
@@ -23,6 +25,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 		case SDLK_s:
 			X(down, up);
 			break;
+		//Buttons
 		case SDLK_i:
 			mem->buttons.a     = down;
 			break;
@@ -34,6 +37,18 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			break;
 		case SDLK_g:
 			mem->buttons.select = down;
+			break;
+		//Other
+		case SDLK_p:
+			if(paused == 0 && down == 0)
+			{
+				paused = 1;
+				state->paused = !state->paused;
+			}
+			else if(paused == 1 && down == 1)
+			{
+				paused = 0;
+			}
 			break;
 		case SDLK_ESCAPE:
 			exit(0);

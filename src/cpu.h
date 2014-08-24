@@ -60,6 +60,8 @@ typedef struct cpu_state
 	uint32_t  clock_counter;
 	int       halt;
 
+	int paused;
+
 }cpu_state_t;
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);

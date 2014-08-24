@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include <stdlib.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <string.h>
 //TODO: Remove pthreads
 #include <pthread.h>
@@ -24,6 +25,12 @@ struct display
 	pthread_t thread;
 
 	unsigned char pixel_data[DISPLAY_HEIGHT][DISPLAY_WIDTH][4];
+	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_WIDTH][4];
+
+	//TTF Data
+	TTF_Font *font;
+	SDL_Surface *surface;
+	SDL_Texture *font_texture;
 };
 
 #if DISPLAY_ENABLED
@@ -31,10 +38,30 @@ struct display
 static void *display_thread(void *display_);
 #endif
 
+static void init_ttf(display_t *d)
+{
+	if(TTF_Init() < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	d->font = TTF_OpenFont("./data/fonts/font0.ttf", 102);
+	if(d->font == NULL)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	TTF_SetFontStyle(d->font, 0);
+	TTF_SetFontOutline(d->font, 0);
+	TTF_SetFontKerning(d->font, 0);
+	TTF_SetFontHinting(d->font, 0);
+	SDL_Color fg = {255, 255, 255};
+	d->surface = TTF_RenderText_Solid(d->font, "1234512345", fg);
+	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
+}
+
 static void init_display(display_t *display)
 {
 	display->window = SDL_CreateWindow("Window", 0, 0, 
-									PIXEL_SCALE * DISPLAY_WIDTH,
+									PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_WIDTH),
 									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
 	if(!display->window)
 	{
@@ -48,7 +75,7 @@ static void init_display(display_t *display)
 	display->texture = SDL_CreateTexture(display->render,
 								SDL_PIXELFORMAT_ARGB8888,
 								SDL_TEXTUREACCESS_STATIC,
-								DISPLAY_WIDTH, DISPLAY_HEIGHT);
+								DISPLAY_WIDTH + DEBUG_WIDTH, DISPLAY_HEIGHT);
 	if(!display->texture)
 	{
 		Error("%s\n", SDL_GetError());
@@ -58,6 +85,9 @@ static void init_display(display_t *display)
 		Error("%s\n", SDL_GetError());
 	}
 	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
+	memset(display->debug_data, 0x00, sizeof(display->debug_data));
+
+	init_ttf(display);
 }
 #endif
 
@@ -219,10 +249,57 @@ void display_clear(display_t *disp)
 	SDL_RenderPresent(disp->render);
 }
 
+void draw_line(display_t *disp, const char *buf, int line)
+{
+	SDL_Rect debug_rect = {
+		.x = DISPLAY_WIDTH, .y = 0, 
+		.w = DEBUG_WIDTH  , .h = DISPLAY_HEIGHT
+	};
+	SDL_Rect temp = {
+		.x = PIXEL_SCALE * DISPLAY_WIDTH, .y = 30 * line,
+		.w = PIXEL_SCALE * DEBUG_WIDTH, .h = 30 
+	};
+
+	SDL_Color fg = {255, 255, 255};
+	disp->surface = TTF_RenderText_Solid(disp->font, buf, fg);
+	disp->font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
+
+	if(SDL_UpdateTexture(disp->texture, &debug_rect, disp->debug_data, PIXEL_SIZE * DEBUG_WIDTH) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+
+	if(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	
+}
+void draw_debug(display_t *disp)
+{
+/*
+	char buf[1024];
+	sprintf(buf, "PC = 0x%04x", disp->state->pc);
+	draw_line(disp, buf, 0);
+	sprintf(buf, "SP = 0x%04x", disp->state->sp);
+	draw_line(disp, buf, 1);
+	sprintf(buf, "AF = 0x%04X", disp->state->af);
+	draw_line(disp, buf, 2);
+	sprintf(buf, "BC = 0x%04X", disp->state->bc);
+	draw_line(disp, buf, 3);
+	sprintf(buf, "DE = 0x%04X", disp->state->de);
+	draw_line(disp, buf, 4);
+*/
+}
+
 //TODO:Change to need DEBUG flag.
 void display_present(display_t *disp)
 {
-	if(SDL_UpdateTexture(disp->texture, NULL, disp->pixel_data, PIXEL_SIZE * DISPLAY_WIDTH) < 0)
+	SDL_Rect rect = {
+		.x = 0, .y = 0,
+		.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT
+	};
+	if(SDL_UpdateTexture(disp->texture, &rect, disp->pixel_data, PIXEL_SIZE * DISPLAY_WIDTH) < 0)
 	{
 		Error("%s\n", SDL_GetError());
 	}
@@ -234,5 +311,6 @@ void display_present(display_t *disp)
 	{
 		Error("%s\n", SDL_GetError());
 	}
+	draw_debug(disp);
 	SDL_RenderPresent(disp->render);
 }
