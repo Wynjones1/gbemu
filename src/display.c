@@ -219,10 +219,20 @@ void display_clear(display_t *disp)
 	SDL_RenderPresent(disp->render);
 }
 
+//TODO:Change to need DEBUG flag.
 void display_present(display_t *disp)
 {
-	SDL_UpdateTexture(disp->texture, NULL, disp->pixel_data, PIXEL_SIZE * DISPLAY_WIDTH);
-	SDL_RenderClear(disp->render);
-	SDL_RenderCopy(disp->render, disp->texture, NULL, NULL);
+	if(SDL_UpdateTexture(disp->texture, NULL, disp->pixel_data, PIXEL_SIZE * DISPLAY_WIDTH) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	if(SDL_RenderClear(disp->render) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
+	if(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0)
+	{
+		Error("%s\n", SDL_GetError());
+	}
 	SDL_RenderPresent(disp->render);
 }

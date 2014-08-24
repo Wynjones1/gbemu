@@ -64,7 +64,7 @@ void memory_delete(memory_t *mem)
 static void joypad_write(memory_t *mem, reg_t data)
 {
 	mem->buttons.enabled = 0;
-	mem->dpad.enabled = 0;
+	mem->dpad.enabled    = 0;
 	*(uint8_t*)&mem->buttons |= data & 0x20;
 	*(uint8_t*)&mem->dpad    |= data & 0x10;
 }

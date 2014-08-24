@@ -129,7 +129,7 @@ void display_mhz(int clk)
 		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
 		fflush(fp);
 	}
-	#if 0
+	#if 1
 	static int scount;
 	if(scount++ % 550 == 0)
 	{
