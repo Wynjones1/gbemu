@@ -207,7 +207,7 @@ void debug_print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum 
 			break;
 		case ARG_TYPE_REL8:
 			rel = state->arg;
-			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel);
+			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
 			break;
 		case ARG_TYPE_REL8_ADD_SP:
 			rel = state->arg;
@@ -250,6 +250,10 @@ void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 {
 	char arg0[1024];
 	char arg1[1024];
+	if(op->op == PREFIX_CB)
+	{
+		op = &cb_op_table[state->arg];
+	}
 	debug_print_arg(arg0, state, op,op->arg0, op->i0);
 	debug_print_arg(arg1, state, op,op->arg1, op->i1);
 	char sep;

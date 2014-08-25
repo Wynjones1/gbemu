@@ -216,7 +216,6 @@ void cpu_start(struct cpu_state *state)
 	while(1)
 	{
 		//Reset status flags.
-		while(state->paused && !state->step) SDL_Delay(100);
 		state->step = 0;
 		state->success = 1;
 #if !DISPLAY_THREAD
@@ -255,10 +254,16 @@ void cpu_start(struct cpu_state *state)
 			Output("%s\n", buf);
 	#endif
 
+			while(state->paused && !state->step && !state->slow)
+			{
+				SDL_Delay(100);
+			}
+			if(state->slow)
+			{
+				SDL_Delay(2);
+			}
+
 			state->pc  += op->size;
-	#if 0
-			debug_output_registers(state);
-	#endif
 			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 			//Increment program counter.
 			int clk = state->success ? op->success : op->fail;
