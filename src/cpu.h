@@ -61,6 +61,8 @@ typedef struct cpu_state
 	int       halt;
 
 	int paused;
+	int step;
+	int frame_limit;
 
 }cpu_state_t;
 

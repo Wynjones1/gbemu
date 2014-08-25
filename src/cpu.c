@@ -129,7 +129,11 @@ void display_mhz(int clk)
 		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
 		fflush(fp);
 	}
-	#if 0
+}
+
+void frame_limit(int clk)
+{
+	#if 1
 	static int scount;
 	if(scount++ % 550 == 0)
 	{
@@ -212,7 +216,8 @@ void cpu_start(struct cpu_state *state)
 	while(1)
 	{
 		//Reset status flags.
-		while(state->paused) SDL_Delay(100);
+		while(state->paused && !state->step) SDL_Delay(100);
+		state->step = 0;
 		state->success = 1;
 #if !DISPLAY_THREAD
 		handle_events(state);
@@ -261,6 +266,10 @@ void cpu_start(struct cpu_state *state)
 			increment_div(state, clk);
 			increment_tima(state, clk);
 			display_mhz(clk);
+			if(state->frame_limit)
+			{
+				frame_limit(clk);
+			}
 			simulate_display(state);
 		}
 	}

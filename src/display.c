@@ -24,7 +24,6 @@ struct display
 	//Thread Data
 	pthread_t thread;
 
-	unsigned char pixel_data[DISPLAY_HEIGHT][DISPLAY_WIDTH][4];
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_WIDTH][4];
 
 	//TTF Data
@@ -74,7 +73,7 @@ static void init_display(display_t *display)
 	}
 	display->texture = SDL_CreateTexture(display->render,
 								SDL_PIXELFORMAT_ARGB8888,
-								SDL_TEXTUREACCESS_STATIC,
+								SDL_TEXTUREACCESS_STREAMING,
 								DISPLAY_WIDTH + DEBUG_WIDTH, DISPLAY_HEIGHT);
 	if(!display->texture)
 	{
@@ -84,7 +83,6 @@ static void init_display(display_t *display)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-	memset(display->pixel_data, 0x00, sizeof(display->pixel_data));
 	memset(display->debug_data, 0x00, sizeof(display->debug_data));
 
 	init_ttf(display);
@@ -130,12 +128,12 @@ void display_delete(display_t *disp)
 	free(disp);
 }
 
-static void write_pixel(display_t *d, int x, int y, uint8_t col)
+static void write_pixel(uint8_t *data, int pitch, int x, int y, uint8_t col)
 {
-	d->pixel_data[y][x][0] = col;
-	d->pixel_data[y][x][1] = col;
-	d->pixel_data[y][x][2] = col;
-	d->pixel_data[y][x][3] = 255;
+	data[pitch * y + 4 * x + 0] = col;
+	data[pitch * y + 4 * x + 1] = col;
+	data[pitch * y + 4 * x + 2] = col;
+	data[pitch * y + 4 * x + 3] = 255;
 }
 
 uint8_t shade_table[4] =
@@ -160,6 +158,10 @@ static void write_tile(display_t *d, int tx, int ty)
 	uint8_t *tile_data = &d->mem->video_ram[(d->mem->lcdc.tile_select ? 0x000 : 0x800) +  tile * 16];
 	uint8_t scx = d->mem->scx;
 	uint8_t scy = d->mem->scy;
+	uint8_t *data;
+	int pitch;
+	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
+	SDL_LockTexture(d->texture, &rect, (void*)&data, &pitch);
 	for(int j = 0; j < 8; j++)
 	{
 		for(int i = 0; i < 8; i++)
@@ -172,11 +174,12 @@ static void write_tile(display_t *d, int tx, int ty)
 			y = y - scy;
 			if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
 			{
-				write_pixel(d, x, y , GET_SHADE(d->mem->bgp, shade));
+				write_pixel(data, pitch, x, y , GET_SHADE(d->mem->bgp, shade));
 			}
 		}
 		tile_data += 2;
 	}
+	SDL_UnlockTexture(d->texture);
 }
 
 static void write_background(display_t *display)
@@ -198,6 +201,10 @@ static void write_sprites(display_t *display)
 {
 	reg_t *video_ram = display->mem->video_ram;
 	const struct OAM_data *data;
+	uint8_t *pixel_data;
+	int pitch;
+	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
+	SDL_LockTexture(display->texture, &rect, (void*)&pixel_data, &pitch);
 	for(int e = 0; e < NUMBER_OF_OAM_ELEMENTS; e++)
 	{
 		data = display->mem->oam_data + e;
@@ -214,18 +221,19 @@ static void write_sprites(display_t *display)
 				uint8_t y = y_pos + j;
 				if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
 				{
-					write_pixel(display, x, y , GET_SHADE(display->mem->bgp, shade));
+					write_pixel(pixel_data, pitch, x, y , GET_SHADE(display->mem->bgp, shade));
 				}
 			}
 			tile_data += 2;
 		}
 	}
+	SDL_UnlockTexture(display->texture);
 }
 
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(display->mem->lcdc.enabled)
+	if(1)//display->mem->lcdc.enabled)
 	{
 		write_background(display);
 		write_window(display);
@@ -238,11 +246,6 @@ void display_display(display_t *display)
 	}
 }
 
-void display_draw_pixel(display_t *disp, int x, int y, char *rgb)
-{
-	memcpy(disp->pixel_data[x][y], rgb, PIXEL_SIZE);
-}
-
 void display_clear(display_t *disp)
 {
 	SDL_RenderClear(disp->render);
@@ -251,13 +254,14 @@ void display_clear(display_t *disp)
 
 void draw_line(display_t *disp, const char *buf, int line)
 {
+	int h = 18;
 	SDL_Rect debug_rect = {
 		.x = DISPLAY_WIDTH, .y = 0, 
 		.w = DEBUG_WIDTH  , .h = DISPLAY_HEIGHT
 	};
 	SDL_Rect temp = {
-		.x = PIXEL_SCALE * DISPLAY_WIDTH, .y = 30 * line,
-		.w = PIXEL_SCALE * DEBUG_WIDTH, .h = 30 
+		.x = PIXEL_SCALE * DISPLAY_WIDTH, .y = h * line,
+		.w = PIXEL_SCALE * DEBUG_WIDTH, .h = h 
 	};
 
 	SDL_Color fg = {255, 255, 255};
@@ -273,23 +277,86 @@ void draw_line(display_t *disp, const char *buf, int line)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-	
+
+	SDL_DestroyTexture(disp->font_texture);
+	SDL_FreeSurface(disp->surface);
 }
 void draw_debug(display_t *disp)
 {
-/*
 	char buf[1024];
-	sprintf(buf, "PC = 0x%04x", disp->state->pc);
+	sprintf(buf, "AF    = 0x%04x", disp->state->af);
 	draw_line(disp, buf, 0);
-	sprintf(buf, "SP = 0x%04x", disp->state->sp);
+	sprintf(buf, "BC    = 0x%04x", disp->state->bc);
 	draw_line(disp, buf, 1);
-	sprintf(buf, "AF = 0x%04X", disp->state->af);
+	sprintf(buf, "DE    = 0x%04x", disp->state->de);
 	draw_line(disp, buf, 2);
-	sprintf(buf, "BC = 0x%04X", disp->state->bc);
+	sprintf(buf, "HL    = 0x%04x", disp->state->hl);
 	draw_line(disp, buf, 3);
-	sprintf(buf, "DE = 0x%04X", disp->state->de);
+	sprintf(buf, "SP    = 0x%04x", disp->state->sp);
 	draw_line(disp, buf, 4);
-*/
+	sprintf(buf, "PC    = 0x%04x", disp->state->pc);
+	draw_line(disp, buf, 5);
+
+	sprintf(buf, "SCX   = 0x%04x" , disp->state->memory->scx);
+	draw_line(disp, buf, 6);
+	sprintf(buf, "SCY   = 0x%04x"  , disp->state->memory->scy);
+	draw_line(disp, buf, 7);
+	sprintf(buf, "LY    = 0x%04x" , disp->state->memory->ly);
+	draw_line(disp, buf, 8);
+	sprintf(buf, "LXC   = 0x%04x"  , disp->state->memory->lyc);
+	draw_line(disp, buf, 9);
+	sprintf(buf, "WX    = 0x%04x" , disp->state->memory->wx);
+	draw_line(disp, buf, 10);
+	sprintf(buf, "WY    = 0x%04x", disp->state->memory->wy);
+	draw_line(disp, buf, 11);
+
+	sprintf(buf, "Bank  = 0x%04x", disp->state->memory->current_bank);
+	draw_line(disp, buf, 12);
+
+	sprintf(buf, "LCDC:         ");
+	draw_line(disp, buf, 13);
+	sprintf(buf, "BG Display : %u", disp->state->memory->lcdc.bg_display);
+	draw_line(disp, buf, 14);
+	sprintf(buf, "OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
+	draw_line(disp, buf, 15);
+	sprintf(buf, "OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
+	draw_line(disp, buf, 16);
+	sprintf(buf, "Map Select : %u", disp->state->memory->lcdc.map_select);
+	draw_line(disp, buf, 17);
+	sprintf(buf, "Tile Select: %u", disp->state->memory->lcdc.tile_select);
+	draw_line(disp, buf, 18);
+	sprintf(buf, "Window Disp: %u", disp->state->memory->lcdc.window_display);
+	draw_line(disp, buf, 19);
+	sprintf(buf, "Window Map : %u", disp->state->memory->lcdc.window_map);
+	draw_line(disp, buf, 20);
+	sprintf(buf, "Enabled    : %u", disp->state->memory->lcdc.enabled);
+	draw_line(disp, buf, 21);
+
+
+	sprintf(buf, "Interrupt Flags (val/enabled):");
+	draw_line(disp, buf, 22);
+	sprintf(buf, "IME      : %u  ", disp->state->memory->IME);
+	draw_line(disp, buf, 23);
+	sprintf(buf, "VBLANK   : %u/%u",
+						disp->state->memory->interrupt.v_blank,
+						disp->state->memory->enabled.v_blank);
+	draw_line(disp, buf, 24);
+	sprintf(buf, "LCD STAT : %u/%u",
+						disp->state->memory->interrupt.lcd_status,
+						disp->state->memory->enabled.lcd_status);
+	draw_line(disp, buf, 25);
+	sprintf(buf, "TIMER    : %u/%u",
+						disp->state->memory->interrupt.timer,
+						disp->state->memory->enabled.timer);
+	draw_line(disp, buf, 26);
+	sprintf(buf, "SERIAL   : %u/%u",
+						disp->state->memory->interrupt.serial,
+						disp->state->memory->enabled.serial);
+	draw_line(disp, buf, 27);
+	sprintf(buf, "JOYPAD   : %u/%u",
+						disp->state->memory->interrupt.joypad,
+						disp->state->memory->enabled.joypad);
+	draw_line(disp, buf, 28);
 }
 
 //TODO:Change to need DEBUG flag.
@@ -299,10 +366,6 @@ void display_present(display_t *disp)
 		.x = 0, .y = 0,
 		.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT
 	};
-	if(SDL_UpdateTexture(disp->texture, &rect, disp->pixel_data, PIXEL_SIZE * DISPLAY_WIDTH) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
 	if(SDL_RenderClear(disp->render) < 0)
 	{
 		Error("%s\n", SDL_GetError());

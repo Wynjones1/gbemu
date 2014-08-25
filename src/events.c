@@ -10,6 +10,8 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 {
 	memory_t *mem = state->memory;
 	static int paused;
+	static int step;
+	static int frame_limit;
 	switch(sym.sym)
 	{
 		//DPad
@@ -48,6 +50,28 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			else if(paused == 1 && down == 1)
 			{
 				paused = 0;
+			}
+			break;
+		case SDLK_e:
+			if(step == 0 && down == 0)
+			{
+				step = 1;
+				state->step = !state->step;
+			}
+			else if(step == 1 && down == 1)
+			{
+				step = 0;
+			}
+			break;
+		case SDLK_q:
+			if(frame_limit == 0 && down == 0)
+			{
+				frame_limit = 1;
+				state->frame_limit = !state->frame_limit;
+			}
+			else if(frame_limit == 1 && down == 1)
+			{
+				frame_limit = 0;
 			}
 			break;
 		case SDLK_ESCAPE:
