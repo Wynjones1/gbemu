@@ -20,8 +20,8 @@ void RLC(struct cpu_state *state,
 
 reg_t   cpu_rlc(struct cpu_state *state, reg_t d0)
 {
-	state->carry = (d0 >> 7) & 0x1;
-	d0 =  (d0 << 1) | state->carry;
+	d0 =  (d0 << 1) | (d0 >> 7);
+	state->carry      = d0 & 0x1;
 	state->zero       = (d0 == 0);
 	state->half_carry = 0;
 	state->subtract   = 0;
