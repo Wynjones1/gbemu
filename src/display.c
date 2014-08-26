@@ -12,7 +12,7 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 3
+#define PIXEL_SCALE 2
 #define DISPLAY_ENABLED 1
 #define NUMBER_OF_OAM_ELEMENTS 40
 
