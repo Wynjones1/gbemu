@@ -27,6 +27,7 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(boot_rom_filename, rom);
 	out->display     = display_init(out);
+	out->frame_limit = 1;
 	return out;
 }
 
@@ -159,9 +160,10 @@ void increment_div(cpu_state_t *state, int clk)
 
 #define X(n) if(count >= n){\
 			count -= n;\
-			state->memory->tma++;\
+			state->memory->tima++;\
 			if(state->memory->tima == 0){\
 				state->memory->tima = state->memory->tma;\
+				state->memory->interrupt.timer = 1;\
 			}}
 void increment_tima(cpu_state_t *state, int clk)
 {
@@ -275,6 +277,11 @@ void cpu_start(struct cpu_state *state)
 			{
 				frame_limit(clk);
 			}
+			simulate_display(state);
+		}
+		else
+		{
+			state->clock_counter += 4;
 			simulate_display(state);
 		}
 	}

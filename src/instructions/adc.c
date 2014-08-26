@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include "common.h"
 
 void ADC(struct cpu_state *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
@@ -24,7 +25,7 @@ void ADC(struct cpu_state *state,
 		{
 			Error("Invalid argument type.\n");
 		}
-		cpu_adc(state, d0, d1);
+		state->a = cpu_adc(state, d0, d1);
 	}
 }
 
