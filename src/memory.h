@@ -93,7 +93,16 @@ typedef struct memory
 		uint8_t           : 3;
 	}dpad;
 	//Video Registers.
-	uint8_t stat;
+	struct
+	{
+		uint8_t mode            : 2;
+		uint8_t coincidence     : 1;
+		uint8_t h_blank_int     : 1;
+		uint8_t v_blank_int     : 1;
+		uint8_t oam_int         : 1;
+		uint8_t coincidence_int : 1;
+		uint8_t                 : 1;
+	}stat;
 	uint8_t scy;
 	uint8_t scx;
 	uint8_t ly;
@@ -142,7 +151,7 @@ typedef struct memory
 	struct
 	{
 		uint8_t clock_select : 2;
-		uint8_t stop         : 1;
+		uint8_t enable       : 1;
 		uint8_t              : 5;
 	}tac;
 }memory_t;

@@ -85,7 +85,7 @@ static reg_t joypad_read(memory_t *mem)
 
 static void stat(memory_t *mem, reg_t data)
 {
-	mem->stat = data;
+	*(uint8_t*)&mem->stat = data & 0x78;
 }
 
 static void dma(memory_t *mem, reg_t data)
@@ -198,7 +198,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		case 0xff40:
 			return *(uint8_t*)&mem->lcdc;
 		case 0xff41:
-			return mem->stat;
+			return *(uint8_t*)&mem->stat;
 		case 0xff42:
 			return mem->scy;
 		case 0xff43:

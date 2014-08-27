@@ -3,6 +3,7 @@
 #include <signal.h>
 
 #include "cpu.h"
+#include "display.h"
 #include "opcodes.h"
 #include "ppm.h"
 #include "debug.h"
@@ -168,7 +169,7 @@ void increment_div(cpu_state_t *state, int clk)
 void increment_tima(cpu_state_t *state, int clk)
 {
 	static int count;
-	if(!state->memory->tac.stop)
+	if(state->memory->tac.enable)
 	{
 		count += clk;
 		switch(state->memory->tac.clock_select)
@@ -194,9 +195,23 @@ void simulate_display(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
+		display_draw_line(state->display);
 		state->clock_counter        -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly           += 1;
 		state->memory->ly           %= 144 + 10;
+		if(state->memory->ly == state->memory->lyc)
+		{
+			state->memory->stat.coincidence = 1;
+			if(state->memory->stat.coincidence_int)
+			{
+				state->memory->interrupt.lcd_status = 1;
+			}
+		}
+		else
+		{
+			state->memory->stat.coincidence = 0;
+		}
+
 		if(state->memory->ly == 144)
 		{
 			state->memory->interrupt.v_blank = 1;

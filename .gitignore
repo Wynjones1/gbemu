@@ -31,3 +31,6 @@ bin/
 *.txt
 *.ppm
 *.svg
+
+#Asm files
+*.s
