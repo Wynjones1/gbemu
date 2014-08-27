@@ -1,13 +1,13 @@
 #include "testing.h"
 
-void rc_test(void)
+void srl_test(void)
 {
 	cpu_state_t state;
 	int *test;
 	int tests[][7] =
 	{
-		{0x80, 0,  0x00, 1, 0, 0, 1},
-		{0x11, 0,  0x22, 0, 0, 0, 0},
+		{0x01, 0,  0x00, 1, 0, 0, 1},
+		{0xff, 0,  0x7f, 0, 0, 0, 1},
 	};
 	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
@@ -16,7 +16,7 @@ void rc_test(void)
 		state.half_carry = rand() % 2;
 		state.subtract   = rand() % 2;
 		state.zero       = rand() % 2;
-		reg_t res = cpu_rl(&state, test[0]);
+		reg_t res = cpu_srl(&state, test[0]);
 		if(res              == test[2] &&
 		   state.zero       == test[3] &&
 		   state.half_carry == test[4] &&
