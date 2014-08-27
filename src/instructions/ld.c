@@ -134,46 +134,82 @@ void LD(struct cpu_state *state,
 	}
 }
 
+#if CPU_DUMMY_IO
+reg_t dummy_data[0x10000];
+#endif
+
 /* Basic memory access functions */
 reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
 {
+#if CPU_DUMMY_IO
+	return dummy_data[addr];
+#else
 	return memory_load8(state->memory, addr);
+#endif
 }
 reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
 {
+#if CPU_DUMMY_IO
+	return *(uint16_t*)&dummy_data[addr];
+#else
 	return memory_load16(state->memory, addr);
+#endif
 }
 
 reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
+#if CPU_DUMMY_IO
+	return dummy_data[addr];
+#else
 	return memory_load8(state->memory, addr);
+#endif
 }
 
 reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
+#if CPU_DUMMY_IO
+	return *(uint16_t*)&dummy_data[addr];
+#else
 	return memory_load16(state->memory, addr);
+#endif
 }
 
 void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
 {
+#if CPU_DUMMY_IO
+	dummy_data[addr] = data;
+#else
 	memory_store8(state->memory, addr, data);
+#endif
 }
 
 void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
 {
+#if CPU_DUMMY_IO
+	*(uint16_t*)&dummy_data[addr] = data;
+#else
 	memory_store16(state->memory, addr, data);
+#endif
 }
 
 void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
+#if CPU_DUMMY_IO
+	dummy_data[addr] = data;
+#else
 	memory_store8(state->memory, addr, data);
+#endif
 }
 
 void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
+#if CPU_DUMMY_IO
+	*(uint16_t*)&dummy_data[addr] = data;
+#else
 	memory_store16(state->memory, addr, data);
+#endif
 }

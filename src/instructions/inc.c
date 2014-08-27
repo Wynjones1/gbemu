@@ -20,15 +20,17 @@ void INC(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		cpu_inc8(state, i0);
+		reg_t data = cpu_load_reg8(state, i0);
+		cpu_store_reg8(state, i0, cpu_inc8(state, data));
 	}
 }
 
-void cpu_inc8(struct cpu_state *state, REG_INPUT reg)
+reg_t cpu_inc8(struct cpu_state *state, reg_t d0)
 {
 	int old_carry = state->carry;
-	state->registers[reg.r8] = cpu_add8(state, state->registers[reg.r8], 1);
-	state->carry             = old_carry;
+	reg_t res     = cpu_add8(state, d0, 1);
+	state->carry  = old_carry;
+	return res;
 }
 
 void cpu_inc16(struct cpu_state *state, REG_INPUT reg)

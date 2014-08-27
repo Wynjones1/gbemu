@@ -20,5 +20,6 @@ void SWAP(struct cpu_state *state,
 
 reg_t cpu_swap(struct cpu_state *state, reg_t d0)
 {
+	state->zero = (d0 == 0);
 	return (d0 << 4) | (d0 >> 4);
 }

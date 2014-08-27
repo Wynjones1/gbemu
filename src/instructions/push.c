@@ -11,5 +11,5 @@ void PUSH(struct cpu_state *state,
 void  cpu_push(struct cpu_state *state, reg16_t d0)
 {
 	state->sp -= 2;
-	memory_store16(state->memory, state->sp, d0);
+	cpu_store16(state, state->sp, d0);
 }

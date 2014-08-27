@@ -9,6 +9,7 @@
 #define CPU_CLOCK_SPEED 4194304
 #define CPU_CLOCKS_PER_MS (CPU_CLOCK_SPEED / 1000.0)
 #define CPU_CLOCKS_PER_LINE DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS
+#define CPU_DUMMY_IO 1
 
 typedef struct cpu_state
 {
@@ -85,8 +86,9 @@ void    cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data);
 void    cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data);
 void    cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data);
 
-void    cpu_dec8(struct cpu_state *state, REG_INPUT reg);
-void    cpu_inc8(struct cpu_state *state, REG_INPUT reg);
+void    cpu_call(cpu_state_t *state, reg16_t addr);
+reg_t   cpu_dec8(struct cpu_state *state, reg_t d0);
+reg_t   cpu_inc8(struct cpu_state *state, reg_t d0);
 void    cpu_dec16(struct cpu_state *state, REG_INPUT reg);
 void    cpu_inc16(struct cpu_state *state, REG_INPUT reg);
 reg_t   cpu_and(struct cpu_state *state, reg_t d0, reg_t d1);

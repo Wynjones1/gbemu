@@ -19,17 +19,18 @@ void DEC(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		cpu_dec8(state, i0);
+		reg_t d0 = cpu_load_reg8(state, i0);
+		state->registers[i0.r8] = cpu_dec8(state, d0);
 	}
 }
 
-void cpu_dec8(struct cpu_state *state, REG_INPUT reg)
+reg_t cpu_dec8(struct cpu_state *state, reg_t d0)
 {
-	reg_t res                = state->registers[reg.r8] - 1;
+	reg_t res                = d0 - 1;
 	state->zero              = (res == 0);
 	state->subtract          = 1;
-	state->half_carry        = ((state->registers[reg.r8] & 0xf) != 0);
-	state->registers[reg.r8] = res;
+	state->half_carry        = (d0 & 0xf) == 0;
+	return res;
 }
 
 void cpu_dec16(struct cpu_state *state, REG_INPUT reg)

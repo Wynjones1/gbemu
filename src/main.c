@@ -8,7 +8,7 @@
 #include "testing/testing.h"
 
 #include <SDL2/SDL.h>
-#define TESTING 0
+#define TESTING 1
 
 int main(int argc, char **argv)
 {
@@ -17,15 +17,15 @@ int main(int argc, char **argv)
 	#else
 		#if 0
 			const char *rom = "/home/stuart/tetris.gb";
-		#elif 1
+		#elif 0
 			const char *rom = "/home/stuart/mario.gb";
-		#elif 1
+		#elif 0
 			const char *rom = "/home/stuart/drmario.gb";
 		#elif 0
 			const char *rom = "/home/stuart/pokemon_blue.gb";
 		#elif 0
 			const char *rom = "/home/stuart/cpu_instrs.gb";
-		#elif 0
+		#elif 1
 			const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/01-special.gb";
 		#else
 			const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/05-op rp.gb";
