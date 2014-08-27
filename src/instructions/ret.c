@@ -20,6 +20,6 @@ void RET(struct cpu_state *state,
 
 void cpu_ret(struct cpu_state *state)
 {
-	state->pc    = memory_load16(state->memory, state->sp);
+	state->pc    = cpu_load16(state, state->sp);
 	state->sp   += 2;
 }

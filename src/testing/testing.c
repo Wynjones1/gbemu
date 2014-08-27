@@ -12,6 +12,8 @@ void call_test(void);
 void bit_test(void);
 void dec_test(void);
 void inc_test(void);
+void ret_test(void);
+void pop_test(void);
 
 
 int testing(int argc, char **argv)
@@ -35,5 +37,9 @@ int testing(int argc, char **argv)
 	dec_test();
 	printf("inc.\n");
 	inc_test();
+	printf("ret.\n");
+	ret_test();
+	printf("pop.\n");
+	pop_test();
 	return 0;
 }
