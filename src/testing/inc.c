@@ -1,6 +1,6 @@
 #include "testing.h"
 
-void inc_test(void)
+static void inc8_test(void)
 {
 	cpu_state_t state;
 	int *test;
@@ -33,4 +33,38 @@ void inc_test(void)
 									 (int) state.carry);
 		}
 	}
+}
+
+static void inc16_test(void)
+{
+	cpu_state_t state;
+	int *test;
+	int tests[][2] = 
+	{
+		{0x0000, 0x0001},
+		{0x00ff, 0x0100},
+		{0xffff, 0x0000},
+		{0x0fff, 0x1000},
+	};
+	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	{
+		test = tests[i];
+		REG_INPUT reg = {.r16 = REG16_BC};
+		state.bc = test[0];
+		cpu_inc16(&state, reg);
+		if(state.bc == test[1])
+		{
+			printf("Tests passed.\n");
+		}
+		else
+		{
+			printf("Tests failed.\n");
+		}
+	}
+}
+
+void inc_test(void)
+{
+	inc8_test();
+	inc16_test();
 }

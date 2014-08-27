@@ -30,7 +30,7 @@ reg_t cpu_and(struct cpu_state *state, reg_t d0, reg_t d1)
 {
 	reg_t res         = d0 & d1;
 	state->zero       = res == 0;
-	state->half_carry = 0;
+	state->half_carry = 1;
 	state->carry      = 0;
 	state->subtract   = 0;
 	return res;
