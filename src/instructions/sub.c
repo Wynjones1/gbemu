@@ -31,10 +31,11 @@ void cpu_sub(struct cpu_state *state, reg_t d0)
 	state->carry = 0;
 	if(res < 0)
 	{
-		res += 0xff;
+		res += 0x100;
 		state->carry = 1;
 	}
-	state->a        = res;
-	state->zero     = (state->a == 0);
-	state->subtract = 1;
+	state->half_carry = (state->a & 0xf) < (d0 & 0xf);
+	state->a          = res;
+	state->zero       = (state->a == 0);
+	state->subtract   = 1;
 }

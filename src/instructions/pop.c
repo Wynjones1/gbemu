@@ -9,6 +9,6 @@ void POP(struct cpu_state *state,
 
 void cpu_pop(struct cpu_state *state, REG_INPUT reg)
 {
-	state->registers16[reg.r16]  = memory_load16(state->memory, state->sp);
+	state->registers16[reg.r16]  = cpu_load16(state, state->sp);
 	state->sp += 2;
 }
