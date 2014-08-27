@@ -8,14 +8,14 @@
 #include "testing/testing.h"
 
 #include <SDL2/SDL.h>
-#define TESTING 1
+#define TESTING 0
 
 int main(int argc, char **argv)
 {
 	#if TESTING
 		testing(argc, argv);
 	#else
-		#if 0
+		#if 1
 			const char *rom = "/home/stuart/tetris.gb";
 		#elif 0
 			const char *rom = "/home/stuart/mario.gb";
