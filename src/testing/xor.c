@@ -1,15 +1,14 @@
 #include "testing.h"
 
-void or_test(void)
+void xor_test(void)
 {
 	cpu_state_t state;
 	int *test;
 	int tests[][7] =
 	{
-		{0x00, 0x00, 0x00, 1, 0, 0, 0},
-		{0x5a, 0x5a, 0x5a, 0, 0, 0, 0},
-		{0x5a, 0x03, 0x5b, 0, 0, 0, 0},
-		{0x5a, 0x0f, 0x5f, 0, 0, 0, 0},
+		{0xff, 0xff, 0x00, 1, 0, 0, 0},
+		{0xff, 0x0f, 0xf0, 0, 0, 0, 0},
+		{0xff, 0x8a, 0x75, 0, 0, 0, 0},
 	};
 	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
@@ -17,8 +16,9 @@ void or_test(void)
 		state.half_carry = rand() % 2;
 		state.subtract   = rand() % 2;
 		state.carry      = rand() % 2;
-		uint8_t res      = cpu_or(&state, test[0], test[1]);
-		if(res              == test[2] &&
+		state.a = test[0];
+		cpu_xor(&state, test[1]);
+		if(state.a          == test[2] &&
 		   state.zero       == test[3] &&
 		   state.half_carry == test[4] &&
 		   state.subtract   == test[5] &&

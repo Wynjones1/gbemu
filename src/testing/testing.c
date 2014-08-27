@@ -14,13 +14,17 @@ void dec_test(void);
 void inc_test(void);
 void ret_test(void);
 void pop_test(void);
+void or_test(void);
+void xor_test(void);
+void rra_test(void);
+void rl_test(void);
+void rla_test(void);
 
 
 int testing(int argc, char **argv)
 {
 	//flag_test();
 	//temp();
-	//adc_test();
 	printf("cmp.\n");
 	cmp_test();
 	printf("sub.\n");
@@ -41,5 +45,17 @@ int testing(int argc, char **argv)
 	ret_test();
 	printf("pop.\n");
 	pop_test();
+	printf("or.\n");
+	or_test();
+	printf("xor.\n");
+	xor_test();
+	printf("rra.\n");
+	rra_test();
+	printf("adc.\n");
+	adc_test();
+	printf("rl.\n");
+	rl_test();
+	printf("rla.\n");
+	rla_test();
 	return 0;
 }

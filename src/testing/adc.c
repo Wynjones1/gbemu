@@ -3,20 +3,35 @@
 void adc_test(void)
 {
 	cpu_state_t state;
-	memset(&state, 0x00, sizeof(state));
-	for(int i = 0; i < 0x100; i++)
+	int *test;
+	int tests[][8] =
 	{
-		for(int j = 0; j < 0x100; j++)
+		{0xe1, 0x0f, 0x1, 0xf1, 0x0, 0x1, 0x0, 0x0},
+		{0xe1, 0x3b, 0x1, 0x1d, 0x0, 0x0, 0x0, 0x1},
+		{0xe1, 0x1e, 0x1, 0x00, 0x1, 0x1, 0x0, 0x1},
+	};
+	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	{
+		test = tests[i];
+		state.half_carry = rand() % 2;
+		state.subtract   = rand() % 2;
+		state.carry      = test[2];
+		reg_t res = cpu_adc(&state, test[0], test[1]);
+		if(res              == test[3] &&
+		   state.zero       == test[4] &&
+		   state.half_carry == test[5] &&
+		   state.subtract   == test[6] &&
+		   state.carry      == test[7])
 		{
-			for(int c = 0; c < 2; c++)
-			{
-				state.carry = c;
-				uint8_t result = cpu_adc(&state, i, j);
-				printf("0x%02x 0x%02x 0x%02x = 0x%02x %d %d %d %d\n",
-												i, j, c, result,
-												state.zero, state.subtract,
-												state.carry, state.half_carry);
-			}
+			printf("Tests passed.\n");
+		}
+		else
+		{
+			printf("Tests failed.\n");
+			printf("0x%02x %d %d %d %d\n",  res, (int) state.zero,
+									 (int) state.half_carry,
+									 (int) state.subtract,
+									 (int) state.carry);
 		}
 	}
 }
