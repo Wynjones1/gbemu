@@ -274,7 +274,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->scx = data;
 			break;
 		case 0xff44:
-			mem->ly = data;
+			Error("Read only.\n");
 			break;
 		case 0xff45:
 			mem->lyc = data;
