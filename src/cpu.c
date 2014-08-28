@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <assert.h>
 
 #include "cpu.h"
 #include "display.h"
@@ -190,15 +191,87 @@ void increment_tima(cpu_state_t *state, int clk)
 	}
 }
 #undef X
+#if 0
+	uint8_t scx = d->mem->scx;
+	uint8_t scy = d->mem->scy;
+	for(int j = 0; j < 8; j++)
+	{
+		for(int i = 0; i < 8; i++)
+		{
+			uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+							((tile_data[0] >> i) & 0x1);
+			uint8_t x = tx * 8 + (7 - i);
+			uint8_t y = ty * 8 + j;
+			x = x - scx;
+			y = y - scy;
+			if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
+			{
+				write_pixel(data, pitch, x, y , GET_SHADE(d->mem->bgp, shade));
+			}
+		}
+		tile_data += 2;
+	}
+#endif
+
+void get_tile_data(cpu_state_t *state, int tx, int ty, int offset, uint8_t *data)
+{
+	//Tile map is located at address 0x9800 or 0x9c00
+	uint8_t *video_ram = state->memory->video_ram;
+	int tile_num = ty * 32 + tx;
+	uint8_t  tile = video_ram[(state->memory->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
+	//Tils data is located at addresses
+	// 0x8800 -> 97FF or
+	// 0x8000 -> 8FFF
+	uint8_t *tile_data;
+	if(state->memory->lcdc.tile_select)
+	{
+		tile_data = &video_ram[tile * 16];
+	}
+	else
+	{
+		/* The tiles are in the range -128 to 127 so we cast the
+		   binary representation of the tile to twos-complement */
+		tile_data = &video_ram[0x1000 +  *(int8_t*)&tile * 16];
+	}
+	memcpy(data, tile_data + 2 * offset, 2);
+}
+
+uint8_t get_shade(uint8_t tile_data[2], int i)
+{
+	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
+}
+
+void write_line(struct cpu_state *state)
+{
+	uint8_t tile_data[2];
+	if(state->memory->ly < DISPLAY_HEIGHT)
+	{
+		int ty        = (state->memory->ly + state->memory->scy) / 8;
+		int offset    = (state->memory->ly + state->memory->scy) % 8;
+		int scx = state->memory->scx;
+		uint8_t *data = g_video_data[state->memory->ly];
+		for(int j = 0; j < 20; j++) //For each of the tiles in the line
+		{
+			for(int i = 0; i < 8; i++) //For each of the dots in the tile
+			{
+				int x  = j * 8 + i;
+				int tx = j + (i + scx) / 8;
+				int ox = (i + scx) % 8;
+				uint8_t tile_data[2];
+				get_tile_data(state, tx, ty, offset, tile_data);
+				data[x] = get_shade(tile_data, ox);
+			}
+		}
+	}
+}
 
 void simulate_display(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		display_draw_line(state->display);
+		write_line(state);
 		state->clock_counter        -= CPU_CLOCKS_PER_LINE;
-		state->memory->ly           += 1;
-		state->memory->ly           %= 144 + 10;
+		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
 		{
 			state->memory->stat.coincidence = 1;
@@ -251,6 +324,15 @@ void cpu_start(struct cpu_state *state)
 			state->EI_Pending = 0;
 		}
 
+		while(state->paused && !state->step && !state->slow)
+		{
+			SDL_Delay(100);
+		}
+		if(state->slow)
+		{
+			SDL_Delay(2);
+		}
+
 		//Load instruction and execute it.
 		if(!state->halt)
 		{
@@ -271,14 +353,6 @@ void cpu_start(struct cpu_state *state)
 			Output("%s\n", buf);
 	#endif
 
-			while(state->paused && !state->step && !state->slow)
-			{
-				SDL_Delay(100);
-			}
-			if(state->slow)
-			{
-				SDL_Delay(2);
-			}
 
 			state->pc  += op->size;
 			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
@@ -292,13 +366,12 @@ void cpu_start(struct cpu_state *state)
 			{
 				frame_limit(clk);
 			}
-			simulate_display(state);
 		}
 		else
 		{
 			state->clock_counter += 4;
-			simulate_display(state);
 		}
+		simulate_display(state);
 	}
 }
 

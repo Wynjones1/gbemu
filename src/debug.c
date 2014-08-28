@@ -7,6 +7,7 @@
 #define GET_SHADE(x, n) shade_table_0[((x >> (2 * n)) & 0x3)]
 
 struct cpu_state *g_state;
+
 void sigabrt_handler(int x)
 {
 	debug_on_exit();
@@ -46,6 +47,22 @@ void debug_on_exit(void)
 	}
 	debug_output_registers(g_state);
 	debug_output_tile_maps(g_state);
+	debug_output_framebuffer(g_state);
+	cpu_delete(g_state);
+	exit(0);
+}
+
+void debug_output_framebuffer(struct cpu_state *state)
+{
+	ppm_t *ppm = ppm_new(256, 256, "framebuffer.ppm");
+	for(int i = 0; i < 256; i++)
+	{
+		for(int j = 0; j < 256; j++)
+		{
+			uint8_t data[] = {i, j, 255};
+			ppm_write_pixel(ppm, j, i, data);
+		}
+	}
 }
 
 void debug_output_tile_maps(struct cpu_state *state)

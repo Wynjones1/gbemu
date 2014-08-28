@@ -12,9 +12,11 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 2
+#define PIXEL_SCALE 3
 #define DISPLAY_ENABLED 1
 #define NUMBER_OF_OAM_ELEMENTS 40
+
+unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 
 struct display
 {
@@ -114,6 +116,7 @@ static void *display_thread(void *display_)
 {
 	display_t *display = display_;
 	init_display(display);
+	g_state = display->state;
 	while(1)
 	{
 		events_handle(display->state);
@@ -149,6 +152,7 @@ uint8_t shade_table[4] =
 //TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
+#if 0
 static void write_tile(display_t *d, int tx, int ty)
 {
 	//Tile map is located at address 0x9800 or 0x9c00
@@ -194,7 +198,28 @@ static void write_tile(display_t *d, int tx, int ty)
 	}
 	SDL_UnlockTexture(d->texture);
 }
+#endif
 
+void transfer_buffer(display_t *d)
+{
+	uint8_t *data;
+	int      pitch;
+	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
+	SDL_LockTexture(d->texture, &rect, (void*)&data, &pitch);
+	for(int j = 0; j < DISPLAY_HEIGHT; j++)
+	{
+		for(int i = 0; i < DISPLAY_WIDTH; i++)
+		{
+			int shade = GET_SHADE(d->mem->bgp, g_video_data[j][i]);
+			data[pitch * j + 4 * i + 0] = shade;
+			data[pitch * j + 4 * i + 1] = shade;
+			data[pitch * j + 4 * i + 2] = shade;
+		}
+	}
+	SDL_UnlockTexture(d->texture);
+}
+
+/*
 static void write_background(display_t *display)
 {
 	for(int ty = 0; ty < 32; ty++)
@@ -205,10 +230,13 @@ static void write_background(display_t *display)
 		}
 	}
 }
+*/
 
+#if 0
 static void write_window(display_t *display)
 {
 }
+#endif
 
 static void write_sprites(display_t *display)
 {
@@ -267,8 +295,9 @@ void display_display(display_t *display)
 	//Display the image.
 	if(1)//display->mem->lcdc.enabled)
 	{
-		write_background(display);
-		write_window(display);
+		transfer_buffer(display);
+		//write_background(display);
+		//write_window(display);
 		write_sprites(display);
 		display_present(display);
 	}
@@ -404,6 +433,12 @@ void draw_debug(display_t *disp)
 						disp->state->memory->interrupt.joypad,
 						disp->state->memory->enabled.joypad);
 	draw_line(disp, buf, 6, 1, DEBUG_REGISTER_WIDTH);
+
+	sprintf(buf, "TIMA/TMA/EN   : %u/%u/%u",
+						disp->state->memory->tima,
+						disp->state->memory->tma,
+						disp->state->memory->tac.enable);
+	draw_line(disp, buf, 7, 1, DEBUG_REGISTER_WIDTH);
 }
 
 //TODO:Change to need DEBUG flag.

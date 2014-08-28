@@ -30,3 +30,5 @@ void display_draw_pixel(display_t *disp, int x, int y, char *rgb);
 void display_present(display_t *disp);
 void display_clear(display_t *disp);
 void display_display(display_t *display);
+
+extern unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
