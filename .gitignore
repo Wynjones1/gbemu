@@ -32,5 +32,8 @@ bin/
 *.ppm
 *.svg
 
+#PPM Output
+tiles/
+
 #Asm files
 *.s
