@@ -19,6 +19,8 @@ int main(int argc, char **argv)
 			const char *rom = "/home/stuart/tetris.gb";
 		#elif 1
 			const char *rom = "/home/stuart/mario.gb";
+		#elif 1
+			const char *rom = "/home/stuart/waverace.gb";
 		#elif 0
 			const char *rom = "/home/stuart/drmario.gb";
 		#elif 0

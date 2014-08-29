@@ -83,7 +83,7 @@ static reg_t joypad_read(memory_t *mem)
 	return out;
 }
 
-static void stat(memory_t *mem, reg_t data)
+static void status(memory_t *mem, reg_t data)
 {
 	*(uint8_t*)&mem->stat = data & 0x78;
 }
@@ -226,7 +226,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		case 0xff02:
 			return mem->serial_control;
 		default:
-			Error("IO register not finished 0x%04x\n", addr);
+			Output("IO register not finished 0x%04x\n", addr);
 	}
 	return 0;
 }
@@ -265,7 +265,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			*(uint8_t*)&mem->lcdc = data;
 			break;
 		case 0xff41:
-			stat(mem, data);
+			status(mem, data);
 			break;
 		case 0xff42:
 			mem->scy = data;
@@ -314,7 +314,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->serial_control = data;
 			break;
 		default:
-			Error("IO Registers not done %04x\n", addr);
+			Output("IO register not finished 0x%04x\n", addr);
 	}
 }
 

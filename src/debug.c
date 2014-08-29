@@ -3,9 +3,6 @@
 #include "common.h"
 #include <signal.h>
 
-//TODO: Properly comment this.
-#define GET_SHADE(x, n) shade_table_0[((x >> (2 * n)) & 0x3)]
-
 struct cpu_state *g_state;
 
 void sigabrt_handler(int x)
@@ -52,15 +49,73 @@ void debug_on_exit(void)
 	exit(0);
 }
 
+void output_tiles(void)
+{
+	struct stat st = {0};
+	if(stat("./tiles/", &st) == -1)
+	{
+		mkdir("./tiles/", 0700);
+	}
+	int w = 32;
+	int h = 6;
+	ppm_t *full = ppm_new(w * 8, h * 8, "./tiles/out.ppm");
+	memory_t *mem = g_state->memory;
+	//Loop through each of the tiles.
+	for(int ty = 0; ty < h; ty++)
+	{
+		for(int tx = 0; tx < w; tx++)
+		{
+			//Tile map is located at address 0x9800 or 0x9c00
+			char buf[1024];
+			sprintf(buf, "./tiles/%03d.ppm", ty * w + tx);
+			ppm_t *ppm = ppm_new(8, 8, buf);
+			int tile_num = ty * w + tx;
+			uint8_t *tile_data = &mem->video_ram[tile_num * 16];
+			//Output the tile
+			for(int j = 0; j < 8; j++)
+			{
+				for(int i = 0; i < 8; i++)
+				{
+					uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+									((tile_data[0] >> i) & 0x1);
+					uint8_t x = tx * 8 + (7 - i);
+					uint8_t y = ty * 8 + j;
+					uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
+					ppm_write_pixel(ppm, 7 - i, j , data);
+					ppm_write_pixel(full, x, y , data);
+				}
+				tile_data += 2;
+			}
+		}
+	}
+}
+
+void   get_tile_data(cpu_state_t *state, int tx, int ty, int offset, uint8_t *data);
+uint8_t get_shade(uint8_t tile_data[2], int i);
+
+uint8_t tab[] =
+{
+	0, 128, 196, 255
+};
+
 void debug_output_framebuffer(struct cpu_state *state)
 {
 	ppm_t *ppm = ppm_new(256, 256, "framebuffer.ppm");
-	for(int i = 0; i < 256; i++)
+	for(int i = 0; i < 32; i++)
 	{
-		for(int j = 0; j < 256; j++)
+		for(int j = 0; j < 32; j++)
 		{
-			uint8_t data[] = {i, j, 255};
-			ppm_write_pixel(ppm, j, i, data);
+			for(int o = 0; o < 8; o++)
+			{
+				uint8_t data[2];
+				get_tile_data(state, i, j, o, data);
+				for(int k = 0; k < 8;k++)
+				{
+					uint8_t shade = tab[get_shade(data, k)];
+					uint8_t pixel[] = {shade, shade, shade};
+					ppm_write_pixel(ppm,  8 * i + k, 8 * j + o, pixel);
+				}
+			}
 		}
 	}
 }

@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1

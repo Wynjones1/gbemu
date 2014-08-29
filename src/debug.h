@@ -14,3 +14,5 @@ void debug_on_exit(void);
 
 void BREAK(void);
 void BREAKIF(int cond);
+
+void output_tiles(void);//TODO:Rename

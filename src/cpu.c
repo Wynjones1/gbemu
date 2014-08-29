@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <assert.h>
 
+#include "common.h"
 #include "cpu.h"
 #include "display.h"
 #include "opcodes.h"
@@ -241,6 +242,13 @@ uint8_t get_shade(uint8_t tile_data[2], int i)
 	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
+int get_tile(cpu_state_t *state, int tx, int ty)
+{
+	uint8_t *video_ram = state->memory->video_ram;
+	int tile_num = ty * 32 + tx;
+	return video_ram[(state->memory->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
+}
+
 void write_line(struct cpu_state *state)
 {
 	uint8_t tile_data[2];
@@ -255,7 +263,7 @@ void write_line(struct cpu_state *state)
 			for(int i = 0; i < 8; i++) //For each of the dots in the tile
 			{
 				int x  = j * 8 + i;
-				int tx = j + (i + scx) / 8;
+				int tx = (j + (i + scx) / 8) % 0x20;
 				int ox = (i + scx) % 8;
 				uint8_t tile_data[2];
 				get_tile_data(state, tx, ty, offset, tile_data);
@@ -305,6 +313,16 @@ void cpu_start(struct cpu_state *state)
 #endif
 	while(1)
 	{
+		//Halt emulation.
+		while(state->paused && !state->step && !state->slow)
+		{
+			SDL_Delay(100);
+		}
+		if(state->slow)
+		{
+			SDL_Delay(2);
+		}
+
 		//Reset status flags.
 		state->step = 0;
 		state->success = 1;
@@ -324,14 +342,6 @@ void cpu_start(struct cpu_state *state)
 			state->EI_Pending = 0;
 		}
 
-		while(state->paused && !state->step && !state->slow)
-		{
-			SDL_Delay(100);
-		}
-		if(state->slow)
-		{
-			SDL_Delay(2);
-		}
 
 		//Load instruction and execute it.
 		if(!state->halt)
