@@ -9,7 +9,7 @@ run: all
 	./bin/gbemu
 
 clean:
-	rm -Rf build bin *.svg *.out
+	rm -Rf build bin *.svg *.out *.ppm *.log
 
 prof:
 	gprof ./bin/gbemu | gprof2dot.py | dot -Tsvg -o profile.svg

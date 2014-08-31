@@ -406,3 +406,31 @@ void memory_store16(memory_t *mem, reg16_t addr, reg16_t data)
 	memory_store8(mem, addr,     data & 0xff);
 	memory_store8(mem, addr + 1, data >> 8);
 }
+
+const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset)
+{
+	//Tile map is located at address 0x9800 or 0x9c00
+	uint8_t tile = memory_get_tile_index(memory, tx, ty);
+	//Tils data is located at addresses
+	// 0x8800 -> 97FF or
+	// 0x8000 -> 8FFF
+	uint8_t *tile_data;
+	if(memory->lcdc.tile_select)
+	{
+		tile_data = &memory->video_ram[tile * 16];
+	}
+	else
+	{
+		/* The tiles are in the range -128 to 127 so we cast the
+		   binary representation of the tile to twos-complement */
+		tile_data = &memory->video_ram[0x1000 +  *(int8_t*)&tile * 16];
+	}
+	return tile_data + 2 * offset;
+}
+
+int memory_get_tile_index(memory_t *memory, int tx, int ty)
+{
+	uint8_t *video_ram = memory->video_ram;
+	int tile_num = ty * 32 + tx;
+	return video_ram[(memory->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
+}

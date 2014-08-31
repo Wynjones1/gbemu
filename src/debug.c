@@ -90,8 +90,7 @@ void output_tiles(void)
 	}
 }
 
-void   get_tile_data(cpu_state_t *state, int tx, int ty, int offset, uint8_t *data);
-uint8_t get_shade(uint8_t tile_data[2], int i);
+uint8_t get_shade(const uint8_t *tile_data, int i);
 
 uint8_t tab[] =
 {
@@ -107,8 +106,7 @@ void debug_output_framebuffer(struct cpu_state *state)
 		{
 			for(int o = 0; o < 8; o++)
 			{
-				uint8_t data[2];
-				get_tile_data(state, i, j, o, data);
+				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o);
 				for(int k = 0; k < 8;k++)
 				{
 					uint8_t shade = tab[get_shade(data, k)];

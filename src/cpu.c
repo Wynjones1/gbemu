@@ -10,20 +10,9 @@
 #include "ppm.h"
 #include "debug.h"
 #include "events.h"
+#include "memory.h"
 
 #include <SDL2/SDL.h>
-
-#if 0
-#define CPU_ERROR(state, arg0, i0, arg1, i1)\
-	fprintf(stderr, "%s %s %d %s %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16);\
-	exit(-1)
-#else
-	#define CPU_ERROR(state, arg0, i0, arg1, i1)
-#endif
-
-#define ERR()\
-	fprintf(stderr, "%s %s %d %s %d %d\n", __func__, ARG_TYPE_s[arg0], i0.r8, ARG_TYPE_s[arg1], i1.r16, __LINE__);\
-	exit(-1)
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
@@ -71,7 +60,8 @@ int cpu_zero(struct cpu_state *state)
 	return state->zero;
 }
 
-#define X(n) state->memory->interrupt.n && state->memory->enabled.n
+#define X(n, addr_in) if(state->memory->interrupt.n && state->memory->enabled.n)\
+					{ state->memory->interrupt.n = 0; addr = addr_in;}
 static int check_for_interrupts(struct cpu_state *state)
 {
 	//Check if interrupts are enabled
@@ -81,31 +71,12 @@ static int check_for_interrupts(struct cpu_state *state)
 		state->memory->IME = 0;
 		state->halt        = 0;
 		//Check each of the interrupts in priority order.
-		if(X(v_blank))
-		{
-			state->memory->interrupt.v_blank = 0;
-			addr = 0x0040;
-		}
-		else if(X(lcd_status))
-		{
-			state->memory->interrupt.lcd_status = 0;
-			addr = 0x0048;
-		}
-		else if(X(timer))
-		{
-			state->memory->interrupt.timer = 0;
-			addr = 0x0050;
-		}
-		else if(X(serial))
-		{
-			state->memory->interrupt.serial = 0;
-			addr = 0x0058;
-		}
-		else if(X(joypad))
-		{
-			state->memory->interrupt.joypad = 0;
-			addr = 0x0060;
-		}
+			 X(v_blank   , 0x40)
+		else X(lcd_status, 0x48)
+		else X(timer     , 0x50)
+		else X(serial    , 0x58)
+		else X(joypad    , 0x60)
+
 		Output("Interrupt 0x%04x\n", addr);
 		cpu_push(state, state->pc);
 		state->pc = addr;
@@ -115,7 +86,7 @@ static int check_for_interrupts(struct cpu_state *state)
 }
 #undef X
 
-void display_mhz(int clk)
+static void display_mhz(int clk)
 {
 	static FILE *fp;
 	static int count;
@@ -135,7 +106,7 @@ void display_mhz(int clk)
 	}
 }
 
-void frame_limit(int clk)
+static void frame_limit(int clk)
 {
 	#if 1
 	static int scount;
@@ -150,7 +121,7 @@ void frame_limit(int clk)
 * The div register increments 16384 times per second
 * which is 256 clock cycles of time.
 */
-void increment_div(cpu_state_t *state, int clk)
+static void increment_div(cpu_state_t *state, int clk)
 {
 	static int count;
 	count += clk;
@@ -168,7 +139,7 @@ void increment_div(cpu_state_t *state, int clk)
 				state->memory->tima = state->memory->tma;\
 				state->memory->interrupt.timer = 1;\
 			}}
-void increment_tima(cpu_state_t *state, int clk)
+static void increment_tima(cpu_state_t *state, int clk)
 {
 	static int count;
 	if(state->memory->tac.enable)
@@ -192,63 +163,14 @@ void increment_tima(cpu_state_t *state, int clk)
 	}
 }
 #undef X
-#if 0
-	uint8_t scx = d->mem->scx;
-	uint8_t scy = d->mem->scy;
-	for(int j = 0; j < 8; j++)
-	{
-		for(int i = 0; i < 8; i++)
-		{
-			uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
-							((tile_data[0] >> i) & 0x1);
-			uint8_t x = tx * 8 + (7 - i);
-			uint8_t y = ty * 8 + j;
-			x = x - scx;
-			y = y - scy;
-			if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
-			{
-				write_pixel(data, pitch, x, y , GET_SHADE(d->mem->bgp, shade));
-			}
-		}
-		tile_data += 2;
-	}
-#endif
 
-void get_tile_data(cpu_state_t *state, int tx, int ty, int offset, uint8_t *data)
-{
-	//Tile map is located at address 0x9800 or 0x9c00
-	uint8_t *video_ram = state->memory->video_ram;
-	int tile_num = ty * 32 + tx;
-	uint8_t  tile = video_ram[(state->memory->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
-	//Tils data is located at addresses
-	// 0x8800 -> 97FF or
-	// 0x8000 -> 8FFF
-	uint8_t *tile_data;
-	if(state->memory->lcdc.tile_select)
-	{
-		tile_data = &video_ram[tile * 16];
-	}
-	else
-	{
-		/* The tiles are in the range -128 to 127 so we cast the
-		   binary representation of the tile to twos-complement */
-		tile_data = &video_ram[0x1000 +  *(int8_t*)&tile * 16];
-	}
-	memcpy(data, tile_data + 2 * offset, 2);
-}
-
-uint8_t get_shade(uint8_t tile_data[2], int i)
+uint8_t get_shade(const uint8_t *tile_data, int i)
 {
 	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
-int get_tile(cpu_state_t *state, int tx, int ty)
-{
-	uint8_t *video_ram = state->memory->video_ram;
-	int tile_num = ty * 32 + tx;
-	return video_ram[(state->memory->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
-}
 
+/* Write the current line that is drawing into the framebuffer */
 void write_line(struct cpu_state *state)
 {
 	uint8_t tile_data[2];
@@ -258,6 +180,7 @@ void write_line(struct cpu_state *state)
 		int offset    = (state->memory->ly + state->memory->scy) % 8;
 		int scx = state->memory->scx;
 		uint8_t *data = g_video_data[state->memory->ly];
+		const uint8_t *tile_data;
 		for(int j = 0; j < 20; j++) //For each of the tiles in the line
 		{
 			for(int i = 0; i < 8; i++) //For each of the dots in the tile
@@ -265,9 +188,8 @@ void write_line(struct cpu_state *state)
 				int x  = j * 8 + i;
 				int tx = (j + (i + scx) / 8) % 0x20;
 				int ox = (i + scx) % 8;
-				uint8_t tile_data[2];
-				get_tile_data(state, tx, ty, offset, tile_data);
-				data[x] = get_shade(tile_data, ox);
+				tile_data = memory_get_tile_data(state->memory, tx, ty, offset);
+				data[x]   = get_shade(tile_data, ox);
 			}
 		}
 	}
@@ -278,7 +200,7 @@ void simulate_display(struct cpu_state *state)
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
 		write_line(state);
-		state->clock_counter        -= CPU_CLOCKS_PER_LINE;
+		state->clock_counter -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
 		{
@@ -323,8 +245,8 @@ void cpu_start(struct cpu_state *state)
 			SDL_Delay(2);
 		}
 
-		//Reset status flags.
-		state->step = 0;
+		//Reset branch success flags.
+		state->step    = 0;
 		state->success = 1;
 #if !DISPLAY_THREAD
 		handle_events(state);
@@ -348,6 +270,7 @@ void cpu_start(struct cpu_state *state)
 		{
 			instruction = cpu_load8(state, state->pc);
 			op          = &op_table[instruction];
+			//If present load the argument of the op.
 			if(op->size == 2 || instruction == 0xCB)
 			{
 				state->arg = cpu_load8(state,  state->pc + 1);

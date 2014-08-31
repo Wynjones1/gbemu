@@ -52,12 +52,14 @@ static void init_ttf(display_t *d)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-	TTF_SetFontStyle(d->font, 0);
+
+	TTF_SetFontStyle(d->font,   0);
 	TTF_SetFontOutline(d->font, 0);
 	TTF_SetFontKerning(d->font, 0);
 	TTF_SetFontHinting(d->font, 0);
-	SDL_Color fg = {255, 255, 255};
-	d->surface = TTF_RenderText_Solid(d->font, "1234512345", fg);
+
+	SDL_Color fg    = {255, 255, 255};
+	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
 	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
 }
 
@@ -152,54 +154,6 @@ uint8_t shade_table[4] =
 //TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
-#if 0
-static void write_tile(display_t *d, int tx, int ty)
-{
-	//Tile map is located at address 0x9800 or 0x9c00
-	uint8_t *video_ram = d->mem->video_ram;
-	int tile_num = ty * 32 + tx;
-	uint8_t  tile = video_ram[(d->mem->lcdc.map_select ? 0x1c00 : 0x1800) + tile_num];
-	//Tils data is located at addresses
-	// 0x8800 -> 97FF or
-	// 0x8000 -> 8FFF
-	uint8_t *tile_data;
-	if(d->mem->lcdc.tile_select)
-	{
-		tile_data = &video_ram[tile * 16];
-	}
-	else
-	{
-		/* The tiles are in the range -128 to 127 so we cast the
-		   binary representation of the tile to twos-complement */
-		tile_data = &video_ram[0x1000 +  *(int8_t*)&tile * 16];
-	}
-	uint8_t scx = d->mem->scx;
-	uint8_t scy = d->mem->scy;
-	uint8_t *data;
-	int pitch;
-	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
-	SDL_LockTexture(d->texture, &rect, (void*)&data, &pitch);
-	for(int j = 0; j < 8; j++)
-	{
-		for(int i = 0; i < 8; i++)
-		{
-			uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
-							((tile_data[0] >> i) & 0x1);
-			uint8_t x = tx * 8 + (7 - i);
-			uint8_t y = ty * 8 + j;
-			x = x - scx;
-			y = y - scy;
-			if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
-			{
-				write_pixel(data, pitch, x, y , GET_SHADE(d->mem->bgp, shade));
-			}
-		}
-		tile_data += 2;
-	}
-	SDL_UnlockTexture(d->texture);
-}
-#endif
-
 void transfer_buffer(display_t *d)
 {
 	uint8_t *data;
@@ -218,25 +172,6 @@ void transfer_buffer(display_t *d)
 	}
 	SDL_UnlockTexture(d->texture);
 }
-
-/*
-static void write_background(display_t *display)
-{
-	for(int ty = 0; ty < 32; ty++)
-	{
-		for(int tx = 0; tx < 32; tx++)
-		{
-			write_tile(display, tx, ty);
-		}
-	}
-}
-*/
-
-#if 0
-static void write_window(display_t *display)
-{
-}
-#endif
 
 static void write_sprites(display_t *display)
 {
@@ -356,6 +291,7 @@ void draw_instructions(display_t *display)
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
 */
 }
+
 void draw_debug(display_t *disp)
 {
 	draw_instructions(disp);

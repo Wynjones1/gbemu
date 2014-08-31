@@ -3,12 +3,14 @@
 
 typedef struct memory memory_t;
 
-memory_t *memory_init(const char *boot, const char *rom);
-void      memory_delete(memory_t *mem);
-reg_t     memory_load8(memory_t *mem, reg16_t addr);
-void      memory_store8(memory_t *mem, reg16_t addr, reg_t data);
-reg16_t   memory_load16(memory_t *mem, reg16_t addr);
-void      memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
+memory_t      *memory_init(const char *boot, const char *rom);
+void           memory_delete(memory_t *mem);
+reg_t          memory_load8(memory_t *mem, reg16_t addr);
+void           memory_store8(memory_t *mem, reg16_t addr, reg_t data);
+reg16_t        memory_load16(memory_t *mem, reg16_t addr);
+void           memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
+const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset);
+int            memory_get_tile_index(memory_t *state, int tx, int ty);
 
 struct OAM_data
 {
