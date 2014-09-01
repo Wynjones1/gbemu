@@ -5,7 +5,6 @@ void DAA(struct cpu_state *state,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
 	//TODO: Make sure this is correct.
-	state->half_carry = 0;
 	reg_t hbits = (state->a & 0xf0) >> 4;
 	reg_t lbits = (state->a & 0x0f);
 	if(state->subtract)
@@ -104,4 +103,6 @@ void DAA(struct cpu_state *state,
 			}
 		}
 	}
+	state->half_carry = 0;
+	state->zero       = (state->a == 0);
 }
