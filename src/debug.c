@@ -109,7 +109,7 @@ void debug_output_framebuffer(struct cpu_state *state)
 				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o);
 				for(int k = 0; k < 8;k++)
 				{
-					uint8_t shade = tab[get_shade(data, k)];
+					uint8_t shade = tab[display_get_shade(data, k)];
 					uint8_t pixel[] = {shade, shade, shade};
 					ppm_write_pixel(ppm,  8 * i + k, 8 * j + o, pixel);
 				}

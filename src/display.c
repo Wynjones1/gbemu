@@ -395,3 +395,83 @@ void display_present(display_t *disp)
 	draw_debug(disp);
 	SDL_RenderPresent(disp->render);
 }
+
+uint8_t display_get_shade(const uint8_t *tile_data, int i)
+{
+	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
+}
+
+/* Write the current line that is drawing into the framebuffer */
+static void write_line(struct cpu_state *state)
+{
+	if(state->memory->ly < DISPLAY_HEIGHT)
+	{
+		int ty        = (state->memory->ly + state->memory->scy) / 8;
+		int offset    = (state->memory->ly + state->memory->scy) % 8;
+		int scx = state->memory->scx;
+		uint8_t *data = g_video_data[state->memory->ly];
+		const uint8_t *tile_data;
+		for(int j = 0; j < 20; j++) //For each of the tiles in the line
+		{
+			for(int i = 0; i < 8; i++) //For each of the dots in the tile
+			{
+				int x  = j * 8 + i;
+				int tx = (j + (i + scx) / 8) % 0x20;
+				int ox = (i + scx) % 8;
+				tile_data = memory_get_tile_data(state->memory, tx, ty, offset);
+				data[x]   = display_get_shade(tile_data, ox);
+			}
+		}
+	}
+}
+
+void write_window(struct cpu_state *state)
+{
+	if(state->memory->ly < DISPLAY_HEIGHT && state->memory->lcdc.window_display)
+	{
+		int ty        = (state->memory->ly + state->memory->wy) / 8;
+		int offset    = (state->memory->ly + state->memory->wy) % 8;
+		int wx = state->memory->wx;
+		uint8_t *data = g_video_data[state->memory->ly];
+		const uint8_t *tile_data;
+		for(int j = 0; j < 20; j++) //For each of the tiles in the line
+		{
+			for(int i = 0; i < 8; i++) //For each of the dots in the tile
+			{
+				int x  = j * 8 + i;
+				int tx = (j + (i + wx) / 8) % 0x20;
+				int ox = (i + wx) % 8;
+				tile_data = memory_get_tile_data(state->memory, tx, ty, offset);
+				data[x]   = display_get_shade(tile_data, ox);
+			}
+		}
+	}
+}
+
+void display_simulate(struct cpu_state *state)
+{
+	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
+	{
+		write_line(state);
+		write_window(state);
+		state->clock_counter -= CPU_CLOCKS_PER_LINE;
+		state->memory->ly = (state->memory->ly + 1) % 154;
+		if(state->memory->ly == state->memory->lyc)
+		{
+			state->memory->stat.coincidence = 1;
+			if(state->memory->stat.coincidence_int)
+			{
+				state->memory->interrupt.lcd_status = 1;
+			}
+		}
+		else
+		{
+			state->memory->stat.coincidence = 0;
+		}
+
+		if(state->memory->ly == 144)
+		{
+			state->memory->interrupt.v_blank = 1;
+		}
+	}
+}
