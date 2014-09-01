@@ -9,8 +9,8 @@ reg_t          memory_load8(memory_t *mem, reg16_t addr);
 void           memory_store8(memory_t *mem, reg16_t addr, reg_t data);
 reg16_t        memory_load16(memory_t *mem, reg16_t addr);
 void           memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
-const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset);
-int            memory_get_tile_index(memory_t *state, int tx, int ty);
+const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset, int map);
+int            memory_get_tile_index(memory_t *state, int tx, int ty, int map);
 
 struct OAM_data
 {
@@ -66,14 +66,14 @@ typedef struct memory
 	//IO Status registers.
 	struct
 	{
-		uint8_t bg_display     : 1;
-		uint8_t obj_enable     : 1;
-		uint8_t obj_size       : 1;
-		uint8_t map_select     : 1;
-		uint8_t tile_select    : 1;
-		uint8_t window_display : 1;
-		uint8_t window_map     : 1;
-		uint8_t enabled        : 1;
+		uint8_t bg_display       : 1;
+		uint8_t obj_enable       : 1;
+		uint8_t obj_size         : 1;
+		uint8_t map_select       : 1;
+		uint8_t tile_data_select : 1;
+		uint8_t window_display   : 1;
+		uint8_t window_map       : 1;
+		uint8_t enabled          : 1;
 	}lcdc;
 	struct
 	{

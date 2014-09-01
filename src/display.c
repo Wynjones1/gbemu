@@ -335,7 +335,7 @@ void draw_debug(display_t *disp)
 	draw_line(disp, buf, 16, 0, DEBUG_REGISTER_WIDTH);
 	sprintf(buf, "Map Select : %u", disp->state->memory->lcdc.map_select);
 	draw_line(disp, buf, 17, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Tile Select: %u", disp->state->memory->lcdc.tile_select);
+	sprintf(buf, "Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
 	draw_line(disp, buf, 18, 0, DEBUG_REGISTER_WIDTH);
 	sprintf(buf, "Window Disp: %u", disp->state->memory->lcdc.window_display);
 	draw_line(disp, buf, 19, 0, DEBUG_REGISTER_WIDTH);
@@ -418,7 +418,7 @@ static void write_line(struct cpu_state *state)
 				int x  = j * 8 + i;
 				int tx = (j + (i + scx) / 8) % 0x20;
 				int ox = (i + scx) % 8;
-				tile_data = memory_get_tile_data(state->memory, tx, ty, offset);
+				tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
 				data[x]   = display_get_shade(tile_data, ox);
 			}
 		}
@@ -427,23 +427,20 @@ static void write_line(struct cpu_state *state)
 
 void write_window(struct cpu_state *state)
 {
-	if(state->memory->ly < DISPLAY_HEIGHT && state->memory->lcdc.window_display)
+	if(state->memory->ly < DISPLAY_HEIGHT && state->memory->lcdc.window_display
+		&& state->memory->ly > state->memory->wy)
 	{
-		int ty        = (state->memory->ly + state->memory->wy) / 8;
-		int offset    = (state->memory->ly + state->memory->wy) % 8;
-		int wx = state->memory->wx;
+		int wx = state->memory->wx - 7;
+		int wy = state->memory->wy;
 		uint8_t *data = g_video_data[state->memory->ly];
-		const uint8_t *tile_data;
-		for(int j = 0; j < 20; j++) //For each of the tiles in the line
+		for(int j = wx; j < DISPLAY_WIDTH; j++)
 		{
-			for(int i = 0; i < 8; i++) //For each of the dots in the tile
-			{
-				int x  = j * 8 + i;
-				int tx = (j + (i + wx) / 8) % 0x20;
-				int ox = (i + wx) % 8;
-				tile_data = memory_get_tile_data(state->memory, tx, ty, offset);
-				data[x]   = display_get_shade(tile_data, ox);
-			}
+			int tx = (j - wx) / 8;
+			int ox = (j - wx) % 8;
+			int ty = (state->memory->ly - wy) / 8;
+			int oy = (state->memory->ly - wy) % 8;
+			const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
+			data[j] = display_get_shade(tile_data, ox);
 		}
 	}
 }

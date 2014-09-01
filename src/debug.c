@@ -106,7 +106,7 @@ void debug_output_framebuffer(struct cpu_state *state)
 		{
 			for(int o = 0; o < 8; o++)
 			{
-				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o);
+				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o, state->memory->lcdc.map_select);
 				for(int k = 0; k < 8;k++)
 				{
 					uint8_t shade = tab[display_get_shade(data, k)];
@@ -184,7 +184,7 @@ void debug_output_registers(struct cpu_state *state)
 	FOutput(fp, "OBJ Enable  : %u\n", state->memory->lcdc.obj_enable);
 	FOutput(fp, "OBJ Size    : %u   ", state->memory->lcdc.obj_size);
 	FOutput(fp, "Map Select  : %u\n", state->memory->lcdc.map_select);
-	FOutput(fp, "Tile Select : %u   ", state->memory->lcdc.tile_select);
+	FOutput(fp, "Tile Select : %u   ", state->memory->lcdc.tile_data_select);
 	FOutput(fp, "Window Disp : %u\n", state->memory->lcdc.window_display);
 	FOutput(fp, "Window Map  : %u   ", state->memory->lcdc.window_map);
 	FOutput(fp, "Enabled     : %u\n\n", state->memory->lcdc.enabled);
