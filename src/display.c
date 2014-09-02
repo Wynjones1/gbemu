@@ -146,19 +146,6 @@ uint8_t shade_table[4] =
 //TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
-#define OLD_SPRITES 0
-#if OLD_SPRITES
-static void write_pixel(uint8_t *data, int pitch, int x, int y, uint8_t col)
-{
-	data[pitch * y + 4 * x + 0] = col;
-	data[pitch * y + 4 * x + 1] = col;
-	data[pitch * y + 4 * x + 2] = col;
-	data[pitch * y + 4 * x + 3] = 255;
-}
-
-static void write_sprites(display_t *display);
-#endif
-
 void transfer_buffer(display_t *d)
 {
 	uint8_t *data;
@@ -176,64 +163,7 @@ void transfer_buffer(display_t *d)
 		}
 	}
 	SDL_UnlockTexture(d->texture);
-	#if OLD_SPRITES
-	write_sprites(d);
-	#endif
 }
-
-#if OLD_SPRITES
-static void write_sprites(display_t *display)
-{
-	reg_t *video_ram = display->mem->video_ram;
-	const struct OAM_data *data;
-	uint8_t *pixel_data;
-	int pitch;
-	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
-	SDL_LockTexture(display->texture, &rect, (void*)&pixel_data, &pitch);
-	for(int e = 0; e < NUMBER_OF_OAM_ELEMENTS; e++)
-	{
-		data = display->mem->oam_data + e;
-		uint8_t x_pos = data->x_pos - 8;
-		uint8_t y_pos = data->y_pos - 16;
-		uint8_t *tile_data = video_ram + data->tile * 16;
-		for(int j = 0; j < 8; j++)
-		{
-			for(int i = 0; i < 8; i++)
-			{
-				uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
-								((tile_data[0] >> i) & 0x1);
-				uint8_t x = x_pos;
-				if(data->x_flip)
-				{
-					x += i;
-				}
-				else
-				{
-					x += (7 - i);
-				}
-				uint8_t y = y_pos;
-				if(data->y_flip)
-				{
-					y += (7 - j);
-				}
-				else
-				{
-					y += j;
-				}
-				if(x < DISPLAY_WIDTH && y < DISPLAY_HEIGHT)
-				{
-					if(shade != 0)
-					{
-						write_pixel(pixel_data, pitch, x, y , GET_SHADE(display->mem->bgp, shade));
-					}
-				}
-			}
-			tile_data += 2;
-		}
-	}
-	SDL_UnlockTexture(display->texture);
-}
-#endif
 
 void display_display(display_t *display)
 {
@@ -408,43 +338,7 @@ uint8_t display_get_shade(const uint8_t *tile_data, int i)
 	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
-/* Write the current line that is drawing into the framebuffer */
-static void write_background(struct cpu_state *state)
-{
-	int ty        = (state->memory->ly + state->memory->scy) / 8;
-	int offset    = (state->memory->ly + state->memory->scy) % 8;
-	int scx = state->memory->scx;
-	uint8_t *data = g_video_data[state->memory->ly];
-	const uint8_t *tile_data;
-	for(int i = 0; i < DISPLAY_WIDTH; i++)
-	{
-		int tx = ((i + scx) / 8) % 0x20;
-		int ox = (i + scx) % 8;
-		tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
-		data[i] = display_get_shade(tile_data, ox);
-	}
-}
 
-void write_window(struct cpu_state *state)
-{
-	if(state->memory->lcdc.window_display && state->memory->ly > state->memory->wy)
-	{
-		int wx = state->memory->wx - 7;
-		int wy = state->memory->wy;
-		uint8_t *data = g_video_data[state->memory->ly];
-		for(int j = wx; j < DISPLAY_WIDTH; j++)
-		{
-			int tx = (j - wx) / 8;
-			int ox = (j - wx) % 8;
-			int ty = (state->memory->ly - wy) / 8;
-			int oy = (state->memory->ly - wy) % 8;
-			const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
-			data[j] = display_get_shade(tile_data, ox);
-		}
-	}
-}
-
-#if !OLD_SPRITES
 static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 {
 	struct OAM_data *temp, *out = NULL;
@@ -478,37 +372,68 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 		   ((tile_data[0] >> ox) & 0x1);
 }
 
-void write_sprites(struct cpu_state *state)
+static void write_sprites(struct cpu_state *state, int x)
 {
 	int y = state->memory->ly;
 	uint8_t *data = g_video_data[y];
-	for(int x = 0; x < DISPLAY_WIDTH; x++)
+	struct OAM_data *sprite = get_sprite(state, x, y);
+	if(sprite)
 	{
-		struct OAM_data *sprite = get_sprite(state, x, y);
-		if(sprite)
+		uint8_t shade = get_sprite_shade(state, sprite, x, y);
+		if(shade)
 		{
-			uint8_t shade = get_sprite_shade(state, sprite, x, y);
-			if(shade)
-			{
-				data[x] = shade;
-			}
+			data[x] = shade;
 		}
 	}
 }
-#endif
+/* Write the current line that is drawing into the framebuffer */
+static void write_background(struct cpu_state *state, int x)
+{
+	int ty        = (state->memory->ly + state->memory->scy) / 8;
+	int offset    = (state->memory->ly + state->memory->scy) % 8;
+	int scx = state->memory->scx;
+	uint8_t *data = g_video_data[state->memory->ly];
+	const uint8_t *tile_data;
+	int tx = ((x + scx) / 8) % 0x20;
+	int ox = (x + scx) % 8;
+	tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
+	data[x] = display_get_shade(tile_data, ox);
+}
+
+static void write_window(struct cpu_state *state, int x)
+{
+	int wx = state->memory->wx - 7;
+	int wy = state->memory->wy;
+	if(state->memory->lcdc.window_display && state->memory->ly > wy && wx <= x)
+	{
+		uint8_t *data = g_video_data[state->memory->ly];
+		int tx = (x - wx) / 8;
+		int ox = (x - wx) % 8;
+		int ty = (state->memory->ly - wy) / 8;
+		int oy = (state->memory->ly - wy) % 8;
+		const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
+		data[x] = display_get_shade(tile_data, ox);
+	}
+}
+
+static void write_display(struct cpu_state *state)
+{
+	if(state->memory->ly < DISPLAY_HEIGHT)
+	{
+		for(int i = 0; i < DISPLAY_WIDTH; i++)
+		{
+			write_background(state, i);
+			write_window(state, i);
+			write_sprites(state, i);
+		}
+	}
+}
 
 void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		if(state->memory->ly < DISPLAY_HEIGHT)
-		{
-			write_background(state);
-			write_window(state);
-#if !OLD_SPRITES
-			write_sprites(state);
-#endif
-		}
+		write_display(state);
 		state->clock_counter -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
