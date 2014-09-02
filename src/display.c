@@ -135,14 +135,6 @@ void display_delete(display_t *disp)
 	free(disp);
 }
 
-static void write_pixel(uint8_t *data, int pitch, int x, int y, uint8_t col)
-{
-	data[pitch * y + 4 * x + 0] = col;
-	data[pitch * y + 4 * x + 1] = col;
-	data[pitch * y + 4 * x + 2] = col;
-	data[pitch * y + 4 * x + 3] = 255;
-}
-
 uint8_t shade_table[4] =
 {
 	255,
@@ -154,8 +146,16 @@ uint8_t shade_table[4] =
 //TODO: Properly comment this.
 #define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
-#define OLD_SPRITES 1
+#define OLD_SPRITES 0
 #if OLD_SPRITES
+static void write_pixel(uint8_t *data, int pitch, int x, int y, uint8_t col)
+{
+	data[pitch * y + 4 * x + 0] = col;
+	data[pitch * y + 4 * x + 1] = col;
+	data[pitch * y + 4 * x + 2] = col;
+	data[pitch * y + 4 * x + 3] = 255;
+}
+
 static void write_sprites(display_t *display);
 #endif
 
@@ -411,27 +411,23 @@ uint8_t display_get_shade(const uint8_t *tile_data, int i)
 /* Write the current line that is drawing into the framebuffer */
 static void write_background(struct cpu_state *state)
 {
-	if(state->memory->ly < DISPLAY_HEIGHT)
+	int ty        = (state->memory->ly + state->memory->scy) / 8;
+	int offset    = (state->memory->ly + state->memory->scy) % 8;
+	int scx = state->memory->scx;
+	uint8_t *data = g_video_data[state->memory->ly];
+	const uint8_t *tile_data;
+	for(int i = 0; i < DISPLAY_WIDTH; i++)
 	{
-		int ty        = (state->memory->ly + state->memory->scy) / 8;
-		int offset    = (state->memory->ly + state->memory->scy) % 8;
-		int scx = state->memory->scx;
-		uint8_t *data = g_video_data[state->memory->ly];
-		const uint8_t *tile_data;
-		for(int i = 0; i < DISPLAY_WIDTH; i++)
-		{
-			int tx = ((i + scx) / 8) % 0x20;
-			int ox = (i + scx) % 8;
-			tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
-			data[i] = display_get_shade(tile_data, ox);
-		}
+		int tx = ((i + scx) / 8) % 0x20;
+		int ox = (i + scx) % 8;
+		tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
+		data[i] = display_get_shade(tile_data, ox);
 	}
 }
 
 void write_window(struct cpu_state *state)
 {
-	if(state->memory->ly < DISPLAY_HEIGHT && state->memory->lcdc.window_display
-		&& state->memory->ly > state->memory->wy)
+	if(state->memory->lcdc.window_display && state->memory->ly > state->memory->wy)
 	{
 		int wx = state->memory->wx - 7;
 		int wy = state->memory->wy;
@@ -449,9 +445,55 @@ void write_window(struct cpu_state *state)
 }
 
 #if !OLD_SPRITES
+static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
+{
+	struct OAM_data *temp, *out = NULL;
+	for(int i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
+	{
+		temp = state->memory->oam_data + i;
+		int x_pos = temp->x_pos - 8;
+		int y_pos = temp->y_pos - 16;
+		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + 8) )
+		{
+			out = temp;
+		}
+	}
+	return out;
+}
+
+static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, int x, int y)
+{
+	int ox = x - (sprite->x_pos - 8);
+	int oy = y - (sprite->y_pos - 16);
+	if(!sprite->x_flip)
+	{
+		ox = 7 - ox;
+	}
+	if(sprite->y_flip)
+	{
+		oy = 7 - oy;
+	}
+	uint8_t *tile_data = state->memory->video_ram + sprite->tile * 16 + 2 * oy;
+	return ((tile_data[1] >> ox) & 0x1) << 1 |
+		   ((tile_data[0] >> ox) & 0x1);
+}
+
 void write_sprites(struct cpu_state *state)
 {
-	
+	int y = state->memory->ly;
+	uint8_t *data = g_video_data[y];
+	for(int x = 0; x < DISPLAY_WIDTH; x++)
+	{
+		struct OAM_data *sprite = get_sprite(state, x, y);
+		if(sprite)
+		{
+			uint8_t shade = get_sprite_shade(state, sprite, x, y);
+			if(shade)
+			{
+				data[x] = shade;
+			}
+		}
+	}
 }
 #endif
 
@@ -459,11 +501,14 @@ void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		write_background(state);
-		write_window(state);
+		if(state->memory->ly < DISPLAY_HEIGHT)
+		{
+			write_background(state);
+			write_window(state);
 #if !OLD_SPRITES
-		write_sprites(state);
+			write_sprites(state);
 #endif
+		}
 		state->clock_counter -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
