@@ -433,7 +433,6 @@ void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		write_display(state);
 		state->clock_counter -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
@@ -453,5 +452,6 @@ void display_simulate(struct cpu_state *state)
 		{
 			state->memory->interrupt.v_blank = 1;
 		}
+		write_display(state);
 	}
 }
