@@ -37,3 +37,4 @@ tiles/
 
 #Asm files
 *.s
+core
