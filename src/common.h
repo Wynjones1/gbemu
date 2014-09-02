@@ -25,6 +25,10 @@
 #define OUTPUT_FILENAME "log.txt"
 #endif
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
 #define Error(M, ...) common_error("Error: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__,##__VA_ARGS__)
 #define Output(M, ...) common_output("Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __func__,##__VA_ARGS__)

@@ -90,8 +90,6 @@ void output_tiles(void)
 	}
 }
 
-uint8_t get_shade(const uint8_t *tile_data, int i);
-
 uint8_t tab[] =
 {
 	0, 128, 196, 255

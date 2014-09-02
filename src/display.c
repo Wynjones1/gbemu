@@ -1,6 +1,5 @@
 #include "display.h"
 #include "events.h"
-#include "common.h"
 #include "cpu.h"
 #include "opcodes.h"
 #include "debug.h"
@@ -28,12 +27,14 @@ struct display
 	//Thread Data
 	pthread_t thread;
 
+#if DEBUG
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 
 	//TTF Data
 	TTF_Font *font;
-	SDL_Surface *surface;
 	SDL_Texture *font_texture;
+#endif
+	SDL_Surface *surface;
 };
 
 #if DISPLAY_ENABLED
@@ -41,6 +42,7 @@ struct display
 	static void *display_thread(void *display_);
 #endif
 
+#if DEBUG
 static void init_ttf(display_t *d)
 {
 	if(TTF_Init() < 0)
@@ -62,6 +64,7 @@ static void init_ttf(display_t *d)
 	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
 	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
 }
+#endif
 
 static void init_display(display_t *display)
 {
@@ -89,9 +92,10 @@ static void init_display(display_t *display)
 	{
 		Error("%s\n", SDL_GetError());
 	}
+#if DEBUG
 	memset(display->debug_data, 0x00, sizeof(display->debug_data));
-
 	init_ttf(display);
+#endif
 }
 #endif
 
@@ -135,16 +139,6 @@ void display_delete(display_t *disp)
 	free(disp);
 }
 
-uint8_t shade_table[4] =
-{
-	255,
-	127,
-	63,
-	0
-};
-
-//TODO: Properly comment this.
-#define GET_SHADE(x, n) shade_table[((x >> (2 * n)) & 0x3)]
 
 void transfer_buffer(display_t *d)
 {
@@ -156,7 +150,7 @@ void transfer_buffer(display_t *d)
 	{
 		for(int i = 0; i < DISPLAY_WIDTH; i++)
 		{
-			int shade = GET_SHADE(d->mem->bgp, g_video_data[j][i]);
+			int shade = g_video_data[j][i];
 			data[pitch * j + 4 * i + 0] = shade;
 			data[pitch * j + 4 * i + 1] = shade;
 			data[pitch * j + 4 * i + 2] = shade;
@@ -185,6 +179,7 @@ void display_clear(display_t *disp)
 	SDL_RenderPresent(disp->render);
 }
 
+#if DEBUG
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
 {
 	int h = 18;
@@ -313,6 +308,7 @@ void draw_debug(display_t *disp)
 						disp->state->memory->tac.enable);
 	draw_line(disp, buf, 7, 1, DEBUG_REGISTER_WIDTH);
 }
+#endif
 
 //TODO:Change to need DEBUG flag.
 void display_present(display_t *disp)
@@ -329,7 +325,9 @@ void display_present(display_t *disp)
 	{
 		Error("%s\n", SDL_GetError());
 	}
+#if DEBUG
 	draw_debug(disp);
+#endif
 	SDL_RenderPresent(disp->render);
 }
 
@@ -338,28 +336,11 @@ uint8_t display_get_shade(const uint8_t *tile_data, int i)
 	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
-
-static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
-{
-	struct OAM_data *temp, *out = NULL;
-	for(int i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
-	{
-		temp = state->memory->oam_data + i;
-		int x_pos = temp->x_pos - 8;
-		int y_pos = temp->y_pos - 16;
-		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + 8) )
-		{
-			out = temp;
-		}
-	}
-	return out;
-}
-
 static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, int x, int y)
 {
 	int ox = x - (sprite->x_pos - 8);
 	int oy = y - (sprite->y_pos - 16);
-	if(!sprite->x_flip)
+	if(sprite->x_flip)
 	{
 		ox = 7 - ox;
 	}
@@ -368,9 +349,42 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 		oy = 7 - oy;
 	}
 	uint8_t *tile_data = state->memory->video_ram + sprite->tile * 16 + 2 * oy;
-	return ((tile_data[1] >> ox) & 0x1) << 1 |
-		   ((tile_data[0] >> ox) & 0x1);
+	return display_get_shade(tile_data, ox);
 }
+
+
+static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
+{
+	struct OAM_data *sprite, *out = NULL;
+	uint16_t new_priority, priority = 0;
+	for(int i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
+	{
+		sprite = state->memory->oam_data + i;
+		int x_pos = sprite->x_pos - 8;
+		int y_pos = sprite->y_pos - 16;
+		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + 8) )
+		{
+			new_priority = ~(sprite->x_pos << 8 | sprite->tile);
+			if(new_priority > priority && get_sprite_shade(state, sprite, x, y))
+			{
+				priority = new_priority;
+				out = sprite;
+			}
+		}
+	}
+	return out;
+}
+
+uint8_t shade_table[4] =
+{
+	255,
+	127,
+	63,
+	0
+};
+
+//TODO: Properly comment this.
+#define GET_SHADE(n, x) shade_table[((x >> (2 * n)) & 0x3)]
 
 static void write_sprites(struct cpu_state *state, int x)
 {
@@ -382,7 +396,8 @@ static void write_sprites(struct cpu_state *state, int x)
 		uint8_t shade = get_sprite_shade(state, sprite, x, y);
 		if(shade)
 		{
-			data[x] = shade;
+			uint8_t palette = sprite->palette ? state->memory->obp1 : state->memory->obp0;
+			data[x] = GET_SHADE(shade, palette);
 		}
 	}
 }
@@ -397,7 +412,7 @@ static void write_background(struct cpu_state *state, int x)
 	int tx = ((x + scx) / 8) % 0x20;
 	int ox = (x + scx) % 8;
 	tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
-	data[x] = display_get_shade(tile_data, ox);
+	data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
 }
 
 static void write_window(struct cpu_state *state, int x)
@@ -412,9 +427,10 @@ static void write_window(struct cpu_state *state, int x)
 		int ty = (state->memory->ly - wy) / 8;
 		int oy = (state->memory->ly - wy) % 8;
 		const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
-		data[x] = display_get_shade(tile_data, ox);
+		data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
 	}
 }
+
 
 static void write_display(struct cpu_state *state)
 {

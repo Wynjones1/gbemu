@@ -1,10 +1,16 @@
 #pragma once
 #include "memory.h"
+#include "common.h"
 
 #define LCD_WIDTH  160
 #define LCD_HEIGHT 144
+#if DEBUG
 #define DEBUG_REGISTER_WIDTH    70
 #define DEBUG_INSTRUCTION_WIDTH 70
+#else
+#define DEBUG_REGISTER_WIDTH    0
+#define DEBUG_INSTRUCTION_WIDTH 0
+#endif
 
 #if DISPLAY_SHOW_FULL_FRAMEBUFFER
 	#define DISPLAY_WIDTH   256
