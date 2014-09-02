@@ -17,8 +17,14 @@ int main(int argc, char **argv)
 	#else
 		#if 0
 			const char *rom = "/home/stuart/tetris.gb";
-		#elif 1
+		#elif 0
 			const char *rom = "/home/stuart/mario.gb";
+		#elif 1
+			const char *rom = "/home/stuart/zelda.gb";
+		#elif 1
+			const char *rom = "/home/stuart/Donkey Kong Land.gb";
+		#elif 1
+			const char *rom = "/home/stuart/Donkey Kong.gb";
 		#elif 1
 			const char *rom = "/home/stuart/waverace.gb";
 		#elif 0
