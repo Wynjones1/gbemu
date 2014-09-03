@@ -340,15 +340,22 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 {
 	int ox = x - (sprite->x_pos - 8);
 	int oy = y - (sprite->y_pos - 16);
+	int second_tile = 0;
+	int size = state->memory->lcdc.obj_size ? 16 : 8;
 	if(sprite->x_flip)
 	{
 		ox = 7 - ox;
 	}
 	if(sprite->y_flip)
 	{
-		oy = 7 - oy;
+		oy = size - oy - 1;
 	}
-	uint8_t *tile_data = state->memory->video_ram + sprite->tile * 16 + 2 * oy;
+	if(oy > 7)
+	{
+		oy -= 8;
+		second_tile = 1;
+	}
+	uint8_t *tile_data = state->memory->video_ram + sprite->tile * 16 + 2 * oy + 16 * second_tile;
 	return display_get_shade(tile_data, ox);
 }
 
@@ -356,18 +363,16 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 {
 	struct OAM_data *sprite, *out = NULL;
-	uint16_t new_priority, priority = 0;
+	uint8_t size = state->memory->lcdc.obj_size ? 16 : 8;
 	for(int i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
 	{
 		sprite = state->memory->oam_data + i;
 		int x_pos = sprite->x_pos - 8;
 		int y_pos = sprite->y_pos - 16;
-		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + 8) )
+		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + size) )
 		{
-			new_priority = ~(sprite->x_pos << 8 | sprite->tile);
-			if(new_priority > priority && get_sprite_shade(state, sprite, x, y))
+			if(get_sprite_shade(state, sprite, x, y))
 			{
-				priority = new_priority;
 				out = sprite;
 			}
 		}
