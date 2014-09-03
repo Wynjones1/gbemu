@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+#include <stdio.h>
 
 typedef struct memory memory_t;
 
@@ -11,6 +12,7 @@ reg16_t        memory_load16(memory_t *mem, reg16_t addr);
 void           memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
 const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset, int map);
 int            memory_get_tile_index(memory_t *state, int tx, int ty, int map);
+void           memory_save_state(memory_t *memory, FILE *fp);
 
 struct OAM_data
 {

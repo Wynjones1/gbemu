@@ -249,3 +249,25 @@ void cpu_start(struct cpu_state *state)
 	}
 }
 
+#define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
+void cpu_save_state(cpu_state_t *state, const char *filename)
+{
+	FILE *fp = fopen(filename, "w");
+	fprintf(fp, "GBEMU%d\n", VERSION);
+	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	X(pc);
+	X(success);
+	X(DI_Pending);
+	X(EI_Pending);
+	X(arg);
+	X(clock_counter);
+	X(halt);
+	X(paused);
+	X(step);
+	X(frame_limit);
+	X(slow);
+	memory_save_state(state->memory, fp);
+
+	fclose(fp);
+}
+#undef X

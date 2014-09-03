@@ -434,3 +434,46 @@ int memory_get_tile_index(memory_t *memory, int tx, int ty, int map)
 	int tile_num = ty * 32 + tx;
 	return video_ram[(map ? 0x1c00 : 0x1800) + tile_num];
 }
+
+#define X(elem) fwrite(&memory->elem, 1, sizeof(memory->elem), fp);
+#define Y(elem) fwrite(memory->elem, 1, sizeof(memory->elem), fp);
+void  memory_save_state(memory_t *memory, FILE *fp)
+{
+	Y(video_ram);
+	Y(working_ram_0);
+	Y(working_ram_1);
+	Y(OAM);
+	Y(io_registers);
+	Y(stack);
+	X(boot_locked);
+	Y(boot);
+	X(current_bank);
+	X(ram_size);
+	X(cart_type);
+	X(rom_size);
+	X(ram_enabled);
+	X(rom_ram_mode);
+	X(lcdc);
+	X(buttons);
+	X(dpad);
+	X(stat);
+	X(scy);
+	X(scx);
+	X(ly);
+	X(lyc);
+	X(dma);
+	X(bgp);
+	X(obp0);
+	X(obp1);
+	X(wy);
+	X(wx);
+	X(IF);
+	X(IE);
+	X(IME);
+	X(serial_data);
+	X(serial_control);
+	X(div);
+	X(tima);
+	X(tma);
+	X(tac);
+}
