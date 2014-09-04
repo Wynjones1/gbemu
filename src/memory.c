@@ -19,10 +19,10 @@ memory_t *memory_init(const char *boot, const char *rom)
 
 	fp = fopen(rom, "r");
 	fseek(fp, 0L, SEEK_END);
-	int to_read = ftell(fp);
+	out->to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
-	out->bank_0       = malloc(to_read);
-	common_fread(out->bank_0, 1, to_read, fp);
+	out->bank_0       = malloc(out->to_read);
+	common_fread(out->bank_0, 1, out->to_read, fp);
 
 	out->bank_n       = out->bank_0 + 0x4000;
 	out->echo         = out->working_ram_0;
@@ -435,8 +435,8 @@ int memory_get_tile_index(memory_t *memory, int tx, int ty, int map)
 	return video_ram[(map ? 0x1c00 : 0x1800) + tile_num];
 }
 
-#define X(elem) fwrite(&memory->elem, 1, sizeof(memory->elem), fp);
-#define Y(elem) fwrite(memory->elem, 1, sizeof(memory->elem), fp);
+#define X(elem) fwrite(&memory->elem, 1, sizeof(memory->elem), fp)
+#define Y(elem) fwrite(memory->elem, 1, sizeof(memory->elem), fp)
 void  memory_save_state(memory_t *memory, FILE *fp)
 {
 	Y(video_ram);
@@ -476,4 +476,62 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 	X(tima);
 	X(tma);
 	X(tac);
+	X(to_read);
+	fwrite(memory->bank_0, sizeof(*memory->bank_0) * memory->to_read, 1, fp);
 }
+#undef X
+#undef Y
+
+#define X(elem) temp = fread(&memory->elem, 1, sizeof(memory->elem), fp)
+#define Y(elem) temp = fread(memory->elem, 1, sizeof(memory->elem), fp)
+memory_t *memory_load_state(FILE *fp)
+{
+	memory_t *memory = malloc(sizeof(memory_t));
+	int temp; //Shuts up gcc about fread.
+	Y(video_ram);
+	Y(working_ram_0);
+	Y(working_ram_1);
+	Y(OAM);
+	Y(io_registers);
+	Y(stack);
+	X(boot_locked);
+	Y(boot);
+	X(current_bank);
+	X(ram_size);
+	X(cart_type);
+	X(rom_size);
+	X(ram_enabled);
+	X(rom_ram_mode);
+	X(lcdc);
+	X(buttons);
+	X(dpad);
+	X(stat);
+	X(scy);
+	X(scx);
+	X(ly);
+	X(lyc);
+	X(dma);
+	X(bgp);
+	X(obp0);
+	X(obp1);
+	X(wy);
+	X(wx);
+	X(IF);
+	X(IE);
+	X(IME);
+	X(serial_data);
+	X(serial_control);
+	X(div);
+	X(tima);
+	X(tma);
+	X(tac);
+	X(to_read);
+	memory->bank_0 = malloc(memory->to_read);
+	temp = fread(memory->bank_0, memory->to_read, 1, fp);
+	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
+	memory->external_ram = malloc(10 * 1024);
+	memory->echo         = memory->working_ram_0;
+	return memory;
+}
+#undef X
+#undef Y

@@ -89,6 +89,9 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			}
 			*/
 			break;
+		case SDLK_k:
+			state->store_state = 1;
+			break;
 		case SDLK_ESCAPE:
 			exit(0);
 			break;

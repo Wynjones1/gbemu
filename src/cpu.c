@@ -20,6 +20,8 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 	out->memory      = memory_init(boot_rom_filename, rom);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
+	out->pc = 0;
+	out->store_state = 0;
 	return out;
 }
 
@@ -170,12 +172,17 @@ void cpu_start(struct cpu_state *state)
 	atexit(debug_on_exit);
 	reg_t instruction;
 	struct opcode *op;
-	state->pc = 0;
+	//state->pc = 0;
 #if !DISPLAY_THREAD
 	display_display(state->display);
 #endif
 	while(1)
 	{
+		if(state->store_state)
+		{
+			cpu_save_state(state, "game.state");
+			exit(0);
+		}
 		//Halt emulation.
 		while(state->paused && !state->step && !state->slow)
 		{
@@ -253,7 +260,7 @@ void cpu_start(struct cpu_state *state)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
 	FILE *fp = fopen(filename, "w");
-	fprintf(fp, "GBEMU%d\n", VERSION);
+	fprintf(fp, "GBEMU%d ", VERSION);
 	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
 	X(success);
@@ -269,5 +276,40 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 	memory_save_state(state->memory, fp);
 
 	fclose(fp);
+}
+#undef X
+
+#define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
+cpu_state_t *cpu_load_state(const char *filename)
+{
+	cpu_state_t *state = malloc(sizeof(cpu_state_t));
+	FILE *fp = fopen(filename, "r");
+	int temp, version;
+	temp = fscanf(fp, "GBEMU%d", &version);
+	if(temp != 1)
+	{
+		Error("%s is not a savestate.\n");
+	}
+	if(version != VERSION)
+	{
+		Warning("Timestamp of emulator does not match that of the save state.\n");
+	}
+	temp = getc(fp);
+	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	X(pc);
+	X(success);
+	X(DI_Pending);
+	X(EI_Pending);
+	X(arg);
+	X(clock_counter);
+	X(halt);
+	X(paused);
+	X(step);
+	X(frame_limit);
+	X(slow);
+	state->memory = memory_load_state(fp);
+	state->display = display_init(state);
+	fclose(fp);
+	return state;
 }
 #undef X

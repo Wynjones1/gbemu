@@ -65,6 +65,7 @@ typedef struct cpu_state
 	int step;
 	int frame_limit;
 	int slow;
+	int store_state;
 
 }cpu_state_t;
 
@@ -72,6 +73,7 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);
 void cpu_start(struct cpu_state *state);
 void cpu_delete(cpu_state_t *state);
 void cpu_save_state(cpu_state_t *state, const char *filename);
+cpu_state_t *cpu_load_state(const char *filename);
 
 reg_t   cpu_load_reg8(struct cpu_state *state, REG_INPUT reg);
 reg16_t cpu_load_reg16(struct cpu_state *state, REG_INPUT reg);

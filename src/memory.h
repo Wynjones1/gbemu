@@ -13,6 +13,7 @@ void           memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
 const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset, int map);
 int            memory_get_tile_index(memory_t *state, int tx, int ty, int map);
 void           memory_save_state(memory_t *memory, FILE *fp);
+memory_t      *memory_load_state(FILE *fp);
 
 struct OAM_data
 {
@@ -158,4 +159,6 @@ typedef struct memory
 		uint8_t enable       : 1;
 		uint8_t              : 5;
 	}tac;
+
+	int to_read;
 }memory_t;

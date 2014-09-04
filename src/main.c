@@ -38,7 +38,14 @@ int main(int argc, char **argv)
 		#else
 			const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/05-op rp.gb";
 		#endif
+		#if 1
 		struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin", rom);
+		#else
+		struct cpu_state *state = cpu_load_state("game.state");
+		cpu_save_state(state, "out.state");
+		exit(0);
+		#endif
+	
 		cpu_start(state);
 		cpu_delete(state);
 	#endif
