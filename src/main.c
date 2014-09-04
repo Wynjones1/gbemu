@@ -18,19 +18,19 @@ int main(int argc, char **argv)
 		#if 0
 			const char *rom = "/home/stuart/tetris.gb";
 		#elif 1
-			const char *rom = "/home/stuart/mario.gb";
+			const char *rom = "./data/roms/mario.gb";
 		#elif 1
-			const char *rom = "/home/stuart/zelda.gb";
+			const char *rom = "./data/roms/zelda.gb";
 		#elif 1
-			const char *rom = "/home/stuart/Donkey Kong Land.gb";
+			const char *rom = "./data/roms/Donkey Kong Land.gb";
 		#elif 1
-			const char *rom = "/home/stuart/Donkey Kong.gb";
+			const char *rom = "./data/roms/Donkey Kong.gb";
 		#elif 1
-			const char *rom = "/home/stuart/waverace.gb";
+			const char *rom = "./data/roms/waverace.gb";
 		#elif 0
-			const char *rom = "/home/stuart/drmario.gb";
+			const char *rom = "./data/roms/drmario.gb";
 		#elif 1
-			const char *rom = "/home/stuart/pokemon_blue.gb";
+			const char *rom = "./data/roms/pokemon_blue.gb";
 		#elif 0
 			const char *rom = "/home/stuart/cpu_instrs.gb";
 		#elif 0
