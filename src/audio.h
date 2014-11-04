@@ -7,4 +7,4 @@ struct audio
 }audio_t;
 
 void audio_start_thread(void);
-
+int audio_init(void);

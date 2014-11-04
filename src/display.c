@@ -11,7 +11,7 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 3
+#define PIXEL_SCALE 4
 #define DISPLAY_ENABLED 1
 #define NUMBER_OF_OAM_ELEMENTS 40
 
@@ -359,7 +359,7 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 	return display_get_shade(tile_data, ox);
 }
 
-
+int g_shade;
 static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 {
 	struct OAM_data *sprite, *out = NULL;
@@ -371,8 +371,11 @@ static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 		int y_pos = sprite->y_pos - 16;
 		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + size) )
 		{
-			if(get_sprite_shade(state, sprite, x, y))
+			int shade = get_sprite_shade(state, sprite, x, y);
+			if(shade)
 			{
+				//TODO:Remove the global state.
+				g_shade = shade;
 				out = sprite;
 			}
 		}
@@ -398,12 +401,8 @@ static void write_sprites(struct cpu_state *state, int x)
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)
 	{
-		uint8_t shade = get_sprite_shade(state, sprite, x, y);
-		if(shade)
-		{
-			uint8_t palette = sprite->palette ? state->memory->obp1 : state->memory->obp0;
-			data[x] = GET_SHADE(shade, palette);
-		}
+		uint8_t palette = sprite->palette ? state->memory->obp1 : state->memory->obp0;
+		data[x] = GET_SHADE(g_shade, palette);
 	}
 }
 /* Write the current line that is drawing into the framebuffer */

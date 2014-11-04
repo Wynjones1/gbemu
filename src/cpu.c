@@ -91,32 +91,42 @@ static int check_for_interrupts(struct cpu_state *state)
 static void display_mhz(int clk)
 {
 	static FILE *fp;
-	static int count;
-	static long unsigned int clocks;
 	if(!fp)
 	{
 		fp = fopen("clock_speed.txt","w");
 	}
 
+	static long unsigned int count, time_count;
+	count += clk;
+	const float c = 1.0;
 	int temp = SDL_GetTicks();
-	clocks += clk;
-	if(temp - count > 1000)
+	if(temp - time_count > c * 1000)
 	{
-		count = temp;
-		fprintf(fp, "%04.2f %04.2fMhz\n", count / 1000.0, (clocks / count) / 1000.0);
-		fflush(fp);
+		float s = (c * count) / CPU_CLOCK_SPEED;
+		fprintf(fp, "%4.2f %f.\n", temp / 1000.0, s);
+		time_count = temp;
+		count = 0;
 	}
 }
 
 static void frame_limit(int clk)
 {
-	#if 1
-	static int scount;
-	if(scount++ % 550 == 0)
+	const float sample_time = 0.01; //Sample time in seconds
+	static long int clk_count, time_count;
+	const int sample_clocks= sample_time * CPU_CLOCK_SPEED;
+
+	clk_count += clk;
+	if(clk_count > sample_clocks)
 	{
-		SDL_Delay(1);
+		int temp = SDL_GetTicks();
+		clk_count -= sample_clocks;
+		int sleep_time = sample_time * 1000 - (temp - time_count);
+		if(sleep_time > 0)
+		{
+			SDL_Delay(sleep_time);
+		}
+		time_count = temp;
 	}
-	#endif
 }
 
 /*
@@ -227,30 +237,30 @@ void cpu_start(struct cpu_state *state)
 			{
 				state->arg = cpu_load16(state, state->pc + 1);
 			}
-			
-	#if 0
-			char buf[1024];
-			debug_print_op(buf, state, op);
-			Output("%s\n", buf);
-	#endif
-
-
 			state->pc  += op->size;
-			op->op(state, op->arg0, op->i0, op->arg1, op->i1);
-			//Increment program counter.
-			int clk = state->success ? op->success : op->fail;
-			state->clock_counter += clk;
-			increment_div(state, clk);
-			increment_tima(state, clk);
-			display_mhz(clk);
-			if(state->frame_limit)
-			{
-				frame_limit(clk);
-			}
 		}
 		else
 		{
-			state->clock_counter += 4;
+			op = &op_table[0]; //NOP
+		}
+			
+	#if 0
+		char buf[1024];
+		debug_print_op(buf, state, op);
+		Output("%s\n", buf);
+	#endif
+
+
+		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
+		//Increment program counter.
+		int clk = state->success ? op->success : op->fail;
+		state->clock_counter += clk;
+		increment_div(state, clk);
+		increment_tima(state, clk);
+		display_mhz(clk);
+		if(state->frame_limit)
+		{
+			frame_limit(clk);
 		}
 		display_simulate(state);
 	}

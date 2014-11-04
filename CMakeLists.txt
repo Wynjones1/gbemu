@@ -10,6 +10,7 @@ file(GLOB SRC
 include_directories("./src" "./src/back_end" "./src/front_end")
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
+set(CMAKE_BUILD_TYPE "Debug" CACHE BOOL "Build type")
 
 add_executable(gbemu ${SRC})
 
@@ -26,7 +27,7 @@ else()
 
 	message(STATUS "SDL Libs:  " ${sdl_libs})
 	message(STATUS "SDL Flags: " ${sdl_cflags})
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -O0 -Wall -Werror -Wno-missing-braces -Wno-unused-variable -Wno-unused")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${sdl_cflags} -std=c11 -g -O3 -Wall -Werror -Wno-missing-braces -Wno-unused-variable -Wno-unused")
 	target_link_libraries(gbemu ${sdl_libs} pthread)
 	target_link_libraries(gbemu ${sdl_libs} SDL2_ttf)
 endif()
