@@ -1,0 +1,30 @@
+#include "cpu.h"
+
+void JP(struct cpu_state *state,
+		ARG_TYPE arg0, REG_INPUT i0,
+		ARG_TYPE arg1, REG_INPUT i1)
+{
+	reg16_t addr = state->arg;
+	if(arg0 == ARG_TYPE_DATA16_UNSIGNED
+		|| (arg0 == ARG_TYPE_NC    && !cpu_carry(state))
+		|| (arg0 == ARG_TYPE_NZ    && !cpu_zero(state))
+		|| (arg0 == ARG_TYPE_Z     &&  cpu_zero(state))
+		|| (arg0 == ARG_TYPE_REG8  &&  cpu_carry(state)))
+	{
+		cpu_jump(state, addr);
+	}
+	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
+	{
+		//TODO:Make sure of this.
+		cpu_jump(state, state->hl);
+	}
+	else
+	{
+		state->success = 0;
+	}
+}
+
+void  cpu_jump(struct cpu_state *state, reg16_t addr)
+{
+	state->pc = addr;
+}

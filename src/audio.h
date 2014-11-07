@@ -1,7 +1,7 @@
 #pragma once
 #include "cpu.h"
 
-struct audio
+typedef struct audio
 {
 	cpu_state_t *state;
 }audio_t;

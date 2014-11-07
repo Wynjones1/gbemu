@@ -2,10 +2,10 @@ cmake_minimum_required(VERSION 2.8)
 project(gbemu)
 
 file(GLOB SRC
-	"./src/*.c" "./src/*.h"
-	"./src/instructions/*.c" "./src/instructions/*.h"
-	"./src/instructions/prefix_cb/*.c" "./src/instructions/prefix_cb/*.h"
-	"./src/testing/*.c" "./src/testing/*.h")
+	"./src/*.cpp" "./src/*.h"
+	"./src/instructions/*.cpp" "./src/instructions/*.h"
+	"./src/instructions/prefix_cb/*.cpp" "./src/instructions/prefix_cb/*.h"
+	"./src/testing/*.cpp" "./src/testing/*.h")
 
 include_directories("./src" "./src/back_end" "./src/front_end")
 
@@ -13,6 +13,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "../bin/")
 set(CMAKE_BUILD_TYPE "Debug" CACHE BOOL "Build type")
 
 add_executable(gbemu ${SRC})
+
+set(CMAKE_CXX_FLAGS "-fpermissive ${CMAKE_CXX_FLAGS}")
 
 if(MSVC)
 else()

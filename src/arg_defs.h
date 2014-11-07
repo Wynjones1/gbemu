@@ -59,10 +59,16 @@ enum ARG_TYPE
 
 extern const char *arg_type_strings[];
 
-typedef union REG_INPUT
+struct REG_INPUT
 {
 	enum REG   r8;
 	enum REG16 r16;
-}REG_INPUT;
 
-static const REG_INPUT A_REG  = {.r8  = REG_A};
+	REG_INPUT(REG r8) : r8(r8)
+	{}
+
+	REG_INPUT(REG16 r16) : r16(r16)
+	{}
+};
+
+extern const REG_INPUT A_REG;
