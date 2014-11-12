@@ -1,8 +1,8 @@
 #include "cpu.h"
 
 void DAA(struct cpu_state *state,
-		enum ARG_TYPE arg0, union REG_INPUT i0,
-		enum ARG_TYPE arg1, union REG_INPUT i1)
+		enum ARG_TYPE arg0, REG_INPUT i0,
+		enum ARG_TYPE arg1, REG_INPUT i1)
 {
 	//TODO: Make sure this is correct.
 	reg_t hbits = (state->a & 0xf0) >> 4;
