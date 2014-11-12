@@ -4,6 +4,7 @@
 typedef struct cmdline
 {
 	const char *in;
+	const char *boot_rom;
 	int         verbose;
 }cmdline_t;
 

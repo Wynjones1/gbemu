@@ -46,7 +46,14 @@ cmdline_t cmdline_read(int argc, char **argv)
 			else
 				Error("Must supply input file.");
 		}
+		if(OPTION("-b", "--boot"))
+		{
+			if(HAVE_NEXT) out.boot_rom = NEXT;
+			else
+				Error("Must supply boot rom.");
+		}
 	}
-	if(out.in == NULL) out.in = "./data/roms/mario.gb";
+	if(out.in       == NULL) out.in       = "./data/roms/mario.gb";
+	if(out.boot_rom == NULL) out.boot_rom = "./data/boot_roms/DMG.bin";
 	return out;
 }

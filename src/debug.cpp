@@ -118,7 +118,7 @@ void debug_output_framebuffer(struct cpu_state *state)
 
 void debug_output_tile_maps(struct cpu_state *state)
 {
-	FILE *fp = fopen("tile_map.txt", "w");
+	FILE *fp = FOPEN("tile_map.txt", "w");
 	for(int i = 0; i < 32; i++)
 	{
 		for(int j = 0; j < 32; j ++)
@@ -159,7 +159,7 @@ uint8_t shade_table_0[4][3] =
 void debug_output_registers(struct cpu_state *state)
 {
 	static FILE *fp;
-	if(!fp) fp = fopen("reg.txt", "w");
+	if(!fp) fp = FOPEN("reg.txt", "w");
 	fseek(fp, 0, SEEK_SET);
 	FOutput(fp, "AF  = 0x%04x   ", state->af);
 	FOutput(fp, "BC  = 0x%04x\n", state->bc);

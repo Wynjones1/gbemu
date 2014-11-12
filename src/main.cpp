@@ -12,19 +12,17 @@
 #include <SDL2/SDL.h>
 int main(int argc, char **argv)
 {
-	audio_init();
-	cmdline_t cmdline;
-	cmdline = cmdline_read(argc, argv);
+	cmdline_t cmdline = cmdline_read(argc, argv);
 #if TESTING
 	testing(argc, argv);
 #else
 
 #if 1
-	struct cpu_state *state = cpu_init("./data/boot_roms/DMG.bin", cmdline.in);
+    struct cpu_state *state = cpu_init(cmdline.boot_rom, cmdline.in);
 #else
 	struct cpu_state *state = cpu_load_state("game.state");
 #endif
-	cpu_start(state);
+//	cpu_start(state);
 	cpu_delete(state);
 #endif
 return 0;

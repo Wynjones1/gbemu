@@ -10,18 +10,18 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 #define DEBUG_DMA 0
 
 
-memory_t *memory_init(const char *boot, const char *rom)
+memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
-	memory_t *out = calloc(1, sizeof(memory_t));
-	FILE *fp = fopen(boot, "r");
+	memory_t *out = (memory_t*)calloc(1, sizeof(memory_t));
+	FILE *fp = FOPEN(boot, "r");
 	common_fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
 
-	fp = fopen(rom, "r");
+	fp = FOPEN(rom, "r");
 	fseek(fp, 0L, SEEK_END);
 	out->to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
-	out->bank_0       = malloc(out->to_read);
+	out->bank_0       = (reg_t*)malloc(out->to_read);
 	common_fread(out->bank_0, 1, out->to_read, fp);
 
 	out->bank_n       = out->bank_0 + 0x4000;
@@ -33,10 +33,12 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->cart_type = out->bank_0[0x147];
 	out->rom_size  = out->bank_0[0x148];
 	out->ram_size  = out->bank_0[0x149];
+	out->audio     = audio_init(state);
 	//Set all of the buttons to off.
 	*(uint8_t*)&out->buttons = 0xff;
 	*(uint8_t*)&out->dpad    = 0xff;
 
+	#if 0
 	switch(out->ram_size)
 	{
 		case 0:
@@ -51,13 +53,17 @@ memory_t *memory_init(const char *boot, const char *rom)
 			out->external_ram = malloc(32 * 1024);
 			break;
 	}
-	out->external_ram = malloc(10 * 1024);
+	#endif
+	out->external_ram = (reg_t*)malloc(10 * 1024);
 	//Error("Ram Size %d\n", out->ram_size);
 	return out;
 }
 
 void memory_delete(memory_t *mem)
 {
+	audio_delete(mem->audio);
+	free(mem->bank_0);
+	free(mem->external_ram);
 	free(mem);
 }
 
@@ -92,7 +98,7 @@ static void dma(memory_t *mem, reg_t data)
 {
 #if DEBUG_DMA
 	static FILE *fp;
-	if(!fp) fp = fopen("dma_log.txt", "w");
+	if(!fp) fp = FOPEN("dma_log.txt", "w");
 #endif
 	//Writing to the DMA register initiates a 0xa0 byte DMA transfer.
 
@@ -160,6 +166,14 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	else if(X(0xfea0,0xfeff))
 	{
 		return 0xff;
+	}
+	else if(X(0xff00, 0xff0f))
+	{
+		return read_IO_registers(mem, addr);
+	}
+	else if(X(0xff10, 0xff3f))
+	{
+		return audio_load(mem->audio, addr);
 	}
 	else if(X(0xff00,0xff7f))
 	{
@@ -379,7 +393,15 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	{
 		//Unused.
 	}
-	else if(X(0xff00,0xff7f))
+	else if(X(0xff00,0xff0f))
+	{
+		write_IO_registers(mem, addr, data);
+	}
+	else if(X(0xff10, 0xff3f))
+	{
+		audio_store(mem->audio, addr, data);
+	}
+	else if(X(0xff40, 0xff7f))
 	{
 		write_IO_registers(mem, addr, data);
 	}
@@ -486,7 +508,7 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 #define Y(elem) temp = fread(memory->elem, 1, sizeof(memory->elem), fp)
 memory_t *memory_load_state(FILE *fp)
 {
-	memory_t *memory = malloc(sizeof(memory_t));
+	memory_t *memory = (memory_t*) malloc(sizeof(memory_t));
 	int temp; //Shuts up gcc about fread.
 	Y(video_ram);
 	Y(working_ram_0);
@@ -526,10 +548,10 @@ memory_t *memory_load_state(FILE *fp)
 	X(tma);
 	X(tac);
 	X(to_read);
-	memory->bank_0 = malloc(memory->to_read);
+	memory->bank_0 = (reg_t*) malloc(memory->to_read);
 	temp = fread(memory->bank_0, memory->to_read, 1, fp);
 	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
-	memory->external_ram = malloc(10 * 1024);
+	memory->external_ram = (reg_t*) malloc(10 * 1024);
 	memory->echo         = memory->working_ram_0;
 	return memory;
 }

@@ -1,10 +1,11 @@
 #pragma once
 #include "types.h"
+#include "audio.h"
 #include <stdio.h>
 
 typedef struct memory memory_t;
 
-memory_t      *memory_init(const char *boot, const char *rom);
+memory_t      *memory_init(cpu_state_t *state, const char *boot, const char *rom);
 void           memory_delete(memory_t *mem);
 reg_t          memory_load8(memory_t *mem, reg16_t addr);
 void           memory_store8(memory_t *mem, reg16_t addr, reg_t data);
@@ -161,4 +162,6 @@ typedef struct memory
 	}tac;
 
 	int to_read;
+
+	audio_t *audio;
 }memory_t;

@@ -16,8 +16,8 @@
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
-	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
-	out->memory      = memory_init(boot_rom_filename, rom);
+	cpu_state_t *out = (cpu_state_t*)calloc(1, sizeof(cpu_state_t));
+	out->memory      = memory_init(out, boot_rom_filename, rom);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
 	out->pc = 0;
@@ -28,6 +28,7 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 void cpu_delete(cpu_state_t *state)
 {
 	memory_delete(state->memory);
+	display_delete(state->display);
 	free(state);
 }
 
@@ -93,7 +94,7 @@ static void display_mhz(int clk)
 	static FILE *fp;
 	if(!fp)
 	{
-		fp = fopen("clock_speed.txt","w");
+		fp = FOPEN("clock_speed.txt","w");
 	}
 
 	static long unsigned int count, time_count;
@@ -269,7 +270,7 @@ void cpu_start(struct cpu_state *state)
 #define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
-	FILE *fp = fopen(filename, "w");
+	FILE *fp = FOPEN(filename, "w");
 	fprintf(fp, "GBEMU%d ", VERSION);
 	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
@@ -292,8 +293,8 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 #define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
 cpu_state_t *cpu_load_state(const char *filename)
 {
-	cpu_state_t *state = malloc(sizeof(cpu_state_t));
-	FILE *fp = fopen(filename, "r");
+	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
+	FILE *fp = FOPEN(filename, "r");
 	int temp, version;
 	temp = fscanf(fp, "GBEMU%d", &version);
 	if(temp != 1)

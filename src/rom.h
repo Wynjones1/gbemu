@@ -4,7 +4,7 @@
 enum CART_TYPE
 {
 	CART_TYPE_ROM_ONLY                = 0x00,
-	CART_TYPE_MBC1                    = 0x01,
+    CART_TYPE_MBC1                    = 0x01,
 	CART_TYPE_MBC1_RAM                = 0x02,
 	CART_TYPE_MBC1_RAM_BATTERY        = 0x03,
 	CART_TYPE_MBC2                    = 0x05,
@@ -13,10 +13,10 @@ enum CART_TYPE
 	CART_TYPE_ROM_RAM_BATTERY         = 0x09,
 	CART_TYPE_MMM01                   = 0x0b,
 	CART_TYPE_MMM01_RAM               = 0x0c,
-	CART_TYPE_MMM01_RAM_BATTERY       = 0x0d,
-	CART_TYPE_MBC3_TIMER_BATTERY      = 0x0f,
+    CART_TYPE_MMM01_RAM_BATTERY       = 0x0d,
+    CART_TYPE_MBC3_TIMER_BATTERY      = 0x0f,
 	CART_TYPE_MBC3_TIMER_RAM_BATTERY  = 0x10,
-	CART_TYPE_MBC3                    = 0x11,
+    CART_TYPE_MBC3                    = 0x11,
 	CART_TYPE_MBC3_RAM                = 0x12,
 	CART_TYPE_MBC3_RAM_BATTERY        = 0x13,
 	CART_TYPE_MBC4                    = 0x15,

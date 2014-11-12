@@ -1,5 +1,7 @@
 #include "common.h"
 #include <stdarg.h>
+#include <errno.h>
+#include <string.h>
 
 uint32_t g_cycles = 0;
 FILE *output_fp;
@@ -46,7 +48,7 @@ void common_output(const char *format, ...)
 	if(!output_fp)
 	{
 #ifdef OUTPUT_FILENAME
-		output_fp = fopen(OUTPUT_FILENAME, "w");
+		output_fp = FOPEN(OUTPUT_FILENAME, "w");
 #else
 		output_fp = stdout;
 #endif
@@ -68,6 +70,17 @@ void common_foutput(FILE *fp, const char *format, ...)
 	va_end(arg_list);
 	fflush(fp);
 #endif
+}
+
+FILE *common_fopen(const char *filename, const char *mode, const char *file, int line)
+{
+	FILE *fp = fopen(filename, mode);
+	if(!fp)
+	{
+		fprintf(stderr, "%s:%d Could not open file %s %s\n", file, line, filename, strerror(errno));
+		exit(-1);
+	}
+	return fp;
 }
 
 void common_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)

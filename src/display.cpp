@@ -32,7 +32,6 @@ struct display
 
 	//TTF Data
 	TTF_Font *font;
-	SDL_Texture *font_texture;
 #endif
 	SDL_Surface *surface;
 };
@@ -62,7 +61,11 @@ static void init_ttf(display_t *d)
 
 	SDL_Color fg    = {255, 255, 255};
 	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
-	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
+}
+
+static void delete_ttf(display_t *d)
+{
+	TTF_CloseFont(d->font);
 }
 #endif
 
@@ -101,7 +104,7 @@ static void init_display(display_t *display)
 
 display_t *display_init(cpu_state_t *state)
 {
-	display_t *display = malloc(sizeof(display_t));
+	display_t *display = (display_t*) malloc(sizeof(display_t));
 	display->state  = state;
 	display->mem    = state->memory;
 #if DISPLAY_ENABLED
@@ -120,7 +123,7 @@ display_t *display_init(cpu_state_t *state)
 void handle_events(struct cpu_state *state);
 static void *display_thread(void *display_)
 {
-	display_t *display = display_;
+	display_t *display = (display_t*) display_;
 	init_display(display);
 	g_state = display->state;
 	while(1)
@@ -135,6 +138,11 @@ static void *display_thread(void *display_)
 
 void display_delete(display_t *disp)
 {
+#if DEBUG
+	delete_ttf(disp);
+#endif
+	SDL_DestroyTexture(disp->texture);
+	SDL_DestroyRenderer(disp->render);
 	SDL_DestroyWindow(disp->window);
 	free(disp);
 }
@@ -145,7 +153,7 @@ void transfer_buffer(display_t *d)
 	uint8_t *data;
 	int      pitch;
 	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
-	SDL_LockTexture(d->texture, &rect, (void*)&data, &pitch);
+	SDL_LockTexture(d->texture, &rect, (void**)&data, &pitch);
 	for(int j = 0; j < DISPLAY_HEIGHT; j++)
 	{
 		for(int i = 0; i < DISPLAY_WIDTH; i++)
@@ -192,9 +200,9 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 		.w = PIXEL_SCALE * width , .h = h 
 	};
 
-	SDL_Color fg = {255, 255, 255};
-	disp->surface = TTF_RenderText_Solid(disp->font, buf, fg);
-	disp->font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
+	SDL_Color fg             = {255, 255, 255};
+	SDL_Surface *surface      = TTF_RenderText_Solid(disp->font, buf, fg);
+	SDL_Texture *font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
 
 	if(SDL_UpdateTexture(disp->texture, &debug_rect, disp->debug_data,
 							PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0)
@@ -202,13 +210,13 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 		Error("%s\n", SDL_GetError());
 	}
 
-	if(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0)
+	if(SDL_RenderCopy(disp->render, font_texture, NULL, &temp) < 0)
 	{
 		Error("%s\n", SDL_GetError());
 	}
 
-	SDL_DestroyTexture(disp->font_texture);
-	SDL_FreeSurface(disp->surface);
+	SDL_DestroyTexture(font_texture);
+	SDL_FreeSurface(surface);
 }
 
 void draw_instructions(display_t *display)

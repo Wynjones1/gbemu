@@ -1,4 +1,5 @@
 #include "ppm.h"
+#include "common.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -12,8 +13,8 @@ struct ppm
 
 ppm_t *ppm_new(int width, int height, const char *filename)
 {
-	ppm_t *out  = malloc(sizeof(ppm_t));
-	out->fp     = fopen(filename, "w");
+	ppm_t *out  = (ppm_t*) malloc(sizeof(ppm_t));
+	out->fp     = FOPEN(filename, "w");
 	out->width  = width;
 	out->height = height;
 
