@@ -6,24 +6,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifndef OUTPUT_ERRORS
-	#define OUTPUT_ERRORS   1
-#endif
-#ifndef OUTPUT_WARNINGS
-	#define OUTPUT_WARNINGS 1
-#endif
-
-#ifndef OUTPUT_OUTPUT
-	#define OUTPUT_OUTPUT 1
-#endif
-
-#ifndef WARN_LIMIT
-	#define WARN_LIMIT 100
-#endif
-
-#if 1
+#define WARN_LIMIT 100
 #define OUTPUT_FILENAME "log.txt"
-#endif
 
 #define VERSION 1
 

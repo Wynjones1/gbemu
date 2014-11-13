@@ -10,7 +10,7 @@ void adc_test(void)
 		{0xe1, 0x3b, 0x1, 0x1d, 0x0, 0x0, 0x0, 0x1},
 		{0xe1, 0x1e, 0x1, 0x00, 0x1, 0x1, 0x0, 0x1},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.half_carry = rand() % 2;

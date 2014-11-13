@@ -12,7 +12,9 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 	static int paused;
 	static int step;
 	static int frame_limit;
+	#if 0
 	static int slow;
+	#endif
 	switch(sym.sym)
 	{
 		//DPad

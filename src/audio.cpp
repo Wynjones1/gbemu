@@ -9,13 +9,11 @@ void audio_start_thread(void)
 
 extern void fill_audio(void *udata, Uint8 *stream, int len)
 {
-	for(int i = 0; i < len; i++)
-		stream[i] = rand() % 1;
 }
 
+SDL_AudioSpec wanted;
 audio_t *audio_init(cpu_state_t *state)
 {
-	SDL_AudioSpec wanted;
 	extern void fill_audio(void *udata, Uint8 *stream, int len);
 	audio_t *out = (audio_t*) malloc(sizeof(audio_t));
 	out->state   = state;
@@ -41,6 +39,7 @@ audio_t *audio_init(cpu_state_t *state)
 reg_t audio_load(audio_t *audio, reg16_t addr)
 {
 	fprintf(stderr, "Audio load\n");
+	return 0;
 }
 
 void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
@@ -50,5 +49,6 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 
 void audio_delete(audio_t *audio)
 {
+	SDL_CloseAudio();
 	free(audio);
 }

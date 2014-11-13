@@ -10,10 +10,9 @@
 //TODO: Remove pthreads
 #include <pthread.h>
 
-#define PIXEL_SIZE  4
-#define PIXEL_SCALE 4
-#define DISPLAY_ENABLED 1
-#define NUMBER_OF_OAM_ELEMENTS 40
+const int PIXEL_SIZE  = 4;
+const int PIXEL_SCALE = 2;
+const int NUMBER_OF_OAM_ELEMENTS = 40;
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 
@@ -26,22 +25,14 @@ struct display
 	memory_t     *mem;
 	//Thread Data
 	pthread_t thread;
-
-#if DEBUG
-	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
-
 	//TTF Data
-	TTF_Font *font;
-#endif
-	SDL_Surface *surface;
+	TTF_Font     *font;
+	SDL_Surface  *surface;
+	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 };
 
-#if DISPLAY_ENABLED
-#if DISPLAY_THREAD
-	static void *display_thread(void *display_);
-#endif
+static void *display_thread(void *display_);
 
-#if DEBUG
 static void init_ttf(display_t *d)
 {
 	if(TTF_Init() < 0)
@@ -60,14 +51,15 @@ static void init_ttf(display_t *d)
 	TTF_SetFontHinting(d->font, 0);
 
 	SDL_Color fg    = {255, 255, 255};
-	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
+	d->surface      = TTF_RenderText_Solid(d->font, " ", fg);
 }
 
 static void delete_ttf(display_t *d)
 {
 	TTF_CloseFont(d->font);
 }
-#endif
+
+pthread_cond_t g_init_cond = PTHREAD_COND_INITIALIZER;
 
 static void init_display(display_t *display)
 {
@@ -95,37 +87,47 @@ static void init_display(display_t *display)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-#if DEBUG
-	memset(display->debug_data, 0x00, sizeof(display->debug_data));
-	init_ttf(display);
-#endif
+
+	if(DEBUG)
+	{
+		memset(display->debug_data, 0x00, sizeof(display->debug_data));
+		init_ttf(display);
+	}
 }
-#endif
 
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = (display_t*) malloc(sizeof(display_t));
 	display->state  = state;
 	display->mem    = state->memory;
-#if DISPLAY_ENABLED
 	SDL_Init(SDL_INIT_VIDEO);
-#if DISPLAY_THREAD
-	pthread_t thread;
-	pthread_create(&thread, NULL, display_thread, display);
-#else
-	init_display(display);
-#endif
-#endif
+	if(DISPLAY_ENABLED)
+	{
+		if(DISPLAY_THREAD)
+		{
+			pthread_t thread;
+			pthread_create(&thread, NULL, display_thread, display);
+			pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+			pthread_cond_wait(&g_init_cond, &mtx);
+		}
+		else
+		{
+			init_display(display);
+		}
+	}
+	atexit(SDL_VideoQuit);
+	atexit(SDL_Quit);
 	return display;
 }
 
-#if DISPLAY_THREAD && DISPLAY_ENABLED
-void handle_events(struct cpu_state *state);
 static void *display_thread(void *display_)
 {
 	display_t *display = (display_t*) display_;
 	init_display(display);
+	pthread_cond_signal(&g_init_cond);
 	g_state = display->state;
+	pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+	pthread_cond_wait(&g_state->start_cond, &mtx);
 	while(1)
 	{
 		events_handle(display->state);
@@ -134,19 +136,18 @@ static void *display_thread(void *display_)
 	}
 	return NULL;
 }
-#endif
 
 void display_delete(display_t *disp)
 {
-#if DEBUG
-	delete_ttf(disp);
-#endif
+	if(DEBUG)
+	{
+		delete_ttf(disp);
+	}
 	SDL_DestroyTexture(disp->texture);
 	SDL_DestroyRenderer(disp->render);
 	SDL_DestroyWindow(disp->window);
 	free(disp);
 }
-
 
 void transfer_buffer(display_t *d)
 {
@@ -187,7 +188,6 @@ void display_clear(display_t *disp)
 	SDL_RenderPresent(disp->render);
 }
 
-#if DEBUG
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
 {
 	int h = 18;
@@ -221,7 +221,6 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 void draw_instructions(display_t *display)
 {
-/*
 	char buf[1024];
 	char buf0[1024];
 	uint16_t addr = display->state->pc;
@@ -229,13 +228,12 @@ void draw_instructions(display_t *display)
 	debug_print_op(buf0, display->state, op);
 	sprintf(buf, " | %-25s", buf0);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
-*/
 }
 
 void draw_debug(display_t *disp)
 {
-	draw_instructions(disp);
 	char buf[1024];
+	draw_instructions(disp);
 	sprintf(buf, "PC    = 0x%04x", disp->state->pc);
 	draw_line(disp, buf, 0, 0, DEBUG_REGISTER_WIDTH);
 	sprintf(buf, "AF    = 0x%04x", disp->state->af);
@@ -316,15 +314,9 @@ void draw_debug(display_t *disp)
 						disp->state->memory->tac.enable);
 	draw_line(disp, buf, 7, 1, DEBUG_REGISTER_WIDTH);
 }
-#endif
 
-//TODO:Change to need DEBUG flag.
 void display_present(display_t *disp)
 {
-	SDL_Rect rect = {
-		.x = 0, .y = 0,
-		.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT
-	};
 	if(SDL_RenderClear(disp->render) < 0)
 	{
 		Error("%s\n", SDL_GetError());
@@ -333,9 +325,10 @@ void display_present(display_t *disp)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-#if DEBUG
-	draw_debug(disp);
-#endif
+	if(DEBUG)
+	{
+		draw_debug(disp);
+	}
 	SDL_RenderPresent(disp->render);
 }
 

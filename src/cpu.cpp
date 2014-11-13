@@ -13,11 +13,13 @@
 #include "memory.h"
 
 #include <SDL2/SDL.h>
+#include <pthread.h>
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = (cpu_state_t*)calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, boot_rom_filename, rom);
+	pthread_cond_init(&out->start_cond, NULL);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
 	out->pc = 0;
@@ -28,9 +30,70 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 void cpu_delete(cpu_state_t *state)
 {
 	memory_delete(state->memory);
-	display_delete(state->display);
+	if(DISPLAY_ENABLED)
+	{
+		display_delete(state->display);
+	}
 	free(state);
 }
+
+#define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
+void cpu_save_state(cpu_state_t *state, const char *filename)
+{
+	FILE *fp = FOPEN(filename, "w");
+	fprintf(fp, "GBEMU%d ", VERSION);
+	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	X(pc);
+	X(success);
+	X(DI_Pending);
+	X(EI_Pending);
+	X(arg);
+	X(clock_counter);
+	X(halt);
+	X(paused);
+	X(step);
+	X(frame_limit);
+	X(slow);
+	memory_save_state(state->memory, fp);
+
+	fclose(fp);
+}
+#undef X
+
+#define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
+cpu_state_t *cpu_load_state(const char *filename)
+{
+	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
+	FILE *fp = FOPEN(filename, "r");
+	int temp, version;
+	temp = fscanf(fp, "GBEMU%d", &version);
+	if(temp != 1)
+	{
+		Error("%s is not a savestate.\n");
+	}
+	if(version != VERSION)
+	{
+		Warning("Timestamp of emulator does not match that of the save state.\n");
+	}
+	temp = getc(fp);
+	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	X(pc);
+	X(success);
+	X(DI_Pending);
+	X(EI_Pending);
+	X(arg);
+	X(clock_counter);
+	X(halt);
+	X(paused);
+	X(step);
+	X(frame_limit);
+	X(slow);
+	state->memory = memory_load_state(fp);
+	state->display = display_init(state);
+	fclose(fp);
+	return state;
+}
+#undef X
 
 /* CPU Helper functions */
 reg_t   cpu_load_reg8(struct cpu_state *state, REG_INPUT reg)
@@ -183,10 +246,14 @@ void cpu_start(struct cpu_state *state)
 	atexit(debug_on_exit);
 	reg_t instruction;
 	struct opcode *op;
-	//state->pc = 0;
-#if !DISPLAY_THREAD
-	display_display(state->display);
-#endif
+	if(DISPLAY_THREAD)
+	{
+		pthread_cond_signal(&state->start_cond);
+	}
+	else
+	{
+		display_display(state->display);
+	}
 	while(1)
 	{
 		if(state->store_state)
@@ -207,11 +274,14 @@ void cpu_start(struct cpu_state *state)
 		//Reset branch success flags.
 		state->step    = 0;
 		state->success = 1;
-#if !DISPLAY_THREAD
-		handle_events(state);
-#endif
+
+		if(!DISPLAY_THREAD)
+		{
+			events_handle(state);
+		}
 		check_for_interrupts(state);
 
+		//DI and EI take an instruction to take effect.
 		if(state->DI_Pending)
 		{
 			state->memory->IME = 0;
@@ -222,7 +292,6 @@ void cpu_start(struct cpu_state *state)
 			state->memory->IME = 1;
 			state->EI_Pending = 0;
 		}
-
 
 		//Load instruction and execute it.
 		if(!state->halt)
@@ -245,13 +314,6 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 			
-	#if 0
-		char buf[1024];
-		debug_print_op(buf, state, op);
-		Output("%s\n", buf);
-	#endif
-
-
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
 		int clk = state->success ? op->success : op->fail;
@@ -267,60 +329,3 @@ void cpu_start(struct cpu_state *state)
 	}
 }
 
-#define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
-void cpu_save_state(cpu_state_t *state, const char *filename)
-{
-	FILE *fp = FOPEN(filename, "w");
-	fprintf(fp, "GBEMU%d ", VERSION);
-	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
-	X(pc);
-	X(success);
-	X(DI_Pending);
-	X(EI_Pending);
-	X(arg);
-	X(clock_counter);
-	X(halt);
-	X(paused);
-	X(step);
-	X(frame_limit);
-	X(slow);
-	memory_save_state(state->memory, fp);
-
-	fclose(fp);
-}
-#undef X
-
-#define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
-cpu_state_t *cpu_load_state(const char *filename)
-{
-	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
-	FILE *fp = FOPEN(filename, "r");
-	int temp, version;
-	temp = fscanf(fp, "GBEMU%d", &version);
-	if(temp != 1)
-	{
-		Error("%s is not a savestate.\n");
-	}
-	if(version != VERSION)
-	{
-		Warning("Timestamp of emulator does not match that of the save state.\n");
-	}
-	temp = getc(fp);
-	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
-	X(pc);
-	X(success);
-	X(DI_Pending);
-	X(EI_Pending);
-	X(arg);
-	X(clock_counter);
-	X(halt);
-	X(paused);
-	X(step);
-	X(frame_limit);
-	X(slow);
-	state->memory = memory_load_state(fp);
-	state->display = display_init(state);
-	fclose(fp);
-	return state;
-}
-#undef X

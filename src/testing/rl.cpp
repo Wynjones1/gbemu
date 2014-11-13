@@ -9,7 +9,7 @@ void rl_test(void)
 		{0x80, 0,  0x00, 1, 0, 0, 1},
 		{0x11, 0,  0x22, 0, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test             = tests[i];
 		state.carry      = test[1];

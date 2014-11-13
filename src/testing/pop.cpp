@@ -8,7 +8,7 @@ void pop_test(void)
 	{
 		{0xfffc, 0x5f, 0xfffd, 0x3c, 0xfffe}
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.sp = test[0];

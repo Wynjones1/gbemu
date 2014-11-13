@@ -55,7 +55,6 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	}
 	#endif
 	out->external_ram = (reg_t*)malloc(10 * 1024);
-	//Error("Ram Size %d\n", out->ram_size);
 	return out;
 }
 
@@ -96,10 +95,8 @@ static void status(memory_t *mem, reg_t data)
 
 static void dma(memory_t *mem, reg_t data)
 {
-#if DEBUG_DMA
 	static FILE *fp;
-	if(!fp) fp = FOPEN("dma_log.txt", "w");
-#endif
+	if(DEBUG_DMA && !fp) fp = FOPEN("dma_log.txt", "w");
 	//Writing to the DMA register initiates a 0xa0 byte DMA transfer.
 
 	//TODO:Make this occur over multiple clock cycles.
@@ -108,20 +105,20 @@ static void dma(memory_t *mem, reg_t data)
 	for(reg16_t i = 0; i < 0xa0; i++)
 	{
 		mem->OAM[i] = memory_load8(mem, source + i);
-#if DEBUG_DMA
-		static int count;
-		fprintf(fp, "%02x ", mem->OAM[i]);
-		count++;
-		if(count == 0x10)
+		if(DEBUG_DMA)
 		{
-			fprintf(fp,"\n");
-			count = 0;
+			static int count;
+			fprintf(fp, "%02x ", mem->OAM[i]);
+			count++;
+			if(count == 0x10)
+			{
+				fprintf(fp,"\n");
+				count = 0;
+			}
 		}
-#endif
 	}
-#if DEBUG_DMA
-	fprintf(fp, "\n");
-#endif
+	if(DEBUG_DMA)
+		fprintf(fp, "\n");
 }
 
 #define X(min, max) ((addr >= min) && (addr <= max))
@@ -504,12 +501,11 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 #undef X
 #undef Y
 
-#define X(elem) temp = fread(&memory->elem, 1, sizeof(memory->elem), fp)
-#define Y(elem) temp = fread(memory->elem, 1, sizeof(memory->elem), fp)
+#define X(elem) fread(&memory->elem, 1, sizeof(memory->elem), fp)
+#define Y(elem) fread(memory->elem, 1, sizeof(memory->elem), fp)
 memory_t *memory_load_state(FILE *fp)
 {
 	memory_t *memory = (memory_t*) malloc(sizeof(memory_t));
-	int temp; //Shuts up gcc about fread.
 	Y(video_ram);
 	Y(working_ram_0);
 	Y(working_ram_1);
@@ -549,7 +545,7 @@ memory_t *memory_load_state(FILE *fp)
 	X(tac);
 	X(to_read);
 	memory->bank_0 = (reg_t*) malloc(memory->to_read);
-	temp = fread(memory->bank_0, memory->to_read, 1, fp);
+	fread(memory->bank_0, memory->to_read, 1, fp);
 	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
 	memory->external_ram = (reg_t*) malloc(10 * 1024);
 	memory->echo         = memory->working_ram_0;

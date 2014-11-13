@@ -10,7 +10,7 @@ void xor_test(void)
 		{0xff, 0x0f, 0xf0, 0, 0, 0, 0},
 		{0xff, 0x8a, 0x75, 0, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.half_carry = rand() % 2;

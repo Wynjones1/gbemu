@@ -9,7 +9,7 @@ void rra_test(void)
 		{0x81, 0,  0x40, 0, 0, 0, 1},
 		{0x81, 1,  0xc0, 0, 0, 0, 1},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test             = tests[i];
 		state.a          = test[0];

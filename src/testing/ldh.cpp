@@ -2,5 +2,5 @@
 
 void ldh_test(void)
 {
-	cpu_state_t *state;
+	//cpu_state_t *state;
 }

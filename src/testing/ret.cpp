@@ -9,7 +9,7 @@ void ret_test(void)
 		//PC, SP, ADDR, (SP - 2), new SP
 		{0x9000, 0xfff0, 0x8003, 0xfff2},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.pc = test[0] + 3;

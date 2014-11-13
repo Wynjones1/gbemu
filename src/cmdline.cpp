@@ -2,32 +2,6 @@
 #include <string.h>
 #include "cmdline.h"
 
-#if 0
-	#if 0
-		const char *rom = "/home/stuart/tetris.gb";
-	#elif 0
-		const char *rom = "./data/roms/mario.gb";
-	#elif 0
-		const char *rom = "./data/roms/zelda.gb";
-	#elif 0
-		const char *rom = "./data/roms/Donkey Kong Land.gb";
-	#elif 0
-		const char *rom = "./data/roms/Donkey Kong.gb";
-	#elif 1
-		const char *rom = "./data/roms/waverace.gb";
-	#elif 0
-		const char *rom = "./data/roms/drmario.gb";
-	#elif 1
-		const char *rom = "./data/roms/pokemon_blue.gb";
-	#elif 0
-		const char *rom = "/home/stuart/cpu_instrs.gb";
-	#elif 0
-		const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/01-special.gb";
-	#else
-		const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/05-op rp.gb";
-	#endif
-#endif
-
 #define HAVE_NEXT (i + 1 < argc)
 #define NEXT argv[i + 1]
 #define CMP(s, l, str)\
@@ -51,6 +25,12 @@ cmdline_t cmdline_read(int argc, char **argv)
 			if(HAVE_NEXT) out.boot_rom = NEXT;
 			else
 				Error("Must supply boot rom.");
+		}
+		if(OPTION("-s", "--state"))
+		{
+			if(HAVE_NEXT) out.state_file = NEXT;
+			else
+				Error("Must supply state file.");
 		}
 	}
 	if(out.in       == NULL) out.in       = "./data/roms/mario.gb";

@@ -8,7 +8,7 @@ void push_test(void)
 	{
 		{0xfffe, 0x1000, 0xfffc},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.sp = test[0];

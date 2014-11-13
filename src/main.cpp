@@ -13,17 +13,18 @@
 int main(int argc, char **argv)
 {
 	cmdline_t cmdline = cmdline_read(argc, argv);
-#if TESTING
-	testing(argc, argv);
-#else
+	if(TESTING)
+	{
+		testing(argc, argv);
+	}
+	else
+	{
+		struct cpu_state *state = cmdline.state_file ?
+			cpu_load_state("game.state")          :
+			cpu_init(cmdline.boot_rom, cmdline.in);
 
-#if 1
-    struct cpu_state *state = cpu_init(cmdline.boot_rom, cmdline.in);
-#else
-	struct cpu_state *state = cpu_load_state("game.state");
-#endif
-//	cpu_start(state);
-	cpu_delete(state);
-#endif
-return 0;
+		cpu_start(state);
+		cpu_delete(state);
+	}
+	return 0;
 }

@@ -10,7 +10,7 @@ void and_test(void)
 		{0x5a, 0x38, 0x18, 0, 1, 0, 0},
 		{0x5a, 0x00, 0x00, 1, 1, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(unsigned int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.half_carry = rand() % 2;
