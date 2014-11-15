@@ -1,7 +1,8 @@
 #include "audio.h"
+#include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 void audio_start_thread(void)
 {
@@ -38,13 +39,13 @@ audio_t *audio_init(cpu_state_t *state)
 
 reg_t audio_load(audio_t *audio, reg16_t addr)
 {
-	fprintf(stderr, "Audio load\n");
+//	fprintf(stderr, "Audio load\n");
 	return 0;
 }
 
 void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 {
-	fprintf(stderr, "Audio store\n");
+//	fprintf(stderr, "Audio store\n");
 }
 
 void audio_delete(audio_t *audio)

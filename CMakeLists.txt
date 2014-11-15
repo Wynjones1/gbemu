@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project(gbemu)
 
 set(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(DEPS ${ROOT}/deps)
 
 file(GLOB SRC
 	"${ROOT}/src/*.cpp"
@@ -35,7 +36,6 @@ endmacro()
 macro(ADD_CFLAG arg)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${arg}")
-	message(STATUS ${CMAKE_CXX_FLAGS})
 endmacro()
 
 DEFADD(OUTPUT_WARNINGS "No"  "Enable warning output.")
@@ -44,6 +44,7 @@ DEFADD(OUTPUT_OUTPUT   "No"  "Enable stdout  output.")
 DEFADD(DISPLAY_ENABLED "Yes" "Use display.")
 DEFADD(DISPLAY_THREAD  "Yes" "Display drawing on separate thread.")
 DEFADD(TESTING         "No"  "Run tests.")
+ADD_CFLAG("-m32")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	add_definitions(-DDEBUG=1)
@@ -55,8 +56,8 @@ endif()
 if(MSVC)
 else()
 	if(${BUILD_DEPS} STREQUAL "Yes")
-		add_subdirectory(${ROOT}/deps/SDL2)
-		add_subdirectory(${ROOT}/deps/SDL2_ttf)
+		add_subdirectory(${DEPS}/SDL2)
+		add_subdirectory(${DEPS}/SDL2_ttf)
 		target_link_libraries(gbemu SDL2 SDL2_ttf)
 	else()
 		find_program(SDL_CONFIG sdl2-config)
@@ -66,6 +67,8 @@ else()
 		execute_process(COMMAND ${SDL_CONFIG} "--cflags"
 						OUTPUT_VARIABLE sdl_cflags
 						OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+		include_directories(${DEPS}/SDL2/include)
 
 		message(STATUS "SDL Libs:  " ${sdl_libs})
 		message(STATUS "SDL Flags: " ${sdl_cflags})

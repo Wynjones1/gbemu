@@ -245,7 +245,7 @@ void cpu_start(struct cpu_state *state)
 	g_state = state;
 	atexit(debug_on_exit);
 	reg_t instruction;
-	struct opcode *op;
+	const struct opcode *op;
 	if(DISPLAY_THREAD)
 	{
 		pthread_cond_signal(&state->start_cond);

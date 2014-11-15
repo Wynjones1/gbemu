@@ -50,8 +50,8 @@ static void init_ttf(display_t *d)
 	TTF_SetFontKerning(d->font, 0);
 	TTF_SetFontHinting(d->font, 0);
 
-	SDL_Color fg    = {255, 255, 255};
-	d->surface      = TTF_RenderText_Solid(d->font, " ", fg);
+	SDL_Color fg= {255, 255, 255};
+	d->surface  = TTF_RenderText_Solid(d->font, " ", fg);
 }
 
 static void delete_ttf(display_t *d)
@@ -224,7 +224,7 @@ void draw_instructions(display_t *display)
 	char buf[1024];
 	char buf0[1024];
 	uint16_t addr = display->state->pc;
-	struct opcode *op = &op_table[cpu_load8(display->state, addr)];
+	const struct opcode *op = &op_table[cpu_load8(display->state, addr)];
 	debug_print_op(buf0, display->state, op);
 	sprintf(buf, " | %-25s", buf0);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);

@@ -234,7 +234,7 @@ const char *reg16_strings[] =
 };
 
 #define X(n) case ARG_TYPE_ ## n:sprintf(buf, #n);break
-void debug_print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TYPE arg, REG_INPUT r)
+void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op,enum ARG_TYPE arg, REG_INPUT r)
 {
 	uint8_t rel;
 	switch(arg)
@@ -310,7 +310,7 @@ void debug_print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum 
 }
 #undef X
 
-void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
+void debug_print_op(char *buffer, struct cpu_state *state, const struct opcode *op)
 {
 	char arg0[1024];
 	char arg1[1024];
