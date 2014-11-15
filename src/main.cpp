@@ -24,6 +24,10 @@ int main(int argc, char **argv)
 			cpu_init(cmdline.boot_rom, cmdline.in);
 
 		cpu_start(state);
+		if(DISPLAY_THREAD)
+		{
+			display_join(state->display);
+		}
 		cpu_delete(state);
 	}
 	return 0;

@@ -7,7 +7,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <string.h>
-//TODO: Remove pthreads
 #include <pthread.h>
 
 const int PIXEL_SIZE  = 4;
@@ -24,7 +23,8 @@ struct display
 	cpu_state_t  *state;
 	memory_t     *mem;
 	//Thread Data
-	pthread_t thread;
+	pthread_t      thread;
+	pthread_cond_t init_cond;
 	//TTF Data
 	TTF_Font     *font;
 	SDL_Surface  *surface;
@@ -58,8 +58,6 @@ static void delete_ttf(display_t *d)
 {
 	TTF_CloseFont(d->font);
 }
-
-pthread_cond_t g_init_cond = PTHREAD_COND_INITIALIZER;
 
 static void init_display(display_t *display)
 {
@@ -105,30 +103,35 @@ display_t *display_init(cpu_state_t *state)
 	{
 		if(DISPLAY_THREAD)
 		{
-			pthread_t thread;
-			pthread_create(&thread, NULL, display_thread, display);
+			/* We need to initialise sdl on the new thread
+			 * so we create the conditional variable to
+			 * wait for the display to be initalised       */
+			pthread_create(&display->thread, NULL, display_thread, display);
 			pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-			pthread_cond_wait(&g_init_cond, &mtx);
+			pthread_cond_init(&display->init_cond, NULL);
+			pthread_cond_wait(&display->init_cond, &mtx);
 		}
 		else
 		{
 			init_display(display);
 		}
 	}
-	atexit(SDL_VideoQuit);
-	atexit(SDL_Quit);
 	return display;
+}
+
+void display_join(display_t *display)
+{
+	pthread_join(display->thread, NULL);
 }
 
 static void *display_thread(void *display_)
 {
 	display_t *display = (display_t*) display_;
 	init_display(display);
-	pthread_cond_signal(&g_init_cond);
-	g_state = display->state;
 	pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
-	pthread_cond_wait(&g_state->start_cond, &mtx);
-	while(1)
+	pthread_cond_signal(&display->init_cond);
+	pthread_cond_wait(&display->state->start_cond, &mtx);
+	while(!display->state->quit)
 	{
 		events_handle(display->state);
 		display_display(display);

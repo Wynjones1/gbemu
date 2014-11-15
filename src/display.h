@@ -25,8 +25,6 @@
 
 #define DISPLAY_MS_PER_LINE 0.111
 
-#define DISPLAY_THREAD 1
-
 typedef struct display display_t;
 typedef struct cpu_state cpu_state_t;
 
@@ -37,6 +35,7 @@ void    display_present(display_t *disp);
 void    display_clear(display_t *disp);
 void    display_display(display_t *display);
 void    display_simulate(cpu_state_t *state);
+void    display_join(display_t *display);
 uint8_t display_get_shade(const uint8_t *tile_data, int i);
 
 extern unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];

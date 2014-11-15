@@ -95,7 +95,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			state->store_state = 1;
 			break;
 		case SDLK_ESCAPE:
-			exit(0);
+			state->quit = 1;
 			break;
 		default:
 			break;
@@ -118,7 +118,7 @@ void events_handle(cpu_state_t *state)
 				key(event.key.keysym, 1, state);
 				break;
 			case SDL_QUIT:
-				exit(0);
+				state->quit = 1;
 				break;
 			default:
 				break;

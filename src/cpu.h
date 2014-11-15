@@ -66,6 +66,7 @@ typedef struct cpu_state
 	int frame_limit;
 	int slow;
 	int store_state;
+	int quit;
 	pthread_cond_t start_cond;
 
 }cpu_state_t;

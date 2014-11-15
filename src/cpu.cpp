@@ -15,15 +15,18 @@
 #include <SDL2/SDL.h>
 #include <pthread.h>
 
+#define EXECUTE_INSTRUCTION(op, state) op->op(state, op->arg0, op->i0, op->arg1, op->i1)
+
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = (cpu_state_t*)calloc(1, sizeof(cpu_state_t));
-	out->memory      = memory_init(out, boot_rom_filename, rom);
 	pthread_cond_init(&out->start_cond, NULL);
+	out->memory      = memory_init(out, boot_rom_filename, rom);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
-	out->pc = 0;
+	out->pc          = 0;
 	out->store_state = 0;
+	out->quit        = 0;
 	return out;
 }
 
@@ -242,8 +245,7 @@ static void increment_tima(cpu_state_t *state, int clk)
 
 void cpu_start(struct cpu_state *state)
 {
-	g_state = state;
-	atexit(debug_on_exit);
+	//atexit(debug_on_exit);
 	reg_t instruction;
 	const struct opcode *op;
 	if(DISPLAY_THREAD)
@@ -254,7 +256,7 @@ void cpu_start(struct cpu_state *state)
 	{
 		display_display(state->display);
 	}
-	while(1)
+	while(!state->quit)
 	{
 		if(state->store_state)
 		{
@@ -278,6 +280,7 @@ void cpu_start(struct cpu_state *state)
 		if(!DISPLAY_THREAD)
 		{
 			events_handle(state);
+			display_display(state->display);
 		}
 		check_for_interrupts(state);
 
@@ -293,7 +296,7 @@ void cpu_start(struct cpu_state *state)
 			state->EI_Pending = 0;
 		}
 
-		//Load instruction and execute it.
+		//Load instruction
 		if(!state->halt)
 		{
 			instruction = cpu_load8(state, state->pc);
@@ -313,8 +316,8 @@ void cpu_start(struct cpu_state *state)
 		{
 			op = &op_table[0]; //NOP
 		}
-			
-		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
+
+		EXECUTE_INSTRUCTION(op, state);
 		//Increment program counter.
 		int clk = state->success ? op->success : op->fail;
 		state->clock_counter += clk;

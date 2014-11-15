@@ -44,6 +44,7 @@ DEFADD(OUTPUT_OUTPUT   "No"  "Enable stdout  output.")
 DEFADD(DISPLAY_ENABLED "Yes" "Use display.")
 DEFADD(DISPLAY_THREAD  "Yes" "Display drawing on separate thread.")
 DEFADD(TESTING         "No"  "Run tests.")
+DEFADD(AUDIO_ENABLED   "No"  "Enable Audio")
 ADD_CFLAG("-m32")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
