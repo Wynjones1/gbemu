@@ -49,17 +49,23 @@ ADD_CFLAG("-m32")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
 	add_definitions(-DDEBUG=1)
-	ADD_CFLAG("-Werror -Wall")
 else()
 	add_definitions(-DDEBUG=0)
 endif()
 
+include_directories(${DEPS}/SDL2/include)
+
 if(MSVC)
+	add_subdirectory(${DEPS}/SDL2)
+	add_subdirectory(${DEPS}/SDL2_ttf)
 else()
+	if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+		ADD_CFLAG("-Werror -Wall")
+	endif()
+
 	if(${BUILD_DEPS} STREQUAL "Yes")
 		add_subdirectory(${DEPS}/SDL2)
 		add_subdirectory(${DEPS}/SDL2_ttf)
-		target_link_libraries(gbemu SDL2 SDL2_ttf)
 	else()
 		find_program(SDL_CONFIG sdl2-config)
 		execute_process(COMMAND "${SDL_CONFIG}" "--libs"
@@ -68,14 +74,8 @@ else()
 		execute_process(COMMAND ${SDL_CONFIG} "--cflags"
 						OUTPUT_VARIABLE sdl_cflags
 						OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-		include_directories(${DEPS}/SDL2/include)
-
-		message(STATUS "SDL Libs:  " ${sdl_libs})
-		message(STATUS "SDL Flags: " ${sdl_cflags})
-		target_link_libraries(gbemu ${sdl_libs} SDL2_ttf)
 	endif()
-
-	target_link_libraries(gbemu pthread)
 endif()
+
+target_link_libraries(gbemu pthread SDL2 SDL2_ttf)
 

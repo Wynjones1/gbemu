@@ -17,7 +17,13 @@
 #define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
 #define FOPEN(filename, mode) common_fopen(filename, mode, __FILE__, __LINE__)
 
-void common_error(const char *format, ...) __attribute__((noreturn));
+#if WIN32
+#define NORETURN(x) __declspec(noreturn) x
+#else
+#define NORETURN(x) x __attribute__((noreturn))
+#endif
+
+NORETURN(void common_error(const char *format, ...));
 void common_warn(const char *format, ...);
 void common_output(const char *format, ...);
 void common_foutput(FILE *fp, const char *format, ...);
