@@ -23,8 +23,9 @@ struct display
 	cpu_state_t  *state;
 	memory_t     *mem;
 	//Thread Data
-	pthread_t      thread;
-	pthread_cond_t init_cond;
+	pthread_t       thread;
+	pthread_cond_t  init_cond;
+	pthread_mutex_t init_mtx;
 	//TTF Data
 	TTF_Font     *font;
 	SDL_Surface  *surface;
@@ -51,7 +52,7 @@ static void init_ttf(display_t *d)
 	TTF_SetFontHinting(d->font, 0);
 
 	SDL_Color fg= {255, 255, 255};
-	d->surface  = TTF_RenderText_Solid(d->font, " ", fg);
+	d->surface  = TTF_RenderText_Solid(d->font, "1234", fg);
 }
 
 static void delete_ttf(display_t *d)
@@ -86,7 +87,7 @@ static void init_display(display_t *display)
 		Error("%s\n", SDL_GetError());
 	}
 
-	if(DEBUG)
+	if(REGISTER_WINDOW)
 	{
 		memset(display->debug_data, 0x00, sizeof(display->debug_data));
 		init_ttf(display);
@@ -103,13 +104,18 @@ display_t *display_init(cpu_state_t *state)
 	{
 		if(DISPLAY_THREAD)
 		{
-			/* We need to initialise sdl on the new thread
+			/* We need to initialise SDL on the new thread
 			 * so we create the conditional variable to
 			 * wait for the display to be initalised       */
-			pthread_create(&display->thread, NULL, display_thread, display);
-			pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 			pthread_cond_init(&display->init_cond, NULL);
-			pthread_cond_wait(&display->init_cond, &mtx);
+			pthread_mutex_init(&display->init_mtx, NULL);
+
+			pthread_mutex_lock(&display->init_mtx);
+			pthread_create(&display->thread, NULL, display_thread, display);
+
+			//Wait for the display to init itself
+			pthread_cond_wait(&display->init_cond, &display->init_mtx);
+			pthread_mutex_unlock(&display->init_mtx);
 		}
 		else
 		{
@@ -128,9 +134,16 @@ static void *display_thread(void *display_)
 {
 	display_t *display = (display_t*) display_;
 	init_display(display);
-	pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
+
+	pthread_mutex_lock(&display->init_mtx);
 	pthread_cond_signal(&display->init_cond);
-	pthread_cond_wait(&display->state->start_cond, &mtx);
+
+	pthread_mutex_lock(&display->state->start_mtx);
+	pthread_mutex_unlock(&display->init_mtx);
+
+	pthread_cond_wait(&display->state->start_cond,
+					  &display->state->start_mtx);
+	pthread_mutex_unlock(&display->state->start_mtx);
 	while(!display->state->quit)
 	{
 		events_handle(display->state);
@@ -142,7 +155,7 @@ static void *display_thread(void *display_)
 
 void display_delete(display_t *disp)
 {
-	if(DEBUG)
+	if(REGISTER_WINDOW)
 	{
 		delete_ttf(disp);
 	}
@@ -174,21 +187,27 @@ void transfer_buffer(display_t *d)
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(display->mem->lcdc.enabled)
+	if(DISPLAY_ENABLED)
 	{
-		transfer_buffer(display);
-		display_present(display);
-	}
-	else
-	{
-		display_clear(display);
+		if(display->mem->lcdc.enabled)
+		{
+			transfer_buffer(display);
+			display_present(display);
+		}
+		else
+		{
+			display_clear(display);
+		}
 	}
 }
 
 void display_clear(display_t *disp)
 {
-	SDL_RenderClear(disp->render);
-	SDL_RenderPresent(disp->render);
+	if(DISPLAY_ENABLED)
+	{
+		SDL_RenderClear(disp->render);
+		SDL_RenderPresent(disp->render);
+	}
 }
 
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
@@ -226,8 +245,9 @@ void draw_instructions(display_t *display)
 {
 	char buf[1024];
 	char buf0[1024];
-	uint16_t addr = display->state->pc;
-	const struct opcode *op = &op_table[cpu_load8(display->state, addr)];
+	uint16_t addr  = display->state->pc;
+	uint16_t instr = cpu_load8(display->state, addr);
+	const struct opcode *op = &op_table[instr];
 	debug_print_op(buf0, display->state, op);
 	sprintf(buf, " | %-25s", buf0);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
@@ -328,7 +348,7 @@ void display_present(display_t *disp)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-	if(DEBUG)
+	if(REGISTER_WINDOW)
 	{
 		draw_debug(disp);
 	}
@@ -438,7 +458,6 @@ static void write_window(struct cpu_state *state, int x)
 		data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
 	}
 }
-
 
 static void write_display(struct cpu_state *state)
 {

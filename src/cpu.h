@@ -5,6 +5,7 @@
 #include "common.h"
 #include "arg_defs.h"
 #include "events.h"
+#include "cmdline.h"
 
 #define CPU_CLOCK_SPEED 4194304
 #define CPU_CLOCKS_PER_MS (CPU_CLOCK_SPEED / 1000.0)
@@ -68,6 +69,8 @@ typedef struct cpu_state
 	int store_state;
 	int quit;
 	pthread_cond_t start_cond;
+	pthread_mutex_t start_mtx;
+	cmdline_t cmdline;
 
 }cpu_state_t;
 

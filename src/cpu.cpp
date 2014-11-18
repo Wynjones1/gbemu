@@ -21,9 +21,10 @@ cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = (cpu_state_t*)calloc(1, sizeof(cpu_state_t));
 	pthread_cond_init(&out->start_cond, NULL);
+	pthread_mutex_init(&out->start_mtx, NULL);
 	out->memory      = memory_init(out, boot_rom_filename, rom);
 	out->display     = display_init(out);
-	out->frame_limit = 1;
+	out->frame_limit = 0;
 	out->pc          = 0;
 	out->store_state = 0;
 	out->quit        = 0;
@@ -78,8 +79,8 @@ cpu_state_t *cpu_load_state(const char *filename)
 	{
 		Warning("Timestamp of emulator does not match that of the save state.\n");
 	}
-	temp = getc(fp);
-	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	getc(fp);
+	fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
 	X(success);
 	X(DI_Pending);
@@ -245,12 +246,16 @@ static void increment_tima(cpu_state_t *state, int clk)
 
 void cpu_start(struct cpu_state *state)
 {
-	//atexit(debug_on_exit);
 	reg_t instruction;
 	const struct opcode *op;
 	if(DISPLAY_THREAD)
 	{
-		pthread_cond_signal(&state->start_cond);
+		pthread_mutex_lock(&state->start_mtx);
+		if(pthread_cond_signal(&state->start_cond))
+		{
+			Error("Signal Failed.\n");
+		}
+		pthread_mutex_unlock(&state->start_mtx);
 	}
 	else
 	{
@@ -316,6 +321,9 @@ void cpu_start(struct cpu_state *state)
 		{
 			op = &op_table[0]; //NOP
 		}
+
+		char buf[1024];
+		debug_print_op(buf, state, op);
 
 		EXECUTE_INSTRUCTION(op, state);
 		//Increment program counter.

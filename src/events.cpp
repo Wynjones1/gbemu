@@ -124,4 +124,26 @@ void events_handle(cpu_state_t *state)
 				break;
 		}
 	}
+	if(state->cmdline.record)
+	{
+		static FILE *fp = fopen("record.txt", "w");
+		fwrite(&state->memory->buttons,
+				sizeof(state->memory->buttons), 1, fp);
+		fwrite(&state->memory->dpad,
+				sizeof(state->memory->dpad), 1, fp);
+		fwrite(&state->memory->interrupt,
+				sizeof(state->memory->interrupt), 1, fp);
+		fflush(fp);
+	}
+	else if(state->cmdline.playback)
+	{
+		static FILE *fp = fopen("record.txt", "r");
+		fread(&state->memory->buttons,
+				sizeof(state->memory->buttons), 1, fp);
+		fread(&state->memory->dpad,
+				sizeof(state->memory->dpad), 1, fp);
+		fread(&state->memory->interrupt,
+				sizeof(state->memory->interrupt), 1, fp);
+		if(feof(fp)) fprintf(stderr, "End of input.\n");
+	}
 }

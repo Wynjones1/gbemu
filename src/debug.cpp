@@ -3,19 +3,12 @@
 #include "common.h"
 #include <signal.h>
 
-struct cpu_state *g_state;
-
-void sigabrt_handler(int x)
-{
-	debug_on_exit();
-}
-
-void debug_on_exit(void)
+void debug_on_exit(cpu_state_t *state)
 {
 	int w = 32;
 	int h = 6;
 	ppm_t *ppm = ppm_new(w * 8, h * 8, "tiles.ppm");
-	memory_t *mem = g_state->memory;
+	memory_t *mem = state->memory;
 	for(int ty = 0; ty < h; ty++)
 	{
 		for(int tx = 0; tx < w; tx++)
@@ -38,14 +31,12 @@ void debug_on_exit(void)
 			}
 		}
 	}
-	debug_output_registers(g_state);
-	debug_output_tile_maps(g_state);
-	debug_output_framebuffer(g_state);
-	cpu_delete(g_state);
-	exit(0);
+	debug_output_registers(state);
+	debug_output_tile_maps(state);
+	debug_output_framebuffer(state);
 }
 
-void output_tiles(void)
+void output_tiles(cpu_state_t *state)
 {
 	struct stat st = {0};
 	if(stat("./tiles/", &st) == -1)
@@ -55,7 +46,7 @@ void output_tiles(void)
 	int w = 32;
 	int h = 6;
 	ppm_t *full = ppm_new(w * 8, h * 8, "./tiles/out.ppm");
-	memory_t *mem = g_state->memory;
+	memory_t *mem = state->memory;
 	//Loop through each of the tiles.
 	for(int ty = 0; ty < h; ty++)
 	{
@@ -86,13 +77,13 @@ void output_tiles(void)
 	}
 }
 
-uint8_t tab[] =
-{
-	0, 128, 196, 255
-};
 
 void debug_output_framebuffer(struct cpu_state *state)
 {
+	static const uint8_t tab[] =
+	{
+		0, 128, 196, 255
+	};
 	ppm_t *ppm = ppm_new(256, 256, "framebuffer.ppm");
 	for(int i = 0; i < 32; i++)
 	{
@@ -100,7 +91,10 @@ void debug_output_framebuffer(struct cpu_state *state)
 		{
 			for(int o = 0; o < 8; o++)
 			{
-				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o, state->memory->lcdc.map_select);
+				const uint8_t *data = memory_get_tile_data(
+													state->memory,
+													i, j, o,
+													state->memory->lcdc.map_select);
 				for(int k = 0; k < 8;k++)
 				{
 					uint8_t shade = tab[display_get_shade(data, k)];
@@ -154,8 +148,7 @@ uint8_t shade_table_0[4][3] =
 
 void debug_output_registers(struct cpu_state *state)
 {
-	static FILE *fp;
-	if(!fp) fp = FOPEN("reg.txt", "w");
+	static FILE *fp = FOPEN("reg.txt", "w");
 	fseek(fp, 0, SEEK_SET);
 	FOutput(fp, "AF  = 0x%04x   ", state->af);
 	FOutput(fp, "BC  = 0x%04x\n", state->bc);
@@ -204,15 +197,20 @@ void debug_output_registers(struct cpu_state *state)
 
 
 	FOutput(fp, "Joypad\n");
-	FOutput(fp, "a     = %d b      = %d\n", state->memory->buttons.a, state->memory->buttons.b);
-	FOutput(fp, "start = %d select = %d\n", state->memory->buttons.start , state->memory->buttons.select);
-	FOutput(fp, "up    = %d down   = %d\n", state->memory->dpad.up, state->memory->dpad.down);
-	FOutput(fp, "left  = %d right  = %d\n", state->memory->dpad.left , state->memory->dpad.right);
-	FOutput(fp, "buttons = %d dpad = %d\n", state->memory->buttons.enabled , state->memory->dpad.enabled);
+	FOutput(fp, "a     = %d b      = %d\n",
+				state->memory->buttons.a, state->memory->buttons.b);
+	FOutput(fp, "start = %d select = %d\n",
+				state->memory->buttons.start , state->memory->buttons.select);
+	FOutput(fp, "up    = %d down   = %d\n",
+				state->memory->dpad.up, state->memory->dpad.down);
+	FOutput(fp, "left  = %d right  = %d\n",
+				state->memory->dpad.left , state->memory->dpad.right);
+	FOutput(fp, "buttons = %d dpad = %d\n",
+				state->memory->buttons.enabled , state->memory->dpad.enabled);
 	fflush(fp);
 }
 
-const char *reg_strings[] =
+static const char *reg_strings[] =
 {
 	"F",
 	"A", 
@@ -224,7 +222,7 @@ const char *reg_strings[] =
 	"H"
 };
 
-const char *reg16_strings[] =
+static const char *reg16_strings[] =
 {
 	"AF",
 	"BC",
@@ -240,16 +238,20 @@ void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op
 	switch(arg)
 	{
 		case ARG_TYPE_REG8:
-			sprintf(buf, "%s = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+			sprintf(buf, "%s = 0x%02x",
+						reg_strings[r.r8], state->registers[r.r8]);
 			break;
 		case ARG_TYPE_REG8_INDIRECT:
-			sprintf(buf, "(%s) = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+			sprintf(buf, "(%s) = 0x%02x",
+						reg_strings[r.r8], state->registers[r.r8]);
 			break;
 		case ARG_TYPE_REG16:
-			sprintf(buf, "%s = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+			sprintf(buf, "%s = 0x%04x",
+						reg16_strings[r.r16], state->registers16[r.r16]);
 			break;
 		case ARG_TYPE_REG16_INDIRECT:
-			sprintf(buf, "(%s) = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+			sprintf(buf, "(%s) = 0x%04x",
+						reg16_strings[r.r16], state->registers16[r.r16]);
 			break;
 		case ARG_TYPE_DATA8:
 			sprintf(buf, "0x%02x", state->arg);
@@ -312,17 +314,17 @@ void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op
 
 void debug_print_op(char *buffer, struct cpu_state *state, const struct opcode *op)
 {
-	char arg0[1024];
-	char arg1[1024];
+	char buf0[1024];
+	char buf1[1024];
 	if(op->op == PREFIX_CB)
 	{
 		op = &cb_op_table[state->arg];
 	}
-	debug_print_arg(arg0, state, op,op->arg0, op->i0);
-	debug_print_arg(arg1, state, op,op->arg1, op->i1);
+	debug_print_arg(buf0, state, op,op->arg0, op->i0);
+	debug_print_arg(buf1, state, op,op->arg1, op->i1);
 	char sep;
 	sep = op->arg1  == ARG_TYPE_NONE ? ' ' : ',';
-	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, arg0, sep, arg1);
+	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, buf0, sep, buf1);
 }
 
 

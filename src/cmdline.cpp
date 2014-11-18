@@ -32,6 +32,16 @@ cmdline_t cmdline_read(int argc, char **argv)
 			else
 				Error("Must supply state file.");
 		}
+		if(OPTION("-r", "--record"))
+		{
+			out.record   = true;
+			out.playback = false;
+		}
+		if(OPTION("-p", "--playback"))
+		{
+			out.playback = true;
+			out.record   = false;
+		}
 	}
 	if(out.in       == NULL) out.in       = "./data/roms/mario.gb";
 	if(out.boot_rom == NULL) out.boot_rom = "./data/boot_roms/DMG.bin";

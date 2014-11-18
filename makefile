@@ -8,5 +8,8 @@ run: all
 clean:
 	rm -Rf build bin *.svg *.out *.ppm *.log
 
+coverage:
+	cd  build; make coverage
+
 prof:
 	gprof ./bin/gbemu | gprof2dot.py | dot -Tsvg -o profile.svg

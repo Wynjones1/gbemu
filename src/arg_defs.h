@@ -64,10 +64,10 @@ struct REG_INPUT
 	enum REG   r8;
 	enum REG16 r16;
 
-	REG_INPUT(REG r8) : r8(r8)
+	REG_INPUT(REG r8) : r8(r8), r16(REG16_AF)
 	{}
 
-	REG_INPUT(REG16 r16) : r16(r16)
+	REG_INPUT(REG16 r16) : r8(REG_A), r16(r16)
 	{}
 };
 

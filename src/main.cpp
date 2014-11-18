@@ -8,6 +8,7 @@
 #include "testing/testing.h"
 #include "audio.h"
 #include "cmdline.h"
+#include "debug.h"
 
 #include <SDL2/SDL.h>
 int main(int argc, char **argv)
@@ -23,11 +24,13 @@ int main(int argc, char **argv)
 			cpu_load_state("game.state")          :
 			cpu_init(cmdline.boot_rom, cmdline.in);
 
+		state->cmdline = cmdline;
 		cpu_start(state);
 		if(DISPLAY_THREAD)
 		{
 			display_join(state->display);
 		}
+		debug_on_exit(state);
 		cpu_delete(state);
 	}
 	return 0;

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
+#include <assert.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -33,5 +34,6 @@ FILE *common_fopen(const char *filename, const char *mode, const char *func, int
 #define BIT_N(x, n) ((x >> n) & 0x1)
 #define SET_N(x, n)   x |= (1 << n)
 #define RESET_N(x, n) x &= ~(1 << n)
+#define ARRAYSIZE(x) (sizeof(x) / sizeof(*x))
 
 extern uint32_t g_cycles;
