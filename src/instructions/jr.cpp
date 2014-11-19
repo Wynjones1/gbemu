@@ -10,7 +10,7 @@ void JR(struct cpu_state *state,
 		|| (arg0 == ARG_TYPE_Z     &&  cpu_zero(state))
 		|| (arg0 == ARG_TYPE_REG8  &&  cpu_carry(state)))
 	{
-		cpu_jump_rel(state, state->arg);
+		cpu_jump_rel(state, (reg_t) state->arg);
 	}
 	else
 	{

@@ -8,7 +8,7 @@ void SUB(struct cpu_state *state,
 	reg_t data;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		data = state->arg;
+		data = (reg_t) state->arg;
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
@@ -35,7 +35,7 @@ void cpu_sub(struct cpu_state *state, reg_t d0)
 		state->carry = 1;
 	}
 	state->half_carry = (state->a & 0xf) < (d0 & 0xf);
-	state->a          = res;
+	state->a          = (reg_t) res;
 	state->zero       = (state->a == 0);
 	state->subtract   = 1;
 }

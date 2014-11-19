@@ -33,6 +33,7 @@ bin/
 #Log files
 *.ppm
 *.svg
+*.txt
 
 #PPM Output
 tiles/

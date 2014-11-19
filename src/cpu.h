@@ -9,7 +9,7 @@
 
 #define CPU_CLOCK_SPEED 4194304
 #define CPU_CLOCKS_PER_MS (CPU_CLOCK_SPEED / 1000.0)
-#define CPU_CLOCKS_PER_LINE DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS
+#define CPU_CLOCKS_PER_LINE (DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS)
 #define CPU_DUMMY_IO 0
 
 typedef struct cpu_state
@@ -53,6 +53,8 @@ typedef struct cpu_state
 	};
 
 	reg16_t   pc;
+	reg16_t   instr;
+	const struct opcode *op;
 	memory_t  *memory;
 	display_t *display;
 	int       success;
@@ -68,9 +70,13 @@ typedef struct cpu_state
 	int slow;
 	int store_state;
 	int quit;
-	pthread_cond_t start_cond;
-	pthread_mutex_t start_mtx;
+	SDL_cond  *start_cond;
+	SDL_mutex *start_mtx;
 	cmdline_t cmdline;
+
+	//TODO:Clean up the relevant code.
+	//This is so we can write the current instruction on the screen.
+	char buffer[200];
 
 }cpu_state_t;
 

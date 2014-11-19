@@ -11,11 +11,11 @@ void ADC(struct cpu_state *state,
 		reg_t d1;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			d1 = state->arg;
+			d1 = (reg_t) state->arg;
 		}
 		else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 		{
-			d1 = cpu_load8_indirect(state, i1);
+			d1 = (reg_t) cpu_load8_indirect(state, i1);
 		}
 		else if(arg1 == ARG_TYPE_REG8)
 		{

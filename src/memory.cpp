@@ -13,11 +13,11 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
 	memory_t *out = (memory_t*)calloc(1, sizeof(memory_t));
-	FILE *fp = FOPEN(boot, "r");
+	FILE *fp = FOPEN(boot, "rb");
 	common_fread(out->boot, 1, 0x100, fp);
 	fclose(fp);
 
-	fp = FOPEN(rom, "r");
+	fp = FOPEN(rom, "rb");
 	fseek(fp, 0L, SEEK_END);
 	out->to_read = ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);

@@ -4,10 +4,9 @@
 #include "opcodes.h"
 #include "debug.h"
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include <string.h>
-#include <pthread.h>
 
 const int PIXEL_SIZE  = 4;
 const int PIXEL_SCALE = 2;
@@ -23,16 +22,16 @@ struct display
 	cpu_state_t  *state;
 	memory_t     *mem;
 	//Thread Data
-	pthread_t       thread;
-	pthread_cond_t  init_cond;
-	pthread_mutex_t init_mtx;
+	SDL_Thread   *thread;
+	SDL_cond     *init_cond;
+	SDL_mutex    *init_mutex;
 	//TTF Data
 	TTF_Font     *font;
 	SDL_Surface  *surface;
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 };
 
-static void *display_thread(void *display_);
+static int display_thread(void *display_);
 
 static void init_ttf(display_t *d)
 {
@@ -62,7 +61,7 @@ static void delete_ttf(display_t *d)
 
 static void init_display(display_t *display)
 {
-	display->window = SDL_CreateWindow("Window", 0, 0, 
+	display->window = SDL_CreateWindow("Window", 100, 100, 
 									PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH),
 									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
 	if(!display->window)
@@ -107,15 +106,15 @@ display_t *display_init(cpu_state_t *state)
 			/* We need to initialise SDL on the new thread
 			 * so we create the conditional variable to
 			 * wait for the display to be initalised       */
-			pthread_cond_init(&display->init_cond, NULL);
-			pthread_mutex_init(&display->init_mtx, NULL);
+			display->init_cond = SDL_CreateCond();
+			display->init_mutex = SDL_CreateMutex();
 
-			pthread_mutex_lock(&display->init_mtx);
-			pthread_create(&display->thread, NULL, display_thread, display);
+			SDL_LockMutex(display->init_mutex);
+			display->thread = SDL_CreateThread(display_thread, "Display", display);
 
 			//Wait for the display to init itself
-			pthread_cond_wait(&display->init_cond, &display->init_mtx);
-			pthread_mutex_unlock(&display->init_mtx);
+			SDL_CondWait(display->init_cond, display->init_mutex);
+			SDL_UnlockMutex(display->init_mutex);
 		}
 		else
 		{
@@ -127,30 +126,30 @@ display_t *display_init(cpu_state_t *state)
 
 void display_join(display_t *display)
 {
-	pthread_join(display->thread, NULL);
+	SDL_WaitThread(display->thread, NULL);
 }
 
-static void *display_thread(void *display_)
+static int display_thread(void *display_)
 {
 	display_t *display = (display_t*) display_;
 	init_display(display);
 
-	pthread_mutex_lock(&display->init_mtx);
-	pthread_cond_signal(&display->init_cond);
+	SDL_LockMutex(display->init_mutex);
+	SDL_CondSignal(display->init_cond);
 
-	pthread_mutex_lock(&display->state->start_mtx);
-	pthread_mutex_unlock(&display->init_mtx);
+	SDL_LockMutex(display->state->start_mtx);
+	SDL_UnlockMutex(display->init_mutex);
 
-	pthread_cond_wait(&display->state->start_cond,
-					  &display->state->start_mtx);
-	pthread_mutex_unlock(&display->state->start_mtx);
+	SDL_CondWait(display->state->start_cond,
+				 display->state->start_mtx);
+	SDL_UnlockMutex(display->state->start_mtx);
 	while(!display->state->quit)
 	{
 		events_handle(display->state);
 		display_display(display);
 		SDL_Delay(17);
 	}
-	return NULL;
+	return 0;
 }
 
 void display_delete(display_t *disp)
@@ -169,7 +168,11 @@ void transfer_buffer(display_t *d)
 {
 	uint8_t *data;
 	int      pitch;
-	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
+	SDL_Rect rect;
+	rect.x = 0;
+	rect.y = 0;
+	rect.w = DISPLAY_WIDTH;
+	rect.h = DISPLAY_HEIGHT;
 	SDL_LockTexture(d->texture, &rect, (void**)&data, &pitch);
 	for(int j = 0; j < DISPLAY_HEIGHT; j++)
 	{
@@ -213,14 +216,17 @@ void display_clear(display_t *disp)
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
 {
 	int h = 18;
-	SDL_Rect debug_rect = {
-		.x = DISPLAY_WIDTH, .y = 0, 
-		.w = DEBUG_REGISTER_WIDTH  , .h = DISPLAY_HEIGHT
-	};
-	SDL_Rect temp = {
-		.x = PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH * column)  , .y = h * line,
-		.w = PIXEL_SCALE * width , .h = h 
-	};
+	SDL_Rect debug_rect;
+	debug_rect.x = DISPLAY_WIDTH;
+	debug_rect.y = 0;
+	debug_rect.w = DEBUG_REGISTER_WIDTH;
+	debug_rect.h = DISPLAY_HEIGHT;
+
+	SDL_Rect temp;
+	temp.x = PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH * column);
+	temp.y = h * line;
+	temp.w = PIXEL_SCALE * width;
+	temp.h = h;
 
 	SDL_Color fg             = {255, 255, 255};
 	SDL_Surface *surface      = TTF_RenderText_Solid(disp->font, buf, fg);
@@ -244,12 +250,7 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 void draw_instructions(display_t *display)
 {
 	char buf[1024];
-	char buf0[1024];
-	uint16_t addr  = display->state->pc;
-	uint16_t instr = cpu_load8(display->state, addr);
-	const struct opcode *op = &op_table[instr];
-	debug_print_op(buf0, display->state, op);
-	sprintf(buf, " | %-25s", buf0);
+	sprintf(buf, " | %-25s", display->state->buffer);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
 }
 
@@ -476,7 +477,7 @@ void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
 	{
-		state->clock_counter -= CPU_CLOCKS_PER_LINE;
+		state->clock_counter -= (uint32_t) CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
 		{

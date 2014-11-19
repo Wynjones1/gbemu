@@ -11,12 +11,19 @@
 #define OUTPUT_FILENAME "log.txt"
 
 #define VERSION 1
-
+#ifdef WIN32
+#define Error(M, ...) common_error("Error: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __FUNCTION__, ##__VA_ARGS__)
+#define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __FUNCTION__,##__VA_ARGS__)
+#define Output(M, ...) common_output("Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __FUNCTION__,##__VA_ARGS__)
+#define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
+#define FOPEN(filename, mode) common_fopen(filename, mode, __FILE__, __LINE__)
+#else
 #define Error(M, ...) common_error("Error: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__, ##__VA_ARGS__)
 #define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__,##__VA_ARGS__)
 #define Output(M, ...) common_output("Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __func__,##__VA_ARGS__)
 #define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
 #define FOPEN(filename, mode) common_fopen(filename, mode, __FILE__, __LINE__)
+#endif
 
 #if WIN32
 #define NORETURN(x) __declspec(noreturn) x

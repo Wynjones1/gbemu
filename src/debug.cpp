@@ -36,13 +36,21 @@ void debug_on_exit(cpu_state_t *state)
 	debug_output_framebuffer(state);
 }
 
+static void mkdir_new(const char *directory)
+{
+#ifdef WIN32
+	//TODO:
+#else
+	struct stat st = {0};
+	if(stat(directory, &st) == -1)
+	{
+		mkdir(directory, 0700);
+	}
+#endif
+}
 void output_tiles(cpu_state_t *state)
 {
-	struct stat st = {0};
-	if(stat("./tiles/", &st) == -1)
-	{
-		mkdir("./tiles/", 0700);
-	}
+	mkdir_new("./tiles");
 	int w = 32;
 	int h = 6;
 	ppm_t *full = ppm_new(w * 8, h * 8, "./tiles/out.ppm");
@@ -232,7 +240,7 @@ static const char *reg16_strings[] =
 };
 
 #define X(n) case ARG_TYPE_ ## n:sprintf(buf, #n);break
-void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op,enum ARG_TYPE arg, REG_INPUT r)
+void debug_print_arg(char *buf, struct cpu_state *state, const opcode_t *op,enum ARG_TYPE arg, REG_INPUT r)
 {
 	uint8_t rel;
 	switch(arg)
@@ -272,11 +280,11 @@ void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op
 			sprintf(buf, "(0x%02x)", state->arg);
 			break;
 		case ARG_TYPE_REL8:
-			rel = state->arg;
+			rel = (reg_t) state->arg;
 			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
 			break;
 		case ARG_TYPE_REL8_ADD_SP:
-			rel = state->arg;
+			rel = (reg_t) state->arg;
 			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel);
 			break;
 		case ARG_TYPE_HL_INDIRECT_DEC:
@@ -312,10 +320,11 @@ void debug_print_arg(char *buf, struct cpu_state *state, const struct opcode *op
 }
 #undef X
 
-void debug_print_op(char *buffer, struct cpu_state *state, const struct opcode *op)
+void debug_print_op(char *buffer, struct cpu_state *state)
 {
 	char buf0[1024];
 	char buf1[1024];
+	const opcode_t *op = state->op;
 	if(op->op == PREFIX_CB)
 	{
 		op = &cb_op_table[state->arg];

@@ -6,9 +6,9 @@
 struct ppm
 {
 	FILE  *fp;
-	size_t pos;
-	int width;
-	int height;
+	long   pos;
+	int    width;
+	int    height;
 };
 
 ppm_t *ppm_new(int width, int height, const char *filename)

@@ -1,5 +1,5 @@
 #include "cpu.h"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 void INC(struct cpu_state *state,
 		ARG_TYPE arg0, REG_INPUT i0,

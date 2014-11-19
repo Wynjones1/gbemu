@@ -7,7 +7,7 @@ void SBC(struct cpu_state *state,
 	reg_t data;
 	if(arg1 == ARG_TYPE_DATA8)
 	{
-		data = state->arg;
+		data = (reg_t) state->arg;
 	}
 	else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 	{

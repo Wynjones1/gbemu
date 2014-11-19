@@ -7,7 +7,7 @@ void CP(struct cpu_state *state,
 	reg_t d0;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		d0 = state->arg;
+		d0 = (reg_t) state->arg;
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{

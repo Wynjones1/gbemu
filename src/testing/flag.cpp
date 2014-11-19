@@ -1,4 +1,5 @@
 #include "testing.h"
+#include <string.h>
 
 int flag_test(void)
 {

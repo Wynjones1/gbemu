@@ -51,8 +51,9 @@ void LD(struct cpu_state *state,
 		else if(arg1 == ARG_TYPE_REL8_ADD_SP)
 		{
 			//TODO:Check that the signed addition is correct.
-			reg_t d = state->arg;
-			reg16_t addr    = cpu_add8(state, state->sp, d);
+			reg_t d = (reg_t) state->arg;
+			//TODO: Check that the cast to reg_t is correct.
+			reg16_t addr    = cpu_add8(state, (reg_t) state->sp, d);
 			state->zero     = 0;
 			state->subtract = 0;
 			data = cpu_load16(state, addr);
@@ -68,11 +69,11 @@ void LD(struct cpu_state *state,
 		reg_t data;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->arg;
+			data = (reg_t) state->arg;
 		}
 		else if(arg1 == ARG_TYPE_REG8)
 		{
-			data = cpu_load_reg8(state, i1);
+			data = (reg_t) cpu_load_reg8(state, i1);
 		}
 		else
 		{
@@ -90,7 +91,7 @@ void LD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->arg;
+			data = (reg_t) state->arg;
 		}
 		else if(arg1 == ARG_TYPE_HL_INDIRECT_DEC)
 		{
@@ -161,6 +162,7 @@ reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
 		return memory_load8(state->memory, addr);
 }
 
+//TODO:Check each use of this at some point.
 reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];

@@ -12,16 +12,15 @@
 #include "events.h"
 #include "memory.h"
 
-#include <SDL2/SDL.h>
-#include <pthread.h>
+#include <SDL.h>
 
 #define EXECUTE_INSTRUCTION(op, state) op->op(state, op->arg0, op->i0, op->arg1, op->i1)
 
 cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
 {
 	cpu_state_t *out = (cpu_state_t*)calloc(1, sizeof(cpu_state_t));
-	pthread_cond_init(&out->start_cond, NULL);
-	pthread_mutex_init(&out->start_mtx, NULL);
+	out->start_cond  = SDL_CreateCond();
+	out->start_mtx   = SDL_CreateMutex();
 	out->memory      = memory_init(out, boot_rom_filename, rom);
 	out->display     = display_init(out);
 	out->frame_limit = 0;
@@ -44,7 +43,7 @@ void cpu_delete(cpu_state_t *state)
 #define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
-	FILE *fp = FOPEN(filename, "w");
+	FILE *fp = FOPEN(filename, "wb");
 	fprintf(fp, "GBEMU%d ", VERSION);
 	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
@@ -64,11 +63,11 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 }
 #undef X
 
-#define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
+#define X(elem) fread(&state->elem, sizeof(state->elem), 1, fp)
 cpu_state_t *cpu_load_state(const char *filename)
 {
 	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
-	FILE *fp = FOPEN(filename, "r");
+	FILE *fp = FOPEN(filename, "rb");
 	int temp, version;
 	temp = fscanf(fp, "GBEMU%d", &version);
 	if(temp != 1)
@@ -179,16 +178,16 @@ static void display_mhz(int clk)
 
 static void frame_limit(int clk)
 {
-	const float sample_time = 0.01; //Sample time in seconds
 	static long int clk_count, time_count;
-	const int sample_clocks= sample_time * CPU_CLOCK_SPEED;
+	const float sample_time = 0.01f; //Sample time in seconds
+	const int sample_clocks = (int)(sample_time * CPU_CLOCK_SPEED);
 
 	clk_count += clk;
 	if(clk_count > sample_clocks)
 	{
 		int temp = SDL_GetTicks();
 		clk_count -= sample_clocks;
-		int sleep_time = sample_time * 1000 - (temp - time_count);
+		int sleep_time = (int) (sample_time * 1000 - (temp - time_count));
 		if(sleep_time > 0)
 		{
 			SDL_Delay(sleep_time);
@@ -247,15 +246,15 @@ static void increment_tima(cpu_state_t *state, int clk)
 void cpu_start(struct cpu_state *state)
 {
 	reg_t instruction;
-	const struct opcode *op;
+	const opcode_t *op;
 	if(DISPLAY_THREAD)
 	{
-		pthread_mutex_lock(&state->start_mtx);
-		if(pthread_cond_signal(&state->start_cond))
+		SDL_LockMutex(state->start_mtx);
+		if(SDL_CondSignal(state->start_cond) < 0)
 		{
 			Error("Signal Failed.\n");
 		}
-		pthread_mutex_unlock(&state->start_mtx);
+		SDL_UnlockMutex(state->start_mtx);
 	}
 	else
 	{
@@ -304,8 +303,10 @@ void cpu_start(struct cpu_state *state)
 		//Load instruction
 		if(!state->halt)
 		{
-			instruction = cpu_load8(state, state->pc);
-			op          = &op_table[instruction];
+			instruction  = cpu_load8(state, state->pc);
+			op           = &op_table[instruction];
+			state->instr = instruction;
+			state->op    = op;
 			//If present load the argument of the op.
 			if(op->size == 2 || instruction == 0xCB)
 			{
@@ -315,15 +316,14 @@ void cpu_start(struct cpu_state *state)
 			{
 				state->arg = cpu_load16(state, state->pc + 1);
 			}
-			state->pc  += op->size;
+			state->pc += op->size;
 		}
 		else
 		{
 			op = &op_table[0]; //NOP
 		}
 
-		char buf[1024];
-		debug_print_op(buf, state, op);
+		debug_print_op(state->buffer, state);
 
 		EXECUTE_INSTRUCTION(op, state);
 		//Increment program counter.

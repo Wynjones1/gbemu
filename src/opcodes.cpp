@@ -2,7 +2,7 @@
 
 #define X(n, a0, d0, a1, d1, s, suc, f) opcode(n,#n,a0,d0,a1,d1,s,suc,f)
 
-const struct opcode op_table[] = {
+const opcode_t op_table[] = {
 X(NOP,ARG_TYPE_NONE,REG_A,ARG_TYPE_NONE,REG_A,1,4,0) /*opcode 0x0*/,
 X(LD,ARG_TYPE_REG16,REG16_BC,ARG_TYPE_DATA16,REG_A,3,12,0) /*opcode 0x1*/,
 X(LD,ARG_TYPE_REG16_INDIRECT,REG16_BC,ARG_TYPE_REG8,REG_A,1,8,0) /*opcode 0x2*/,

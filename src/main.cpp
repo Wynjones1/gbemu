@@ -9,8 +9,9 @@
 #include "audio.h"
 #include "cmdline.h"
 #include "debug.h"
+#include <SDL.h>
 
-#include <SDL2/SDL.h>
+
 int main(int argc, char **argv)
 {
 	cmdline_t cmdline = cmdline_read(argc, argv);

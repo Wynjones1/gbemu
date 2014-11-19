@@ -10,7 +10,7 @@ typedef void (*cpu_opcode)(
 				ARG_TYPE    arg1,
 				REG_INPUT   i1);
 
-struct opcode
+typedef struct opcode
 {
 	cpu_opcode op;
 	const char *name;
@@ -33,7 +33,7 @@ struct opcode
 	, success(success)
 	, fail(fail)
 	{}
-};
+}opcode_t;
 
 extern const struct opcode op_table[];
 extern const struct opcode cb_op_table[];
