@@ -41,3 +41,5 @@ tiles/
 #Asm files
 *.s
 core
+reg.txt
+tile_map.txt
