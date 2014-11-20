@@ -157,6 +157,7 @@ static int check_for_interrupts(struct cpu_state *state)
 
 static void display_mhz(int clk)
 {
+#if 0
 	static FILE *fp;
 	if(!fp)
 	{
@@ -174,6 +175,7 @@ static void display_mhz(int clk)
 		time_count = temp;
 		count = 0;
 	}
+#endif
 }
 
 static void frame_limit(int clk)

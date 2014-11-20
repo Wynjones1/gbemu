@@ -27,7 +27,7 @@ struct display
 	SDL_mutex    *init_mutex;
 	//TTF Data
 	TTF_Font     *font;
-	SDL_Surface  *surface;
+	//SDL_Surface  *surface;
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 };
 
@@ -49,9 +49,6 @@ static void init_ttf(display_t *d)
 	TTF_SetFontOutline(d->font, 0);
 	TTF_SetFontKerning(d->font, 0);
 	TTF_SetFontHinting(d->font, 0);
-
-	SDL_Color fg= {255, 255, 255};
-	d->surface  = TTF_RenderText_Solid(d->font, "1234", fg);
 }
 
 static void delete_ttf(display_t *d)
@@ -230,7 +227,7 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 	SDL_Color fg             = {255, 255, 255};
 	SDL_Surface *surface      = TTF_RenderText_Solid(disp->font, buf, fg);
-	SDL_Texture *font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
+	SDL_Texture *font_texture = SDL_CreateTextureFromSurface(disp->render, surface);
 
 	if(SDL_UpdateTexture(disp->texture, &debug_rect, disp->debug_data,
 							PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0)
@@ -249,15 +246,15 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 void draw_instructions(display_t *display)
 {
-	char buf[1024];
+	char buf[100];
 	sprintf(buf, " | %-25s", display->state->buffer);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
 }
 
 void draw_debug(display_t *disp)
 {
-	char buf[1024];
-	draw_instructions(disp);
+	char buf[100];
+	//draw_instructions(disp);
 	sprintf(buf, "PC    = 0x%04x", disp->state->pc);
 	draw_line(disp, buf, 0, 0, DEBUG_REGISTER_WIDTH);
 	sprintf(buf, "AF    = 0x%04x", disp->state->af);

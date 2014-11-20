@@ -141,25 +141,30 @@ static reg_t dummy_data[0x10000];
 reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
 {
 	if(CPU_DUMMY_IO)
+	{
 		return dummy_data[addr];
-	else
-		return memory_load8(state->memory, addr);
+	}
+	return memory_load8(state->memory, addr);
 }
 reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
 {
 	if(CPU_DUMMY_IO)
-		return *(uint16_t*)&dummy_data[addr];
-	else
-		return memory_load16(state->memory, addr);
+	{
+		reg16_t out = dummy_data[addr];
+		out |= dummy_data[addr + 1] << 8;
+		return out;
+	}
+	return memory_load16(state->memory, addr);
 }
 
 reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
+	{
 		return dummy_data[addr];
-	else
-		return memory_load8(state->memory, addr);
+	}
+	return memory_load8(state->memory, addr);
 }
 
 //TODO:Check each use of this at some point.
@@ -167,9 +172,15 @@ reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
-		return *(uint16_t*)&dummy_data[addr];
+	{
+		reg16_t out = dummy_data[addr];
+		out |= dummy_data[addr + 1] << 8;
+		return out;
+	}
 	else
+	{
 		return memory_load16(state->memory, addr);
+	}
 }
 
 void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
@@ -183,9 +194,14 @@ void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
 void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
 {
 	if(CPU_DUMMY_IO)
-		*(uint16_t*)&dummy_data[addr] = data;
+	{
+		dummy_data[addr]     = data & 0xff;
+		dummy_data[addr + 1] = data >> 8;
+	}
 	else
+	{
 		memory_store16(state->memory, addr, data);
+	}
 }
 
 void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
@@ -201,7 +217,12 @@ void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
-		*(uint16_t*)&dummy_data[addr] = data;
+	{
+		dummy_data[addr]     = data & 0xff;
+		dummy_data[addr + 1] = data >> 8;
+	}
 	else
+	{
 		memory_store16(state->memory, addr, data);
+	}
 }

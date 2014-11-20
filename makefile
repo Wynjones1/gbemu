@@ -2,6 +2,10 @@ all:
 	mkdir -p build
 	cd build; cmake .. -DCMAKE_BUILD_TYPE=Debug; make -j5
 
+rel:
+	mkdir -p build
+	cd build; cmake .. -DCMAKE_BUILD_TYPE=Release; make -j5
+
 run: all
 	./build/gbemu
 
