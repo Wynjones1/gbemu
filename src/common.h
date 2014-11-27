@@ -35,6 +35,7 @@
 #define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, __func__,##__VA_ARGS__)
 #define Output(M, ...) common_output("Output: %s:%d in %s: " M, __FILE__ + 15, __LINE__, __func__,##__VA_ARGS__)
 #define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
+#define FOPEN(filename, mode) fopen(filename, mode)
 
 void common_error(const char *format, ...) __attribute__((noreturn));
 void common_warn(const char *format, ...);

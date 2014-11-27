@@ -183,9 +183,10 @@ void cpu_start(struct cpu_state *state)
 	reg_t instruction;
 	struct opcode *op;
 	//state->pc = 0;
-#if !DISPLAY_THREAD
-	display_display(state->display);
-#endif
+	if(DISPLAY_THREAD)
+	{
+		display_display(state->display);
+	}
 	while(1)
 	{
 		if(state->store_state)
@@ -206,9 +207,10 @@ void cpu_start(struct cpu_state *state)
 		//Reset branch success flags.
 		state->step    = 0;
 		state->success = 1;
-#if !DISPLAY_THREAD
-		handle_events(state);
-#endif
+		if(!DISPLAY_THREAD)
+		{
+			events_handle(state);
+		}
 		check_for_interrupts(state);
 
 		if(state->DI_Pending)
@@ -269,7 +271,7 @@ void cpu_start(struct cpu_state *state)
 #define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
-	FILE *fp = fopen(filename, "w");
+	FILE *fp = fopen(filename, "wb");
 	fprintf(fp, "GBEMU%d ", VERSION);
 	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
@@ -293,7 +295,7 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 cpu_state_t *cpu_load_state(const char *filename)
 {
 	cpu_state_t *state = malloc(sizeof(cpu_state_t));
-	FILE *fp = fopen(filename, "r");
+	FILE *fp = FOPEN(filename, "rb");
 	int temp, version;
 	temp = fscanf(fp, "GBEMU%d", &version);
 	if(temp != 1)

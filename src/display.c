@@ -11,7 +11,7 @@
 #include <pthread.h>
 
 #define PIXEL_SIZE  4
-#define PIXEL_SCALE 4
+#define PIXEL_SCALE 2
 #define DISPLAY_ENABLED 1
 #define NUMBER_OF_OAM_ELEMENTS 40
 
@@ -104,15 +104,19 @@ display_t *display_init(cpu_state_t *state)
 	display_t *display = malloc(sizeof(display_t));
 	display->state  = state;
 	display->mem    = state->memory;
-#if DISPLAY_ENABLED
-	SDL_Init(SDL_INIT_VIDEO);
-#if DISPLAY_THREAD
-	pthread_t thread;
-	pthread_create(&thread, NULL, display_thread, display);
-#else
-	init_display(display);
-#endif
-#endif
+	if(DISPLAY_ENABLED)
+	{
+		SDL_Init(SDL_INIT_VIDEO);
+		if(DISPLAY_THREAD)
+		{
+			pthread_t thread;
+			pthread_create(&thread, NULL, display_thread, display);
+		}
+		else
+		{
+			init_display(display);
+		}
+	}
 	return display;
 }
 

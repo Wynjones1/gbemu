@@ -1,5 +1,5 @@
 all: build
-	cd build; make
+	cd build; make -j4
 
 build:
 	mkdir -p build

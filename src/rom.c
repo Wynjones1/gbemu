@@ -23,7 +23,7 @@ static int verify(FILE *fp)
 
 rom_t rom_read(const char *filename)
 {
-	FILE *fp = fopen(filename, "r");
+	FILE *fp = FOPEN(filename, "rb");
 	fseek(fp, 0x0134, SEEK_SET);
 	rom_t out;
 	common_fread(out.title,             1, 0x144 - 0x134, fp); // 0x134 - 0x143

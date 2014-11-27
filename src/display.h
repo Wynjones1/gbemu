@@ -4,13 +4,13 @@
 
 #define LCD_WIDTH  160
 #define LCD_HEIGHT 144
+
 #if DEBUG
-#define DEBUG_REGISTER_WIDTH    70
-#define DEBUG_INSTRUCTION_WIDTH 70
-#endif
+	#define DEBUG_REGISTER_WIDTH    70
+	#define DEBUG_INSTRUCTION_WIDTH 70
 #else
-#define DEBUG_REGISTER_WIDTH    0
-#define DEBUG_INSTRUCTION_WIDTH 0
+	#define DEBUG_REGISTER_WIDTH    0
+	#define DEBUG_INSTRUCTION_WIDTH 0
 #endif
 
 #if DISPLAY_SHOW_FULL_FRAMEBUFFER
@@ -26,9 +26,7 @@
 
 #define DISPLAY_MS_PER_LINE 0.111
 
-#define DISPLAY_THREAD 1
-
-typedef struct display display_t;
+typedef struct display   display_t;
 typedef struct cpu_state cpu_state_t;
 
 display_t *display_init(cpu_state_t *state);
