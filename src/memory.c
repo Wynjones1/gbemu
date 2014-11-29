@@ -9,8 +9,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
 #define DEBUG_DMA 0
 
-
-memory_t *memory_init(const char *boot, const char *rom)
+memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
 	memory_t *out = calloc(1, sizeof(memory_t));
 	FILE *fp = FOPEN(boot, "rb");
@@ -24,6 +23,8 @@ memory_t *memory_init(const char *boot, const char *rom)
 	out->bank_0       = malloc(out->to_read);
 	common_fread(out->bank_0, 1, out->to_read, fp);
 
+	out->state        = state;
+	out->audio        = audio_init(state);
 	out->bank_n       = out->bank_0 + 0x4000;
 	out->echo         = out->working_ram_0;
 	out->current_bank = 1;
@@ -178,6 +179,10 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 {
+	if(0xff10 <= addr && addr < 0xff40)
+	{
+		return audio_load(mem->audio, addr);
+	}
 	switch(addr)
 	{
 		//Timer Registers
@@ -237,9 +242,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	//TODO:IO Registers.
 	if(X(0xff10, 0xff3f))
 	{
-#if 0
-		Warning("Sound function not available (addr : 0x%04x)\n", addr);
-#endif
+		audio_store(mem->audio, addr, data);
 		return;
 	}
 	switch(addr)

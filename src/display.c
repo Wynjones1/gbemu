@@ -10,12 +10,17 @@
 //TODO: Remove pthreads
 #include <pthread.h>
 
-#define PIXEL_SIZE  4
-#define PIXEL_SCALE 2
-#define DISPLAY_ENABLED 1
-#define NUMBER_OF_OAM_ELEMENTS 40
+static const int PIXEL_SIZE  = 4;
+static const int PIXEL_SCALE = 2;
+static const int NUMBER_OF_OAM_ELEMENTS = 40;
+
+static void *display_thread(void *display_);
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
+
+#define SDL_Error(cond)                       \
+	if(cond)                                  \
+		Error("%s\n", SDL_GetError());        \
 
 struct display
 {
@@ -27,33 +32,20 @@ struct display
 	//Thread Data
 	pthread_t thread;
 
-#if DEBUG
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 
 	//TTF Data
 	TTF_Font *font;
 	SDL_Texture *font_texture;
-#endif
 	SDL_Surface *surface;
 };
 
-#if DISPLAY_ENABLED
-#if DISPLAY_THREAD
-	static void *display_thread(void *display_);
-#endif
-
-#if DEBUG
 static void init_ttf(display_t *d)
 {
-	if(TTF_Init() < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error(TTF_Init() < 0);
+
 	d->font = TTF_OpenFont("./data/fonts/font0.ttf", 102);
-	if(d->font == NULL)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error(d->font == NULL);
 
 	TTF_SetFontStyle(d->font,   0);
 	TTF_SetFontOutline(d->font, 0);
@@ -64,64 +56,35 @@ static void init_ttf(display_t *d)
 	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
 	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
 }
-#endif
 
 static void init_display(display_t *display)
 {
-	display->window = SDL_CreateWindow("Window", 0, 0, 
-									PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH),
-									PIXEL_SCALE * DISPLAY_HEIGHT, 0);
-	if(!display->window)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	unsigned int width  = DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH;
+	unsigned int height = DISPLAY_HEIGHT;
+	display->window = SDL_CreateWindow("Window", 0, 0, PIXEL_SCALE * width,PIXEL_SCALE * height, 0);
+
+	SDL_Error(display->window == NULL);
+
 	display->render  = SDL_CreateRenderer(display->window, -1, 0);
-	if(!display->render)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error(display->render == NULL);
+
 	display->texture = SDL_CreateTexture(display->render,
-								SDL_PIXELFORMAT_ARGB8888,
-								SDL_TEXTUREACCESS_STREAMING,
-								DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH, DISPLAY_HEIGHT);
-	if(!display->texture)
-	{
-		Error("%s\n", SDL_GetError());
-	}
-	if(SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
-#if DEBUG
-	memset(display->debug_data, 0x00, sizeof(display->debug_data));
-	init_ttf(display);
-#endif
-}
-#endif
+										SDL_PIXELFORMAT_RGB888,
+										SDL_TEXTUREACCESS_STREAMING,
+										width, height);
 
-display_t *display_init(cpu_state_t *state)
-{
-	display_t *display = malloc(sizeof(display_t));
-	display->state  = state;
-	display->mem    = state->memory;
-	if(DISPLAY_ENABLED)
+	SDL_Error(display->texture == NULL);
+
+	SDL_Error(
+		SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff) < 0);
+
+	if(REGISTER_WINDOW)
 	{
-		SDL_Init(SDL_INIT_VIDEO);
-		if(DISPLAY_THREAD)
-		{
-			pthread_t thread;
-			pthread_create(&thread, NULL, display_thread, display);
-		}
-		else
-		{
-			init_display(display);
-		}
+		//display->debug_data;
+		init_ttf(display);
 	}
-	return display;
 }
 
-#if DISPLAY_THREAD && DISPLAY_ENABLED
-void handle_events(struct cpu_state *state);
 static void *display_thread(void *display_)
 {
 	display_t *display = display_;
@@ -135,7 +98,22 @@ static void *display_thread(void *display_)
 	}
 	return NULL;
 }
-#endif
+
+display_t *display_init(cpu_state_t *state)
+{
+	display_t *display = malloc(sizeof(display_t));
+	display->state = state;
+	display->mem = state->memory;
+
+	if(DISPLAY_ENABLED)
+	{
+		SDL_Init(SDL_INIT_VIDEO);
+		pthread_t thread;
+		pthread_create(&thread, NULL, display_thread, display);
+	}
+	return display;
+}
+
 
 void display_delete(display_t *disp)
 {
@@ -144,7 +122,7 @@ void display_delete(display_t *disp)
 }
 
 
-void transfer_buffer(display_t *d)
+static void transfer_buffer(display_t *d)
 {
 	uint8_t *data;
 	int      pitch;
@@ -183,7 +161,6 @@ void display_clear(display_t *disp)
 	SDL_RenderPresent(disp->render);
 }
 
-#if DEBUG
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
 {
 	int h = 18;
@@ -200,16 +177,10 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 	disp->surface = TTF_RenderText_Solid(disp->font, buf, fg);
 	disp->font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
 
-	if(SDL_UpdateTexture(disp->texture, &debug_rect, disp->debug_data,
-							PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error( SDL_UpdateTexture(disp->texture, &debug_rect,
+							disp->debug_data, PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0);
 
-	if(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0);
 
 	SDL_DestroyTexture(disp->font_texture);
 	SDL_FreeSurface(disp->surface);
@@ -217,7 +188,6 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 void draw_instructions(display_t *display)
 {
-/*
 	char buf[1024];
 	char buf0[1024];
 	uint16_t addr = display->state->pc;
@@ -225,10 +195,9 @@ void draw_instructions(display_t *display)
 	debug_print_op(buf0, display->state, op);
 	sprintf(buf, " | %-25s", buf0);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
-*/
 }
 
-void draw_debug(display_t *disp)
+static void draw_debug(display_t *disp)
 {
 	draw_instructions(disp);
 	char buf[1024];
@@ -312,9 +281,7 @@ void draw_debug(display_t *disp)
 						disp->state->memory->tac.enable);
 	draw_line(disp, buf, 7, 1, DEBUG_REGISTER_WIDTH);
 }
-#endif
 
-//TODO:Change to need DEBUG flag.
 void display_present(display_t *disp)
 {
 	SDL_Rect rect = {
@@ -329,9 +296,10 @@ void display_present(display_t *disp)
 	{
 		Error("%s\n", SDL_GetError());
 	}
-#if DEBUG
-	draw_debug(disp);
-#endif
+	if(DEBUG)
+	{
+		draw_debug(disp);
+	}
 	SDL_RenderPresent(disp->render);
 }
 
@@ -387,7 +355,7 @@ static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 	return out;
 }
 
-uint8_t shade_table[4] =
+static uint8_t shade_table[4] =
 {
 	255,
 	127,
