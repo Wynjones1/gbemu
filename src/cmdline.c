@@ -21,7 +21,12 @@
     }                                                           \
     else if(OPTION(s, l))                                       \
     {                                                           \
-        if(HAVE_NEXT) out.name = atoi(NEXT);                    \
+        if(HAVE_NEXT)                                           \
+        {                                                       \
+            out.name = atoi(NEXT);                              \
+            i++;                                                \
+            continue;                                           \
+        }                                                       \
         else Error("Must supply argument for --%s/-%s\n", l, s);\
     }
 #define OPTION_BOOL(s, l, name, description)                    \
@@ -32,6 +37,7 @@
     else if(!SET_DEFAULT && OPTION(s, l))                       \
     {                                                           \
         out.name = true;                                        \
+        continue;                                               \
     }
 #define OPTION_STRING(s, l, name, default_val, description)     \
     if(PRINT_HELP)                                              \
@@ -45,7 +51,12 @@
     }                                                           \
     else if(OPTION(s, l))                                       \
     {                                                           \
-        if(HAVE_NEXT) out.name = NEXT;                          \
+        if(HAVE_NEXT)                                           \
+        {                                                       \
+            out.name = NEXT;                                    \
+            i++;                                                \
+            continue;                                           \
+        }                                                       \
         else Error("Must supply argument for --%s/-%s\n", l, s);\
     }
 

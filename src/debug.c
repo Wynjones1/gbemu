@@ -12,39 +12,42 @@ void sigabrt_handler(int x)
 
 void debug_on_exit(void)
 {
-	int w = 32;
-	int h = 6;
-	ppm_t *ppm = ppm_new(w * 8, h * 8, "tiles.ppm");
-	memory_t *mem = g_state->memory;
-	for(int ty = 0; ty < h; ty++)
-	{
-		for(int tx = 0; tx < w; tx++)
-		{
-			//Tile map is located at address 0x9800 or 0x9c00
-			int tile_num = ty * w + tx;
-			uint8_t *tile_data = &mem->video_ram[tile_num * 16];
-			for(int j = 0; j < 8; j++)
-			{
-				for(int i = 0; i < 8; i++)
-				{
-					uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
-									((tile_data[0] >> i) & 0x1);
-					uint8_t x = tx * 8 + (7 - i);
-					uint8_t y = ty * 8 + j;
-					#if 1
-						uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
-						ppm_write_pixel(ppm, x, y , data);
-					#else
-						ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
-					#endif
-				}
-				tile_data += 2;
-			}
-		}
-	}
-	debug_output_registers(g_state);
-	debug_output_tile_maps(g_state);
-	debug_output_framebuffer(g_state);
+    if(OUTPUT_DEBUG_FILES)
+    {
+        int w = 32;
+        int h = 6;
+        ppm_t *ppm = ppm_new(w * 8, h * 8, "tiles.ppm");
+        memory_t *mem = g_state->memory;
+        for(int ty = 0; ty < h; ty++)
+        {
+            for(int tx = 0; tx < w; tx++)
+            {
+                //Tile map is located at address 0x9800 or 0x9c00
+                int tile_num = ty * w + tx;
+                uint8_t *tile_data = &mem->video_ram[tile_num * 16];
+                for(int j = 0; j < 8; j++)
+                {
+                    for(int i = 0; i < 8; i++)
+                    {
+                        uint8_t shade = ((tile_data[1] >> i) & 0x1) << 1 |
+                                        ((tile_data[0] >> i) & 0x1);
+                        uint8_t x = tx * 8 + (7 - i);
+                        uint8_t y = ty * 8 + j;
+                        #if 1
+                            uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
+                            ppm_write_pixel(ppm, x, y , data);
+                        #else
+                            ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
+                        #endif
+                    }
+                    tile_data += 2;
+                }
+            }
+        }
+        debug_output_registers(g_state);
+        debug_output_tile_maps(g_state);
+        debug_output_framebuffer(g_state);
+    }
 	cpu_delete(g_state);
 	exit(0);
 }

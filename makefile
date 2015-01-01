@@ -1,5 +1,5 @@
 all: build
-	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..; make -j5
+	cd build; cmake ..; make -j5
 
 build:
 	mkdir -p build
