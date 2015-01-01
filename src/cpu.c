@@ -21,7 +21,7 @@ cpu_state_t *cpu_init(cmdline_t *cmd)
 	out->memory      = memory_init(out, cmd->boot_rom, cmd->in);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
-	out->pc = 0;
+	out->pc          = 0;
 	out->store_state = 0;
 	return out;
 }
@@ -149,27 +149,6 @@ static int check_for_interrupts(struct cpu_state *state)
 	return 0;
 }
 #undef X
-
-static void display_mhz(int clk)
-{
-	static FILE *fp;
-	if(!fp)
-	{
-		fp = common_fopen("clock_speed.txt","w");
-	}
-
-	static long unsigned int count, time_count;
-	count += clk;
-	const float c = 1.0;
-	int temp = SDL_GetTicks();
-	if(temp - time_count > c * 1000)
-	{
-		float s = (c * count) / CPU_CLOCK_SPEED;
-		fprintf(fp, "%4.2f %f.\n", temp / 1000.0, s);
-		time_count = temp;
-		count = 0;
-	}
-}
 
 static void frame_limit(int clk)
 {
@@ -333,7 +312,6 @@ void cpu_start(struct cpu_state *state)
 		state->clock_counter += clk;
 		increment_div(state, clk);
 		increment_tima(state, clk);
-		display_mhz(clk);
 		if(state->frame_limit)
 		{
 			frame_limit(clk);
