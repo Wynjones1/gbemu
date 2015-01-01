@@ -6,7 +6,7 @@ build:
 	cd build; cmake ..
 
 run: all
-	./bin/gbemu
+	./build/gbemu
 
 clean:
 	rm -Rf build bin *.svg *.out *.ppm *.log

@@ -1,6 +1,7 @@
 #include "ppm.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include "common.h"
 
 struct ppm
 {
@@ -13,7 +14,7 @@ struct ppm
 ppm_t *ppm_new(int width, int height, const char *filename)
 {
 	ppm_t *out  = malloc(sizeof(ppm_t));
-	out->fp     = fopen(filename, "w");
+	out->fp     = common_fopen(filename, "w");
 	out->width  = width;
 	out->height = height;
 

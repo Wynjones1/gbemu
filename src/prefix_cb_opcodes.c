@@ -1,6 +1,10 @@
 #include "opcodes.h"
 
-#define X(n, a0, d0, a1, d1, s, suc, f) {.op = n, .arg0 = a0, .i0 = d0, .arg1 = a1, .i1 = d1, .size = s, .success = suc, .fail = f, .name = #n}
+#define X(n, a0, d0, a1, d1, s, suc, f)     \
+    {.op = n,  .arg0 = a0,                  \
+     .i0.r8 = d0, .arg1 = a1,                  \
+     .i1.r8 = d1, .size = s,                   \
+     .success = suc, .fail = f, .name = #n}
 
 struct opcode cb_op_table[] = {
 X(RLC,ARG_TYPE_REG8,REG_B,ARG_TYPE_NONE,REG_A,2,8,0) /*opcode 0x0*/,

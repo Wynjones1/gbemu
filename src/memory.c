@@ -93,7 +93,7 @@ static void dma(memory_t *mem, reg_t data)
 {
 #if DEBUG_DMA
 	static FILE *fp;
-	if(!fp) fp = fopen("dma_log.txt", "w");
+	if(!fp) fp = common_fopen("dma_log.txt", "w");
 #endif
 	//Writing to the DMA register initiates a 0xa0 byte DMA transfer.
 
@@ -485,12 +485,11 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 #undef X
 #undef Y
 
-#define X(elem) temp = fread(&memory->elem, 1, sizeof(memory->elem), fp)
-#define Y(elem) temp = fread(memory->elem, 1, sizeof(memory->elem), fp)
+#define X(elem) fread(&memory->elem, 1, sizeof(memory->elem), fp)
+#define Y(elem) fread(memory->elem, 1, sizeof(memory->elem), fp)
 memory_t *memory_load_state(FILE *fp)
 {
 	memory_t *memory = malloc(sizeof(memory_t));
-	int temp; //Shuts up gcc about fread.
 	Y(video_ram);
 	Y(working_ram_0);
 	Y(working_ram_1);
@@ -530,7 +529,7 @@ memory_t *memory_load_state(FILE *fp)
 	X(tac);
 	X(to_read);
 	memory->bank_0 = malloc(memory->to_read);
-	temp = fread(memory->bank_0, memory->to_read, 1, fp);
+	fread(memory->bank_0, memory->to_read, 1, fp);
 	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
 	memory->external_ram = malloc(10 * 1024);
 	memory->echo         = memory->working_ram_0;
