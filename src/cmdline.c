@@ -52,7 +52,7 @@
 #define OPTION_HELP()\
     if(PRINT_HELP)\
     {\
-        break;\
+        exit(0);\
     }\
     else if(SET_DEFAULT)\
     {}\
@@ -71,7 +71,8 @@ cmdline_t cmdline_read(int argc, char **argv)
 print_help_label:
         OPTION_BOOL("v", "verbose",  verbose, "verbose output.");
         OPTION_BOOL("a", "audio", audio, "enable audio");
-        OPTION_BOOL("r", "replay", replay, "replay");
+        OPTION_BOOL("r", "record", record, "record input for playback.");
+        OPTION_BOOL("p", "replay", replay, "replay previously recorded input."); 
         OPTION_STRING("i", "in", in, "./data/roms/mario.gb","rom that will be run.");
         OPTION_INT("s", "scale", scale, 1, "scale window size.");
         OPTION_STRING("b", "boot-rom", boot_rom, "./data/boot_roms/DMG.bin","first 256 bytes to be run.");

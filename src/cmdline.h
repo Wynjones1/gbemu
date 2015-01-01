@@ -9,6 +9,7 @@ typedef struct cmdline
 	bool        verbose;
     bool        audio;
     bool        replay;
+    bool        record;
 }cmdline_t;
 
 cmdline_t cmdline_read(int argc, char **argv);

@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		struct cpu_state *state = cpu_init(cmdline.boot_rom, cmdline.in);
+		struct cpu_state *state = cpu_init(&cmdline);
 		cpu_start(state);
 		cpu_delete(state);
 	}

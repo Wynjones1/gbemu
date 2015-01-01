@@ -14,10 +14,11 @@
 
 #include <SDL2/SDL.h>
 
-cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom)
+cpu_state_t *cpu_init(cmdline_t *cmd)
 {
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
-	out->memory      = memory_init(out, boot_rom_filename, rom);
+    out->cmd         = *cmd;
+	out->memory      = memory_init(out, cmd->boot_rom, cmd->in);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
 	out->pc = 0;
@@ -237,6 +238,24 @@ static void increment_tima(cpu_state_t *state, int clk)
 }
 #undef X
 
+void record(struct cpu_state *state)
+{
+    static FILE *fp;
+    if(!fp) fp = fopen("record.txt", "wb");
+    fwrite(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
+    fwrite(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
+    fflush(fp);
+}
+
+void replay(struct cpu_state *state)
+{
+    static FILE *fp;
+    if(!fp) fp = fopen("record.txt", "rb");
+    if(feof(fp)) exit(0);
+    fread(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
+    fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
+}
+
 void cpu_start(struct cpu_state *state)
 {
 	g_state = state;
@@ -300,7 +319,14 @@ void cpu_start(struct cpu_state *state)
 		{
 			op = &op_table[0]; //NOP
 		}
-			
+
+        debug_print_op(instruction_buffer, state, op);
+        
+        if(state->cmd.record)
+            record(state);
+        if(state->cmd.replay)
+            replay(state);
+
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
 		//Increment program counter.
 		int clk = state->success ? op->success : op->fail;

@@ -5,6 +5,7 @@
 #include "common.h"
 #include "arg_defs.h"
 #include "events.h"
+#include "cmdline.h"
 
 #define CPU_CLOCK_SPEED     4194304
 #define CPU_CLOCKS_PER_MS   (CPU_CLOCK_SPEED / 1000.0)
@@ -66,9 +67,11 @@ typedef struct cpu_state
 	int slow;
 	int store_state;
 
+    cmdline_t cmd;
+
 }cpu_state_t;
 
-cpu_state_t *cpu_init(const char *boot_rom_filename, const char *rom);
+cpu_state_t *cpu_init(cmdline_t *command_line);
 void cpu_start(struct cpu_state *state);
 void cpu_delete(cpu_state_t *state);
 void cpu_save_state(cpu_state_t *state, const char *filename);
