@@ -1,5 +1,7 @@
 #include "common.h"
 #include <stdarg.h>
+#include <string.h>
+#include <errno.h>
 
 uint32_t g_cycles = 0;
 FILE *output_fp;
@@ -74,4 +76,22 @@ void common_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
 	int read = fread(ptr, size, nmemb, fp);
 	if(read != nmemb) Error("Could not read all data.\n");
+}
+
+void common_print_binary(FILE *fp, uint64_t x, unsigned int width)
+{
+    for(int i = 0; i < width; i++)
+    {
+        fprintf(fp, "%c", ((x >> i) & 0x1) ? '1' : '0');
+    }
+}
+
+FILE *common_fopen(const char *filename, const char *mode)
+{
+    FILE *fp = fopen(filename, mode);
+    if(!fp)
+    {
+        Error("Could not open file %s\n", filename, strerror(errno));
+    }
+    return fp;
 }

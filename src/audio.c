@@ -1,7 +1,7 @@
 #include "audio.h"
 #include <pthread.h>
 #include <stdlib.h>
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 void audio_start_thread(void)
 {

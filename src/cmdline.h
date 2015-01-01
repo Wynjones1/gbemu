@@ -4,7 +4,11 @@
 typedef struct cmdline
 {
 	const char *in;
-	int         verbose;
+    const char *boot_rom;
+    int         scale;
+	bool        verbose;
+    bool        audio;
+    bool        replay;
 }cmdline_t;
 
 cmdline_t cmdline_read(int argc, char **argv);

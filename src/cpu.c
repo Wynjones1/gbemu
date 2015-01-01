@@ -65,7 +65,7 @@ int cpu_zero(struct cpu_state *state)
 #define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
-	FILE *fp = fopen(filename, "wb");
+	FILE *fp = common_fopen(filename, "wb");
 	fprintf(fp, "GBEMU%d ", VERSION);
 	fwrite(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
@@ -154,7 +154,7 @@ static void display_mhz(int clk)
 	static FILE *fp;
 	if(!fp)
 	{
-		fp = fopen("clock_speed.txt","w");
+		fp = common_fopen("clock_speed.txt","w");
 	}
 
 	static long unsigned int count, time_count;

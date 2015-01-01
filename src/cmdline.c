@@ -1,52 +1,83 @@
 #include <stdio.h>
 #include <string.h>
 #include "cmdline.h"
+#include "common.h"
 
-#if 0
-	#if 0
-		const char *rom = "/home/stuart/tetris.gb";
-	#elif 0
-		const char *rom = "./data/roms/mario.gb";
-	#elif 0
-		const char *rom = "./data/roms/zelda.gb";
-	#elif 0
-		const char *rom = "./data/roms/Donkey Kong Land.gb";
-	#elif 0
-		const char *rom = "./data/roms/Donkey Kong.gb";
-	#elif 1
-		const char *rom = "./data/roms/waverace.gb";
-	#elif 0
-		const char *rom = "./data/roms/drmario.gb";
-	#elif 1
-		const char *rom = "./data/roms/pokemon_blue.gb";
-	#elif 0
-		const char *rom = "/home/stuart/cpu_instrs.gb";
-	#elif 0
-		const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/01-special.gb";
-	#else
-		const char *rom = "/home/stuart/Documents/Gameboy/cpu_instrs/individual/05-op rp.gb";
-	#endif
-#endif
-
-#define HAVE_NEXT (i + 1 < argc)
-#define NEXT argv[i + 1]
+#define SET_DEFAULT (i == -1)
+#define HAVE_NEXT   (i + 1 < argc)
+#define NEXT        argv[i + 1]
 #define CMP(s, l, str)\
-	(strcmp(s, str) == 0 || strcmp(l, str) == 0)
+	(strcmp("-" s, str) == 0 || strcmp("--" l, str) == 0)
 #define OPTION(s, l) CMP(s, l, argv[i])
+#define OPTION_INT(s, l, name, default_val, description)        \
+    if(PRINT_HELP)                                              \
+    {                                                           \
+        printf("-%s/--%-10s: %s (default : %d)\n",              \
+            s,l, description, default_val);                     \
+    }                                                           \
+    else if(SET_DEFAULT)                                        \
+    {                                                           \
+        out.name = default_val;                                 \
+    }                                                           \
+    else if(OPTION(s, l))                                       \
+    {                                                           \
+        if(HAVE_NEXT) out.name = atoi(NEXT);                    \
+        else Error("Must supply argument for --%s/-%s\n", l, s);\
+    }
+#define OPTION_BOOL(s, l, name, description)                    \
+    if(PRINT_HELP)                                              \
+    {                                                           \
+        printf("-%s/--%-10s: %s\n", s,l, description);          \
+    }                                                           \
+    else if(!SET_DEFAULT && OPTION(s, l))                       \
+    {                                                           \
+        out.name = true;                                        \
+    }
+#define OPTION_STRING(s, l, name, default_val, description)     \
+    if(PRINT_HELP)                                              \
+    {                                                           \
+        printf("-%s/--%-10s: %s (default : %s)\n",              \
+            s,l, description, default_val);                     \
+    }                                                           \
+    else if(SET_DEFAULT)                                        \
+    {                                                           \
+        out.name = default_val;                                 \
+    }                                                           \
+    else if(OPTION(s, l))                                       \
+    {                                                           \
+        if(HAVE_NEXT) out.name = NEXT;                          \
+        else Error("Must supply argument for --%s/-%s\n", l, s);\
+    }
+
+#define OPTION_HELP()\
+    if(PRINT_HELP)\
+    {\
+        break;\
+    }\
+    else if(SET_DEFAULT)\
+    {}\
+    else if(OPTION("h", "help"))\
+    {\
+        PRINT_HELP = true;\
+        goto print_help_label;\
+    }
+
 cmdline_t cmdline_read(int argc, char **argv)
 {
-	cmdline_t out;
-	memset(&out, 0x00, sizeof(out));
-	for(int i = 0; i < argc; i++)
+	cmdline_t out = {0};
+    bool PRINT_HELP= false;
+	for(int i = -1; i < argc; i++)
 	{
-		if(OPTION("-v", "--verbose")) out.verbose = 1;
-		if(OPTION("-i", "--in"))
-		{
-			if(HAVE_NEXT) out.in = NEXT;
-			else
-				Error("Must supply input file.");
-		}
+print_help_label:
+        OPTION_BOOL("v", "verbose",  verbose, "verbose output.");
+        OPTION_BOOL("a", "audio", audio, "enable audio");
+        OPTION_BOOL("r", "replay", replay, "replay");
+        OPTION_STRING("i", "in", in, "./data/roms/mario.gb","rom that will be run.");
+        OPTION_INT("s", "scale", scale, 1, "scale window size.");
+        OPTION_STRING("b", "boot-rom", boot_rom, "./data/boot_roms/DMG.bin","first 256 bytes to be run.");
+        OPTION_HELP();
+        if(i > 1)
+            Error("Unrecognised option %s\n", argv[i]);
 	}
-	if(out.in == NULL) out.in = "./data/roms/mario.gb";
 	return out;
 }
