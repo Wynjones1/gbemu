@@ -38,3 +38,4 @@ void       display_simulate(cpu_state_t *state);
 uint8_t    display_get_shade(const uint8_t *tile_data, int i);
 
 extern unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
+extern char instruction_buffer[];

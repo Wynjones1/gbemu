@@ -11,12 +11,13 @@
 #include <pthread.h>
 
 static const int PIXEL_SIZE  = 4;
-static const int PIXEL_SCALE = 2;
+static const int PIXEL_SCALE = 3;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
 
 static void *display_thread(void *display_);
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
+char instruction_buffer[200];
 
 #define SDL_Error(cond)                       \
 	if(cond)                                  \
@@ -40,6 +41,22 @@ struct display
 	SDL_Surface *surface;
 };
 
+static SDL_Surface *RenderText(TTF_Font *font, const char *string)
+{
+    static const int mode = 2;
+    static const SDL_Color fg = {255, 255, 255};
+    static const SDL_Color bg = {0, 0, 0};
+    if(mode == 1)
+    {
+        return TTF_RenderText_Shaded(font, string, fg, bg);
+    }
+    else if(mode == 2)
+    {
+        return TTF_RenderText_Blended(font, string, fg);
+    }
+    return TTF_RenderText_Solid(font, string, fg);
+}
+
 static void init_ttf(display_t *d)
 {
 	SDL_Error(TTF_Init() < 0);
@@ -52,8 +69,7 @@ static void init_ttf(display_t *d)
 	TTF_SetFontKerning(d->font, 0);
 	TTF_SetFontHinting(d->font, 0);
 
-	SDL_Color fg    = {255, 255, 255};
-	d->surface      = TTF_RenderText_Solid(d->font, "1234512345", fg);
+	d->surface      = RenderText(d->font, "1234512345");
 	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
 }
 
@@ -69,9 +85,9 @@ static void init_display(display_t *display)
 	SDL_Error(display->render == NULL);
 
 	display->texture = SDL_CreateTexture(display->render,
-										SDL_PIXELFORMAT_RGB888,
-										SDL_TEXTUREACCESS_STREAMING,
-										width, height);
+                                         SDL_PIXELFORMAT_RGB888,
+                                         SDL_TEXTUREACCESS_STREAMING,
+                                         width, height);
 
 	SDL_Error(display->texture == NULL);
 
@@ -105,12 +121,9 @@ display_t *display_init(cpu_state_t *state)
 	display->state = state;
 	display->mem = state->memory;
 
-	if(DISPLAY_ENABLED)
-	{
-		SDL_Init(SDL_INIT_VIDEO);
-		pthread_t thread;
-		pthread_create(&thread, NULL, display_thread, display);
-	}
+    SDL_Init(SDL_INIT_VIDEO);
+    pthread_t thread;
+    pthread_create(&thread, NULL, display_thread, display);
 	return display;
 }
 
@@ -173,11 +186,10 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 		.w = PIXEL_SCALE * width , .h = h 
 	};
 
-	SDL_Color fg = {255, 255, 255};
-	disp->surface = TTF_RenderText_Solid(disp->font, buf, fg);
+	disp->surface = RenderText(disp->font, buf);
 	disp->font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
 
-	SDL_Error( SDL_UpdateTexture(disp->texture, &debug_rect,
+	SDL_Error(SDL_UpdateTexture(disp->texture, &debug_rect,
 							disp->debug_data, PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0);
 
 	SDL_Error(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0);
@@ -188,98 +200,77 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 void draw_instructions(display_t *display)
 {
-	char buf[1024];
-	char buf0[1024];
-	uint16_t addr = display->state->pc;
-	struct opcode *op = &op_table[cpu_load8(display->state, addr)];
-	debug_print_op(buf0, display->state, op);
-	sprintf(buf, " | %-25s", buf0);
+	char buf[100];
+	sprintf(buf, "%-35s", instruction_buffer + 7);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
 }
 
+#define DRAWLINE(format, ...)\
+    do\
+    {\
+        sprintf(buf, format, ##__VA_ARGS__);\
+        draw_line(disp, buf, cur_line++, column, DEBUG_REGISTER_WIDTH);\
+    }\
+    while(false)
+
 static void draw_debug(display_t *disp)
 {
-	draw_instructions(disp);
 	char buf[1024];
-	sprintf(buf, "PC    = 0x%04x", disp->state->pc);
-	draw_line(disp, buf, 0, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "AF    = 0x%04x", disp->state->af);
-	draw_line(disp, buf, 1, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "BC    = 0x%04x", disp->state->bc);
-	draw_line(disp, buf, 2, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "DE    = 0x%04x", disp->state->de);
-	draw_line(disp, buf, 3, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "HL    = 0x%04x", disp->state->hl);
-	draw_line(disp, buf, 4, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "SP    = 0x%04x", disp->state->sp);
-	draw_line(disp, buf, 5, 0, DEBUG_REGISTER_WIDTH);
+    int cur_line = 0;
+    int column   = 0;
+	DRAWLINE("REGISTERS:    ");
+	DRAWLINE("PC    = 0x%04x", disp->state->pc);
+	DRAWLINE("AF    = 0x%04x", disp->state->af);
+	DRAWLINE("BC    = 0x%04x", disp->state->bc);
+	DRAWLINE("DE    = 0x%04x", disp->state->de);
+	DRAWLINE("HL    = 0x%04x", disp->state->hl);
+	DRAWLINE("SP    = 0x%04x", disp->state->sp);
+	DRAWLINE("SCX   = 0x%04x", disp->state->memory->scx);
+	DRAWLINE("SCY   = 0x%04x", disp->state->memory->scy);
+	DRAWLINE("LY    = 0x%04x", disp->state->memory->ly);
+	DRAWLINE("LXC   = 0x%04x", disp->state->memory->lyc);
+	DRAWLINE("WX    = 0x%04x", disp->state->memory->wx);
+	DRAWLINE("WY    = 0x%04x", disp->state->memory->wy);
+	DRAWLINE("Bank  = 0x%04x", disp->state->memory->current_bank);
+    DRAWLINE(" ");
+	DRAWLINE("LCDC:          ");
+	DRAWLINE("BG Display : %u", disp->state->memory->lcdc.bg_display);
+	DRAWLINE("OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
+	DRAWLINE("OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
+	DRAWLINE("Map Select : %u", disp->state->memory->lcdc.map_select);
+	DRAWLINE("Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
+	DRAWLINE("Window Disp: %u", disp->state->memory->lcdc.window_display);
+	DRAWLINE("Window Map : %u", disp->state->memory->lcdc.window_map);
+	DRAWLINE("Enabled    : %u", disp->state->memory->lcdc.enabled);
 
-	sprintf(buf, "SCX   = 0x%04x" , disp->state->memory->scx);
-	draw_line(disp, buf, 6, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "SCY   = 0x%04x"  , disp->state->memory->scy);
-	draw_line(disp, buf, 7, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "LY    = 0x%04x" , disp->state->memory->ly);
-	draw_line(disp, buf, 8, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "LXC   = 0x%04x"  , disp->state->memory->lyc);
-	draw_line(disp, buf, 9, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "WX    = 0x%04x" , disp->state->memory->wx);
-	draw_line(disp, buf, 10, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "WY    = 0x%04x", disp->state->memory->wy);
-	draw_line(disp, buf, 11, 0, DEBUG_REGISTER_WIDTH);
-
-	sprintf(buf, "Bank  = 0x%04x", disp->state->memory->current_bank);
-	draw_line(disp, buf, 12, 0, DEBUG_REGISTER_WIDTH);
-
-	sprintf(buf, "LCDC:         ");
-	draw_line(disp, buf, 13, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "BG Display : %u", disp->state->memory->lcdc.bg_display);
-	draw_line(disp, buf, 14, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
-	draw_line(disp, buf, 15, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
-	draw_line(disp, buf, 16, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Map Select : %u", disp->state->memory->lcdc.map_select);
-	draw_line(disp, buf, 17, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
-	draw_line(disp, buf, 18, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Window Disp: %u", disp->state->memory->lcdc.window_display);
-	draw_line(disp, buf, 19, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Window Map : %u", disp->state->memory->lcdc.window_map);
-	draw_line(disp, buf, 20, 0, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "Enabled    : %u", disp->state->memory->lcdc.enabled);
-	draw_line(disp, buf, 21, 0, DEBUG_REGISTER_WIDTH);
-
-
-	sprintf(buf, "Interrupt Flags (val/enabled):");
-	draw_line(disp, buf, 0, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "IME      : %u  ", disp->state->memory->IME);
-	draw_line(disp, buf, 1, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "VBLANK   : %u/%u",
+    column   = 1;
+    cur_line = 1;
+	DRAWLINE("Interrupt Flags (val/en):");
+	DRAWLINE("IME      : %u  ", disp->state->memory->IME);
+	DRAWLINE("VBLANK   : %u/%u",
 						disp->state->memory->interrupt.v_blank,
 						disp->state->memory->enabled.v_blank);
-	draw_line(disp, buf, 2, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "LCD STAT : %u/%u",
+	DRAWLINE("LCD STAT : %u/%u",
 						disp->state->memory->interrupt.lcd_status,
 						disp->state->memory->enabled.lcd_status);
-	draw_line(disp, buf, 3, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "TIMER    : %u/%u",
+	DRAWLINE("TIMER    : %u/%u",
 						disp->state->memory->interrupt.timer,
 						disp->state->memory->enabled.timer);
-	draw_line(disp, buf, 4, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "SERIAL   : %u/%u",
+	DRAWLINE("SERIAL   : %u/%u",
 						disp->state->memory->interrupt.serial,
 						disp->state->memory->enabled.serial);
-	draw_line(disp, buf, 5, 1, DEBUG_REGISTER_WIDTH);
-	sprintf(buf, "JOYPAD   : %u/%u",
+	DRAWLINE("JOYPAD   : %u/%u",
 						disp->state->memory->interrupt.joypad,
 						disp->state->memory->enabled.joypad);
-	draw_line(disp, buf, 6, 1, DEBUG_REGISTER_WIDTH);
 
-	sprintf(buf, "TIMA/TMA/EN   : %u/%u/%u",
-						disp->state->memory->tima,
-						disp->state->memory->tma,
-						disp->state->memory->tac.enable);
-	draw_line(disp, buf, 7, 1, DEBUG_REGISTER_WIDTH);
+    DRAWLINE(" ");
+    DRAWLINE("TIME REGISTERS ");
+	DRAWLINE("TIMA     : %03u", disp->state->memory->tima);
+	DRAWLINE("TMA      : %03u", disp->state->memory->tma);
+	DRAWLINE("CLK SEL  :   %01u", disp->state->memory->tac.clock_select);
+    DRAWLINE("TAC EN   :   %01u", disp->state->memory->tac.enable);
+
+	draw_instructions(disp);
 }
 
 void display_present(display_t *disp)

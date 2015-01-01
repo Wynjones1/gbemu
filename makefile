@@ -1,9 +1,8 @@
 all: build
-	cd build; make -j4
+	cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..; make -j5
 
 build:
 	mkdir -p build
-	cd build; cmake ..
 
 run: all
 	./build/gbemu
