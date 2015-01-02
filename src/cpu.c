@@ -243,7 +243,7 @@ void cpu_start(struct cpu_state *state)
 	struct opcode *op;
 	//state->pc = 0;
 	//TODO: Check if we need this.
-	display_display(state->display);
+	//display_display(state->display);
 	while(1)
 	{
 		if(state->store_state)

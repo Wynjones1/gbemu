@@ -329,7 +329,7 @@ void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 	debug_print_arg(arg1, state, op,op->arg1, op->i1);
 	char sep;
 	sep = op->arg1  == ARG_TYPE_NONE ? ' ' : ',';
-	sprintf(buffer, "0x%04x %s %s %c %s", state->pc, op->name, arg0, sep, arg1);
+	sprintf(buffer, "0x%04x %s %s %c %s", state->pc - op->size, op->name, arg0, sep, arg1);
 }
 
 

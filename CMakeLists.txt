@@ -52,17 +52,12 @@ DEFADD(OUTPUT_OUTPUT      No   "Enable stdout  output.")
 DEFADD(TESTING            No   "Run tests.")
 DEFADD(REGISTER_WINDOW    Yes  "Enable GB register window")
 DEFADD(OUTPUT_DEBUG_FILES No   "Output debug output files")
+DEFADD(DEBUG_WINDOW       Yes  "Window with current instruction and register values")
 
 if(${TESTING})
 	add_definitions("-DCPU_DUMMY_IO=1")
 else()
 	add_definitions("-DCPU_DUMMY_IO=0")
-endif()
-
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
-	add_definitions(-DDEBUG=1)
-else()
-	add_definitions(-DDEBUG=0)
 endif()
 
 include_directories(${DEPS}/SDL2/include)

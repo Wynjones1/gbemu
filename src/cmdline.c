@@ -80,12 +80,12 @@ cmdline_t cmdline_read(int argc, char **argv)
 	for(int i = -1; i < argc; i++)
 	{
 print_help_label:
-        OPTION_BOOL("v", "verbose",  verbose, "verbose output.");
-        OPTION_BOOL("a", "audio", audio, "enable audio");
-        OPTION_BOOL("r", "record", record, "record input for playback.");
-        OPTION_BOOL("p", "replay", replay, "replay previously recorded input."); 
-        OPTION_STRING("i", "in", in, "./data/roms/mario.gb","rom that will be run.");
-        OPTION_INT("s", "scale", scale, 1, "scale window size.");
+        OPTION_BOOL(  "v", "verbose",  verbose,                             "verbose output.");
+        OPTION_BOOL(  "a", "audio",    audio,                               "enable audio");
+        OPTION_BOOL(  "r", "record",   record,                              "record input for playback.");
+        OPTION_BOOL(  "p", "replay",   replay,                              "replay previously recorded input."); 
+        OPTION_STRING("i", "in",       in,        "./data/roms/pokemon_blue.gb",   "rom that will be run.");
+        OPTION_INT(   "s", "scale",    scale,     3,                        "scale window size.");
         OPTION_STRING("b", "boot-rom", boot_rom, "./data/boot_roms/DMG.bin","first 256 bytes to be run.");
         OPTION_HELP();
         if(i > 1)
