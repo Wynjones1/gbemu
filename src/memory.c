@@ -23,13 +23,13 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	out->bank_0       = malloc(out->to_read);
 	common_fread(out->bank_0, 1, out->to_read, fp);
 
-	out->state        = state;
-	out->audio        = audio_init(state);
-	out->bank_n       = out->bank_0 + 0x4000;
-	out->echo         = out->working_ram_0;
-	out->current_bank = 1;
-	out->io_registers[0x44] = 0x90;
-	out->boot_locked = 0;
+	out->state              = state;
+	out->audio              = audio_init(state);
+	out->bank_n             = out->bank_0;
+	out->echo               = out->working_ram_0;
+	out->current_bank       = 1;
+	out->boot_locked        = 0;
+	out->io_registers[0x44] = 0x90; //TODO: Why did I set it to this?
 	fclose(fp);
 	out->cart_type = out->bank_0[0x147];
 	out->rom_size  = out->bank_0[0x148];
@@ -40,20 +40,21 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 
 	switch(out->ram_size)
 	{
-		case 0:
-			break;
-		case 1:
-			out->external_ram = malloc(2 * 1024);
-			break;
-		case 2:
-			out->external_ram = malloc(4 * 1024);
-			break;
-		case 3:
-			out->external_ram = malloc(32 * 1024);
-			break;
+        case SAVE_RAM_SIZE_0K:
+            out->external_ram = NULL;
+            break;
+        case SAVE_RAM_SIZE_2K:
+            out->external_ram = malloc(2 * 1024);
+            break;
+        case SAVE_RAM_SIZE_8K:
+            out->external_ram = malloc(8 * 1024);
+            break;
+        case SAVE_RAM_SIZE_32K:
+            out->external_ram = malloc(32 * 1024);
+            break;
+        default:
+            Error("Invalid Ram Size %d\n", out->ram_size);
 	}
-	out->external_ram = malloc(10 * 1024);
-	//Error("Ram Size %d\n", out->ram_size);
 	return out;
 }
 
@@ -132,7 +133,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0x4000,0x7fff))
 	{
-		return mem->bank_0[(mem->current_bank - 1) * 0x4000 + addr];
+		return mem->bank_n[mem->current_bank * 0x4000 + addr - 0x4000];
 	}
 	else if(X(0x8000,0x9fff))
 	{
@@ -140,7 +141,9 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	}
 	else if(X(0xa000,0xbfff))
 	{
-		return mem->external_ram[addr - 0xa000];
+        if(mem->external_ram)
+            return mem->external_ram[addr - 0xa000];
+        return 0;
 	}
 	else if(X(0xc000,0xcfff))
 	{
@@ -329,25 +332,22 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0x2000, 0x3fff))//Select the lower 5 bits of the rom bank.
 	{
-		mem->lsb = data & 0x1f;
-		if(mem->current_bank == 0x00 ||
-			mem->current_bank == 0x20 ||
-			mem->current_bank == 0x40 ||
-			mem->current_bank == 0x60)
-		{
-			mem->current_bank++;
-		}
+		data = data & 0x1f;
+        if((mem->cart_type == CART_TYPE_MBC1              ||
+            mem->cart_type == CART_TYPE_MBC1_RAM          ||
+            mem->cart_type == CART_TYPE_MBC1_RAM_BATTERY) &&
+            data == 0x0)
+        {
+            data = 0x1;
+        }
+        mem->current_bank = (mem->current_bank & 0x60) | data;
+        if(mem->current_bank == 0) mem->current_bank = 1;
 	}
 	else if(X(0x4000, 0x5fff))//Select the upper 2 bits of the ROM bank or the RAM bank.
 	{
-		mem->msb = data & 0x3;
-		if(mem->current_bank == 0x00 ||
-			mem->current_bank == 0x20 ||
-			mem->current_bank == 0x40 ||
-			mem->current_bank == 0x60)
-		{
-			mem->current_bank++;
-		}
+		data = (data & 0x3) << 5;
+        mem->current_bank = data | (mem->current_bank & 0x1f);
+        if(mem->current_bank == 0) mem->current_bank = 1;
 	}
 	else if(X(0x6000, 0x7fff))//ROM/RAM mode select.
 	{
@@ -360,7 +360,8 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0xa000,0xbfff))
 	{
-		mem->external_ram[addr - 0xa000] = data;
+        if(mem->external_ram)
+            mem->external_ram[addr - 0xa000] = data;
 	}
 	else if(X(0xc000,0xcfff))
 	{

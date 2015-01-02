@@ -128,7 +128,7 @@ enum LICENSEE_CODE
     LICENSEE_CODE_EPIC_SONY_RECORDS     = 0xEC,
     LICENSEE_CODE_EPOCH                 = 0xE5,
     LICENSEE_CODE_EXTREME_ENTERTAINMENT = 0xF3,
-    LICENSEE_CODE_G                     = 0x33,
+    LICENSEE_CODE_GBC                   = 0x33,
     LICENSEE_CODE_GAMETEK               = 0x54,
     LICENSEE_CODE_GREMLIN               = 0x3E,
     LICENSEE_CODE_HAL                   = 0xB6,

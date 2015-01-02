@@ -1,15 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include <SDL2/SDL.h>
 
-#include "rom.h"
+#include "audio.h"
+#include "cmdline.h"
 #include "cpu.h"
 #include "display.h"
 #include "ppm.h"
+#include "rom.h"
 #include "testing/testing.h"
-#include "audio.h"
-#include "cmdline.h"
 
-#include <SDL2/SDL.h>
 int main(int argc, char **argv)
 {
 	cmdline_t cmdline;

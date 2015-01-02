@@ -1,6 +1,7 @@
 #pragma once
 #include "types.h"
 #include "audio.h"
+#include "rom.h"
 #include <stdio.h>
 
 typedef struct memory memory_t;
@@ -54,18 +55,10 @@ typedef struct memory
 	int boot_locked;
 	reg_t boot[0x100];
 	//Banking information and game rom data.
-	union
-	{
-		struct
-		{
-			char lsb : 5;
-			char msb : 2;
-		};
-		char current_bank;
-	};
-	int ram_size;
-	int cart_type;
-	int rom_size;
+    uint8_t current_bank;
+	enum CART_TYPE cart_type;
+	enum SAVE_RAM_SIZE  ram_size;
+	enum ROM_SIZE       rom_size;
 	int ram_enabled;
 	int rom_ram_mode;
 	//IO Status registers.

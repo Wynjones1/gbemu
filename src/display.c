@@ -11,10 +11,11 @@
 #include <pthread.h>
 
 static const int PIXEL_SIZE  = 4;
-static const int PIXEL_SCALE = 3;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
+static int PIXEL_SCALE = 0;
 
 static void *display_thread(void *display_);
+static void draw_debug(display_t *disp);
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 char instruction_buffer[200];
@@ -96,7 +97,6 @@ static void init_display(display_t *display)
 
 	if(REGISTER_WINDOW)
 	{
-		//display->debug_data;
 		init_ttf(display);
 	}
 }
@@ -120,6 +120,8 @@ display_t *display_init(cpu_state_t *state)
 	display_t *display = malloc(sizeof(display_t));
 	display->state = state;
 	display->mem = state->memory;
+
+    PIXEL_SCALE = state->cmd.scale;
 
     SDL_Init(SDL_INIT_VIDEO);
     pthread_t thread;
@@ -160,7 +162,7 @@ void display_display(display_t *display)
 	if(display->mem->lcdc.enabled)
 	{
 		transfer_buffer(display);
-		display_present(display);
+        display_present(display);
 	}
 	else
 	{
@@ -171,6 +173,10 @@ void display_display(display_t *display)
 void display_clear(display_t *disp)
 {
 	SDL_RenderClear(disp->render);
+	if(DEBUG)
+	{
+		draw_debug(disp);
+	}
 	SDL_RenderPresent(disp->render);
 }
 
@@ -215,62 +221,65 @@ void draw_instructions(display_t *display)
 
 static void draw_debug(display_t *disp)
 {
-	char buf[1024];
-    int cur_line = 0;
-    int column   = 0;
-	DRAWLINE("REGISTERS:    ");
-	DRAWLINE("PC    = 0x%04x", disp->state->pc);
-	DRAWLINE("AF    = 0x%04x", disp->state->af);
-	DRAWLINE("BC    = 0x%04x", disp->state->bc);
-	DRAWLINE("DE    = 0x%04x", disp->state->de);
-	DRAWLINE("HL    = 0x%04x", disp->state->hl);
-	DRAWLINE("SP    = 0x%04x", disp->state->sp);
-	DRAWLINE("SCX   = 0x%04x", disp->state->memory->scx);
-	DRAWLINE("SCY   = 0x%04x", disp->state->memory->scy);
-	DRAWLINE("LY    = 0x%04x", disp->state->memory->ly);
-	DRAWLINE("LXC   = 0x%04x", disp->state->memory->lyc);
-	DRAWLINE("WX    = 0x%04x", disp->state->memory->wx);
-	DRAWLINE("WY    = 0x%04x", disp->state->memory->wy);
-	DRAWLINE("Bank  = 0x%04x", disp->state->memory->current_bank);
-    DRAWLINE(" ");
-	DRAWLINE("LCDC:          ");
-	DRAWLINE("BG Display : %u", disp->state->memory->lcdc.bg_display);
-	DRAWLINE("OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
-	DRAWLINE("OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
-	DRAWLINE("Map Select : %u", disp->state->memory->lcdc.map_select);
-	DRAWLINE("Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
-	DRAWLINE("Window Disp: %u", disp->state->memory->lcdc.window_display);
-	DRAWLINE("Window Map : %u", disp->state->memory->lcdc.window_map);
-	DRAWLINE("Enabled    : %u", disp->state->memory->lcdc.enabled);
+    if(DEBUG_WINDOW)
+    {
+        char buf[1024];
+        int cur_line = 0;
+        int column   = 0;
+        DRAWLINE("REGISTERS:    ");
+        DRAWLINE("PC    = 0x%04x", disp->state->pc);
+        DRAWLINE("AF    = 0x%04x", disp->state->af);
+        DRAWLINE("BC    = 0x%04x", disp->state->bc);
+        DRAWLINE("DE    = 0x%04x", disp->state->de);
+        DRAWLINE("HL    = 0x%04x", disp->state->hl);
+        DRAWLINE("SP    = 0x%04x", disp->state->sp);
+        DRAWLINE("SCX   = 0x%04x", disp->state->memory->scx);
+        DRAWLINE("SCY   = 0x%04x", disp->state->memory->scy);
+        DRAWLINE("LY    = 0x%04x", disp->state->memory->ly);
+        DRAWLINE("LXC   = 0x%04x", disp->state->memory->lyc);
+        DRAWLINE("WX    = 0x%04x", disp->state->memory->wx);
+        DRAWLINE("WY    = 0x%04x", disp->state->memory->wy);
+        DRAWLINE("Bank  = 0x%04x", disp->state->memory->current_bank);
+        DRAWLINE(" ");
+        DRAWLINE("LCDC:          ");
+        DRAWLINE("BG Display : %u", disp->state->memory->lcdc.bg_display);
+        DRAWLINE("OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
+        DRAWLINE("OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
+        DRAWLINE("Map Select : %u", disp->state->memory->lcdc.map_select);
+        DRAWLINE("Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
+        DRAWLINE("Window Disp: %u", disp->state->memory->lcdc.window_display);
+        DRAWLINE("Window Map : %u", disp->state->memory->lcdc.window_map);
+        DRAWLINE("Enabled    : %u", disp->state->memory->lcdc.enabled);
 
-    column   = 1;
-    cur_line = 1;
-	DRAWLINE("Interrupt Flags (val/en):");
-	DRAWLINE("IME      : %u  ", disp->state->memory->IME);
-	DRAWLINE("VBLANK   : %u/%u",
-						disp->state->memory->interrupt.v_blank,
-						disp->state->memory->enabled.v_blank);
-	DRAWLINE("LCD STAT : %u/%u",
-						disp->state->memory->interrupt.lcd_status,
-						disp->state->memory->enabled.lcd_status);
-	DRAWLINE("TIMER    : %u/%u",
-						disp->state->memory->interrupt.timer,
-						disp->state->memory->enabled.timer);
-	DRAWLINE("SERIAL   : %u/%u",
-						disp->state->memory->interrupt.serial,
-						disp->state->memory->enabled.serial);
-	DRAWLINE("JOYPAD   : %u/%u",
-						disp->state->memory->interrupt.joypad,
-						disp->state->memory->enabled.joypad);
+        column   = 1;
+        cur_line = 1;
+        DRAWLINE("Interrupt Flags (val/en):");
+        DRAWLINE("IME      : %u  ", disp->state->memory->IME);
+        DRAWLINE("VBLANK   : %u/%u",
+                            disp->state->memory->interrupt.v_blank,
+                            disp->state->memory->enabled.v_blank);
+        DRAWLINE("LCD STAT : %u/%u",
+                            disp->state->memory->interrupt.lcd_status,
+                            disp->state->memory->enabled.lcd_status);
+        DRAWLINE("TIMER    : %u/%u",
+                            disp->state->memory->interrupt.timer,
+                            disp->state->memory->enabled.timer);
+        DRAWLINE("SERIAL   : %u/%u",
+                            disp->state->memory->interrupt.serial,
+                            disp->state->memory->enabled.serial);
+        DRAWLINE("JOYPAD   : %u/%u",
+                            disp->state->memory->interrupt.joypad,
+                            disp->state->memory->enabled.joypad);
 
-    DRAWLINE(" ");
-    DRAWLINE("TIME REGISTERS ");
-	DRAWLINE("TIMA     : %03u", disp->state->memory->tima);
-	DRAWLINE("TMA      : %03u", disp->state->memory->tma);
-	DRAWLINE("CLK SEL  :   %01u", disp->state->memory->tac.clock_select);
-    DRAWLINE("TAC EN   :   %01u", disp->state->memory->tac.enable);
+        DRAWLINE(" ");
+        DRAWLINE("TIME REGISTERS ");
+        DRAWLINE("TIMA     : %03u", disp->state->memory->tima);
+        DRAWLINE("TMA      : %03u", disp->state->memory->tma);
+        DRAWLINE("CLK SEL  :   %01u", disp->state->memory->tac.clock_select);
+        DRAWLINE("TAC EN   :   %01u", disp->state->memory->tac.enable);
 
-	draw_instructions(disp);
+        draw_instructions(disp);
+    }
 }
 
 void display_present(display_t *disp)

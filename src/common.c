@@ -24,6 +24,14 @@ void common_warn(const char *format, ...)
 	static int warn_count = 0;
 	if(warn_count < WARN_LIMIT)
 	{
+        if(!output_fp)
+        {
+    #ifdef OUTPUT_FILENAME
+            output_fp = fopen(OUTPUT_FILENAME, "w");
+    #else
+            output_fp = stdout;
+    #endif
+        }
 		va_list arg_list;
 		va_start(arg_list, format);
 		vprintf(format, arg_list);
