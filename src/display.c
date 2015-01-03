@@ -19,6 +19,7 @@ static void draw_debug(display_t *disp);
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 char instruction_buffer[200];
+char last_instruction[200];
 
 #define SDL_Error(cond)                       \
 	if(cond)                                  \
@@ -121,7 +122,7 @@ display_t *display_init(cpu_state_t *state)
 	display->state = state;
 	display->mem = state->memory;
 
-    PIXEL_SCALE = state->cmd.scale;
+    PIXEL_SCALE = cmdline_args.scale;
 
     SDL_Init(SDL_INIT_VIDEO);
     pthread_t thread;
@@ -159,7 +160,7 @@ static void transfer_buffer(display_t *d)
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(display->mem->lcdc.enabled)
+	if(1)//display->mem->lcdc.enabled)
 	{
 		transfer_buffer(display);
         display_present(display);
@@ -206,9 +207,11 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 void draw_instructions(display_t *display)
 {
-	char buf[100];
-	sprintf(buf, "%-35s", instruction_buffer + 7);
+    char buf[100];
+	sprintf(buf, "%-35s", last_instruction);
 	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
+	sprintf(buf, "%-35s", instruction_buffer);
+	draw_line(display, buf, 1, 1, DEBUG_INSTRUCTION_WIDTH);
 }
 
 #define DRAWLINE(format, ...)\
@@ -252,7 +255,7 @@ static void draw_debug(display_t *disp)
         DRAWLINE("Enabled    : %u", disp->state->memory->lcdc.enabled);
 
         column   = 1;
-        cur_line = 1;
+        cur_line = 2;
         DRAWLINE("Interrupt Flags (val/en):");
         DRAWLINE("IME      : %u  ", disp->state->memory->IME);
         DRAWLINE("VBLANK   : %u/%u",
@@ -277,6 +280,8 @@ static void draw_debug(display_t *disp)
         DRAWLINE("TMA      : %03u", disp->state->memory->tma);
         DRAWLINE("CLK SEL  :   %01u", disp->state->memory->tac.clock_select);
         DRAWLINE("TAC EN   :   %01u", disp->state->memory->tac.enable);
+        DRAWLINE(" ");
+        DRAWLINE("CONT     :  %03d", disp->state->cont);
 
         draw_instructions(disp);
     }

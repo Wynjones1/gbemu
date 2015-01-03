@@ -11,14 +11,14 @@
 #include "debug.h"
 #include "events.h"
 #include "memory.h"
+#include "cmdline.h"
 
 #include <SDL2/SDL.h>
 
-cpu_state_t *cpu_init(cmdline_t *cmd)
+cpu_state_t *cpu_init()
 {
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
-    out->cmd         = *cmd;
-	out->memory      = memory_init(out, cmd->boot_rom, cmd->in);
+	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
 	out->frame_limit = 1;
 	out->pc          = 0;
@@ -142,6 +142,10 @@ static int check_for_interrupts(struct cpu_state *state)
 		else X(joypad    , addr, 0x60)
 
 		Output("Interrupt 0x%04x\n", addr);
+        if(state->cont)
+        {
+            state->cont += 1;
+        }
 		cpu_push(state, state->pc);
 		state->pc = addr;
 		state->clock_counter += 5;
@@ -217,7 +221,7 @@ static void increment_tima(cpu_state_t *state, int clk)
 }
 #undef X
 
-void record(struct cpu_state *state)
+static void record(struct cpu_state *state)
 {
     static FILE *fp;
     if(!fp) fp = fopen("record.txt", "wb");
@@ -226,7 +230,7 @@ void record(struct cpu_state *state)
     fflush(fp);
 }
 
-void replay(struct cpu_state *state)
+static void replay(struct cpu_state *state)
 {
     static FILE *fp;
     if(!fp) fp = fopen("record.txt", "rb");
@@ -251,6 +255,10 @@ void cpu_start(struct cpu_state *state)
 			cpu_save_state(state, "game.state");
 			exit(0);
 		}
+
+        if(state->memory->boot_locked && debug_is_break_address(state->memory->current_bank, state->pc))
+            state->paused = 1;
+
 		//Halt emulation.
 		while(state->paused && !state->step && !state->slow)
 		{
@@ -269,14 +277,13 @@ void cpu_start(struct cpu_state *state)
 		if(state->DI_Pending)
 		{
 			state->memory->IME = 0;
-			state->DI_Pending = 0;
+			state->DI_Pending  = 0;
 		}
 		if(state->EI_Pending)
 		{
 			state->memory->IME = 1;
-			state->EI_Pending = 0;
+			state->EI_Pending  = 0;
 		}
-
 
 		//Load instruction and execute it.
 		if(!state->halt)
@@ -299,11 +306,12 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 
-        debug_print_op(instruction_buffer, state, op);
+        memcpy(last_instruction, instruction_buffer, 200);
+            debug_print_op(instruction_buffer, state, op);
         
-        if(state->cmd.record)
+        if(cmdline_args.record)
             record(state);
-        if(state->cmd.replay)
+        if(cmdline_args.replay)
             replay(state);
 
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);

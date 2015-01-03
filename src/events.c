@@ -92,6 +92,13 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 		case SDLK_k:
 			state->store_state = 1;
 			break;
+        case SDLK_x:
+            if(down == 1)
+            {
+                state->cont   = 1;
+                state->paused = 0;
+            }
+            break;
 		case SDLK_ESCAPE:
 			exit(0);
 			break;
