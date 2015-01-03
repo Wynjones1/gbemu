@@ -20,6 +20,13 @@ void RET(struct cpu_state *state,
 
 void cpu_ret(struct cpu_state *state)
 {
+    if(state->cont)
+    {
+        if(!--state->cont)
+        {
+            state->paused = 1;
+        }
+    }
 	state->pc    = cpu_load16(state, state->sp);
 	state->sp   += 2;
 }

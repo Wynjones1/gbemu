@@ -345,3 +345,52 @@ void BREAKIF(int cond)
 		raise(SIGINT);
 	}
 }
+
+int *break_addresses;
+int  num_break_addresses;
+
+void debug_init(void)
+{
+    const char *filename = cmdline_args.break_file;
+    if(filename)
+    {
+        char buf[50];
+        FILE *fp = FOPEN(filename,"r");
+        int bank;
+        int pc;
+        int count = 0;
+        int *out = NULL;
+        fgets(buf, 49, fp);
+        while(!feof(fp))
+        {
+            out = realloc(out, sizeof(int) * 2 * (count + 1));
+            if(sscanf(buf, "%X:%X", &bank, &pc) == 2)
+            {
+                out[2 * count]     = bank;
+                out[2 * count + 1] = pc;
+                count += 1;
+            }
+            else if(sscanf(buf, "%X", &pc) == 1)
+            {
+                out[2 * count]     = -1;
+                out[2 * count + 1] = pc;
+                count += 1;
+            }
+            fgets(buf, 49, fp);
+        }
+        break_addresses     = out;
+        num_break_addresses = count;
+    }
+}
+
+bool debug_is_break_address(int current_bank, uint16_t pc)
+{
+    for(int i = 0;i < num_break_addresses;i++)
+    {
+        int      break_bank = break_addresses[2 * i];
+        uint16_t break_pc   = break_addresses[2 * i + 1];
+        if((break_bank == -1 || break_bank == 0 || break_bank == current_bank) && (break_pc == pc))
+            return true;
+    }
+    return false;
+}

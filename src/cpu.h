@@ -66,12 +66,11 @@ typedef struct cpu_state
 	int frame_limit;
 	int slow;
 	int store_state;
-
-    cmdline_t cmd;
+    int cont;
 
 }cpu_state_t;
 
-cpu_state_t *cpu_init(cmdline_t *command_line);
+cpu_state_t *cpu_init(void);
 void cpu_start(struct cpu_state *state);
 void cpu_delete(cpu_state_t *state);
 void cpu_save_state(cpu_state_t *state, const char *filename);

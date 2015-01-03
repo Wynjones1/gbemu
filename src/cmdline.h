@@ -5,6 +5,7 @@ typedef struct cmdline
 {
 	const char *in;
     const char *boot_rom;
+    const char *break_file;
     int         scale;
 	bool        verbose;
     bool        audio;
@@ -12,4 +13,6 @@ typedef struct cmdline
     bool        record;
 }cmdline_t;
 
-cmdline_t cmdline_read(int argc, char **argv);
+/* Initialise the cmdline struct */
+void cmdline_read(int argc, char **argv);
+extern cmdline_t cmdline_args;
