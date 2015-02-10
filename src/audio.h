@@ -13,17 +13,16 @@ typedef struct audio
 			{
 				struct
 				{
-					uint8_t shift    : 3;
-					uint8_t negate   : 1;
-					uint8_t sweep    : 3;
-					uint8_t          : 1;
-					uint8_t len_load : 6;
-					uint8_t duty     : 2;
-					uint8_t freq_lsb : 8;
-					uint8_t freq_msb : 3;
-					uint8_t          : 3;
-					uint8_t len_en   : 1;
-					uint8_t trigger  : 1;
+					uint16_t shift    :  3; //NR10
+					uint16_t negate   :  1;
+					uint16_t sweep    :  3;
+					uint16_t          :  1;
+					uint16_t len_load :  6; //NR11
+					uint16_t duty     :  2;
+					uint16_t freq     : 11; //NR12-14
+					uint16_t          :  3;
+					uint16_t len_en   :  1;
+					uint16_t trigger  :  1;
 				};
 				struct
 				{
@@ -140,11 +139,13 @@ typedef struct audio
 		};
 		uint8_t registers[0xff3f - 0xff10];
 	};
-
+    int channel_counters[4];
+    int channel_en[4];
 }audio_t;
 
 void     audio_start_thread(void);
 audio_t *audio_init(cpu_state_t *state);
 reg_t    audio_load(audio_t *audio, reg16_t addr);
+void     audio_simulate(audio_t *audio, int clk);
 void     audio_store(audio_t *audio, reg16_t addr, reg_t data);
 void     audio_delete(audio_t *audio);

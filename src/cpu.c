@@ -3,15 +3,16 @@
 #include <signal.h>
 #include <assert.h>
 
+#include "audio.h"
+#include "cmdline.h"
 #include "common.h"
 #include "cpu.h"
-#include "display.h"
-#include "opcodes.h"
-#include "ppm.h"
 #include "debug.h"
+#include "display.h"
 #include "events.h"
 #include "memory.h"
-#include "cmdline.h"
+#include "opcodes.h"
+#include "ppm.h"
 
 #include <SDL2/SDL.h>
 
@@ -256,8 +257,11 @@ void cpu_start(struct cpu_state *state)
 			exit(0);
 		}
 
-        if(state->memory->boot_locked && debug_is_break_address(state->memory->current_bank, state->pc))
+        if(state->memory->boot_locked &&
+            debug_is_break_address(state->memory->current_bank, state->pc))
+        {
             state->paused = 1;
+        }
 
 		//Halt emulation.
 		while(state->paused && !state->step && !state->slow)
@@ -307,7 +311,7 @@ void cpu_start(struct cpu_state *state)
 		}
 
         memcpy(last_instruction, instruction_buffer, 200);
-            debug_print_op(instruction_buffer, state, op);
+        debug_print_op(instruction_buffer, state, op);
         
         if(cmdline_args.record)
             record(state);
@@ -320,6 +324,7 @@ void cpu_start(struct cpu_state *state)
 		state->clock_counter += clk;
 		increment_div(state, clk);
 		increment_tima(state, clk);
+        audio_simulate(state->memory->audio, clk);
 		if(state->frame_limit)
 		{
 			frame_limit(clk);

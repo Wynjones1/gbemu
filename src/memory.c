@@ -439,6 +439,11 @@ int memory_get_tile_index(memory_t *memory, int tx, int ty, int map)
 	return video_ram[(map ? 0x1c00 : 0x1800) + tile_num];
 }
 
+audio_t *memory_get_audio(memory_t *memory)
+{
+    return memory->audio;
+}
+
 #define X(elem) fwrite(&memory->elem, 1, sizeof(memory->elem), fp)
 #define Y(elem) fwrite(memory->elem, 1, sizeof(memory->elem), fp)
 void  memory_save_state(memory_t *memory, FILE *fp)
