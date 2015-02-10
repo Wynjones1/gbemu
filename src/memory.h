@@ -17,6 +17,7 @@ const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset
 int            memory_get_tile_index(memory_t *state, int tx, int ty, int map);
 void           memory_save_state(memory_t *memory, FILE *fp);
 memory_t      *memory_load_state(FILE *fp);
+audio_t       *memory_get_audio(memory_t *memory);
 
 struct OAM_data
 {
