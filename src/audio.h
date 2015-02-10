@@ -19,7 +19,10 @@ typedef struct audio
 					uint16_t          :  1;
 					uint16_t len_load :  6; //NR11
 					uint16_t duty     :  2;
-					uint16_t freq     : 11; //NR12-14
+                    uint16_t period   :  3; //NR12
+                    uint16_t env_add  :  1;
+                    uint16_t volume   :  4;
+					uint16_t freq     : 11; //NR13-14
 					uint16_t          :  3;
 					uint16_t len_en   :  1;
 					uint16_t trigger  :  1;
@@ -38,21 +41,20 @@ typedef struct audio
 			{
 				struct
 				{
-					uint8_t           : 8;
-					uint8_t len_load  : 6;
-					uint8_t duty      : 2;
-					uint8_t period    : 3;
-					uint8_t add_mode  : 1;
-					uint8_t start_vol : 4;
-					uint8_t freq_lsb  : 8;
-					uint8_t freq_msb  : 3;
-					uint8_t           : 3;
-					uint8_t len_en    : 1;
-					uint8_t trigger   : 1;
+					uint16_t           : 8;
+					uint16_t len_load  : 6; //NR21
+					uint16_t duty      : 2;
+					uint16_t period    : 3; //NR22
+					uint16_t add_mode  : 1;
+					uint16_t start_vol : 4;
+					uint16_t freq      : 11;//NR23-24
+					uint16_t           : 3;
+					uint16_t len_en    : 1;
+					uint16_t trigger   : 1;
 				};
 				struct
 				{
-					uint8_t  : 8;
+					uint8_t _unused_;
 					uint8_t NR21;
 					uint8_t NR22;
 					uint8_t NR23;
@@ -141,6 +143,7 @@ typedef struct audio
 	};
     int channel_counters[4];
     int channel_en[4];
+    int sweep_timer;
 }audio_t;
 
 void     audio_start_thread(void);
