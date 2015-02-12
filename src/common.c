@@ -88,7 +88,7 @@ void common_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 
 void common_print_binary(FILE *fp, uint64_t x, unsigned int width)
 {
-    for(int i = 0; i < width; i++)
+    for(int i = width - 1; i >= 0; i--)
     {
         fprintf(fp, "%c", ((x >> i) & 0x1) ? '1' : '0');
     }

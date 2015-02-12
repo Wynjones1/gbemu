@@ -53,5 +53,7 @@ void common_print_binary(FILE *fp, uint64_t x, unsigned int width);
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) min(y, x)
 #define PI 3.1415926
+#define DOWNTO(x, msb, lsb)\
+            (((x) & ((1 << (msb + 1)) - 1)) >> lsb)
 
 extern uint32_t g_cycles;
