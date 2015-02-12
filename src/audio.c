@@ -165,58 +165,36 @@ void sweep(audio_t *audio)
     }
 }
 
+static void envelope_channel(uint8_t en, uint8_t period, uint8_t add_mode, int8_t *volume, uint8_t *counter)
+{
+    if(en && period)
+    {
+        if(*counter >= period)
+        {
+            *counter = 0;
+            if(add_mode)
+            {
+                *volume += 1;
+                if(*volume > 15) *volume = 15;
+            }
+            else
+            {
+                *volume -= 1;
+                if(*volume == -1) *volume = 0;
+            }
+        }
+        *counter += 1;
+    }
+    else
+    {
+        *counter = 0;
+    }
+}
 void envelope(audio_t *audio)
 {
-    {
-        static int counter = 0;
-        if(audio->sq1.en && audio->sq1.period)
-        {
-            if(counter >= audio->sq1.period)
-            {
-                counter = 0;
-                if(audio->sq1.add_mode)
-                {
-                    audio->sq1.volume += 1;
-                    if(audio->sq1.volume > 15) audio->sq1.volume = 15;
-                }
-                else
-                {
-                    audio->sq1.volume -= 1;
-                    if(audio->sq1.volume < 0) audio->sq1.volume = 0;
-                }
-            }
-            counter++;
-        }
-        else
-        {
-            counter = 0;
-        }
-    }
-    {
-        static int counter = 0;
-        if(audio->sq2.en && audio->sq2.period)
-        {
-            if(counter >= audio->sq2.period)
-            {
-                counter = 0;
-                if(audio->sq2.add_mode)
-                {
-                    audio->sq2.volume += 1;
-                    if(audio->sq2.volume > 15) audio->sq2.volume = 15;
-                }
-                else
-                {
-                    audio->sq2.volume -= 1;
-                    if(audio->sq2.volume < 0) audio->sq2.volume = 0;
-                }
-            }
-            counter++;
-        }
-        else
-        {
-            counter = 0;
-        }
-    }
+    static uint8_t counter[4];
+    envelope_channel(audio->sq1.en, audio->sq1.period, audio->sq1.add_mode, &audio->sq1.volume, counter + 0);
+    envelope_channel(audio->sq2.en, audio->sq2.period, audio->sq2.add_mode, &audio->sq2.volume, counter + 1);
 }
 
 void frame_sequencer(audio_t *audio, int clk)
@@ -231,7 +209,6 @@ void frame_sequencer(audio_t *audio, int clk)
         step = (step + 1) % 8;
         if(step % 2 == 0)
         {
-            //Length Ctrl
             length_counter(audio);
             if(step == 2 || step == 6)
             {

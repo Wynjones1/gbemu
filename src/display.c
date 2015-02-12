@@ -160,7 +160,7 @@ static void transfer_buffer(display_t *d)
 void display_display(display_t *display)
 {
 	//Display the image.
-	if(1)//display->mem->lcdc.enabled)
+	if(display->mem->lcdc.enabled)
 	{
 		transfer_buffer(display);
         display_present(display);

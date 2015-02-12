@@ -51,8 +51,8 @@ typedef struct audio
         NR12
         NR13
         NR14
-        int volume;
-        int en;
+        int8_t volume;
+        uint8_t en;
     }sq1;
 
     struct{
@@ -60,8 +60,8 @@ typedef struct audio
         NR22
         NR23
         NR24
-        int volume;
-        int en;
+        int8_t volume;
+        uint8_t en;
     }sq2;
 #undef X
 }audio_t;
