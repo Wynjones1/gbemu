@@ -157,7 +157,7 @@ static int check_for_interrupts(struct cpu_state *state)
 
 static void frame_limit(int clk)
 {
-	const float sample_time = 0.01; //Sample time in seconds
+	const float sample_time = 0.001; //Sample time in seconds
 	static long int clk_count, time_count;
 	const int sample_clocks= sample_time * CPU_CLOCK_SPEED;
 
