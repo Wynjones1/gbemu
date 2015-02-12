@@ -1,7 +1,7 @@
+BUILD_CONFIG ?= Release
+
 all: build
-	#cd build; cmake -DCMAKE_BUILD_TYPE=Debug ..; make -j5
-	cd build; cmake -DCMAKE_BUILD_TYPE=Release ..; make -j5
-#	cd build; cmake  ..; make -j5
+	cd build; cmake -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) ..; make -j5
 
 build:
 	mkdir -p build
@@ -14,3 +14,6 @@ clean:
 
 prof:
 	gprof ./bin/gbemu | gprof2dot.py | dot -Tsvg -o profile.svg
+
+plot: run
+	cat ./track.txt | ./plot.py

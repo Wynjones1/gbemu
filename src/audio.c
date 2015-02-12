@@ -22,47 +22,27 @@ typedef struct
     int16_t right;
 }sample_t;
 
-static uint8_t volume = 15;
+#define FREQ(x) (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (x)))))
 static int16_t square1(float t)
 {
-    int   freq = CPU_CLOCK_SPEED / (4 * 2 * (2048 - g_audio->square1.freq));
+    float freq = FREQ(g_audio->freq);
     float val  = sin(freq * 2 * PI * t);
-    float v    = VOLUME * (volume / 15.0);
+    int16_t out;
     if(val < 0.0)
     {
-        return v * INT16_MIN;
+        out = -(INT16_MAX / 10);
     }
     else
     {
-        return v * INT16_MAX;
+        out = INT16_MAX / 10;
     }
+#if 0
+    static FILE *fp;
+    if(!fp) fp = fopen("plot.txt", "w");
+    fprintf(fp, "%f %f\n", SDL_GetTicks() / 1000.0, val / (float)(INT16_MAX));
+#endif
+    return (g_audio->volume * out) / 15;
 }
-
-static int16_t square2(float t)
-{
-    return 0;
-    int   freq = g_audio->square2.freq;
-    float val  = sin(freq * 2 * PI * t);
-    if(val < 0.0)
-    {
-        return VOLUME * INT16_MIN;
-    }
-    else
-    {
-        return VOLUME * INT16_MAX;
-    }
-}
-
-static int16_t noise(float t)
-{
-    return 0;
-}
-
-static int16_t wave(float t)
-{
-    return 0;
-}
-
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
@@ -73,17 +53,9 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
     {
         float t = pos / (float)FREQUENCY;
         int16_t val = 0;
-        if(g_audio->channel_en[0]) {
+        if(g_audio->en)
+        {
             val += square1(t);
-        }
-        if(g_audio->channel_en[1]) {
-            val += square2(t);
-        }
-        if(g_audio->channel_en[2]) {
-            val += wave(t);
-        }
-        if(g_audio->channel_en[3]) {
-            val += noise(t);
         }
         samples[i]= (sample_t){.left = val, .right = val};
         pos = (pos + 1) % FREQUENCY;
@@ -117,30 +89,9 @@ audio_t *audio_init(cpu_state_t *state)
 
 reg_t audio_load(audio_t *audio, reg16_t addr)
 {
-	return audio->registers[addr - 0xff10];
+    return 0;
 }
 
-void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
-{
-	audio->registers[addr - 0xff10] = data;
-    if(addr == 0xff10)
-    {
-    }
-    if(addr == 0xff11)
-    {
-        audio->channel_counters[0] = audio->square1.len_load;
-    }
-    if(addr == 0xff12)
-    {
-        volume = audio->square1.volume;
-    }
-    if(addr == 0xff14 && (data & (1 << 7)))
-    {
-        audio->channel_en[0] = 1;
-        if(audio->channel_counters[0] == 0)
-            audio->channel_counters[0] = 64;
-    }
-}
 
 void audio_delete(audio_t *audio)
 {
@@ -149,56 +100,63 @@ void audio_delete(audio_t *audio)
 
 void length_counter(audio_t *audio)
 {
-    if(audio->channel_counters[0] && audio->square1.len_en)
+    if(audio->load_len && audio->len_en)
     {
-        audio->channel_counters[0] -= 1;
-        if(audio->channel_counters[0] == 0)
-            audio->channel_en[0] = 0;
+        audio->load_len -= 1;
+        if(audio->load_len == 0) audio->en = 0;
     }
 }
 
 void sweep(audio_t *audio)
 {
-    uint16_t shadow   = audio->square1.freq;
+#if 1
+    uint16_t shadow   = audio->freq;
     uint16_t new_freq = 0;
     static uint16_t count = 0;
-    if(audio->square1.sweep)
+    if(audio->sweep_period)
     {
         count++;
-        if(count >= audio->square1.sweep)
+        if(count >= audio->sweep_period)
         {
             count = 0;
-            if(audio->square1.shift > 0 || audio->square1.sweep > 0)
+            if(audio->shift > 0 || audio->sweep_period > 0)
             {
-                audio->channel_counters[0] = audio->square1.len_load;
-                new_freq = (shadow >> audio->square1.shift);
-                new_freq = audio->square1.negate ? -new_freq : new_freq;
+                new_freq = (shadow >> audio->shift);
+                new_freq = audio->negate ? -new_freq : new_freq;
                 new_freq = shadow + new_freq;
-                if(new_freq >> 11) audio->channel_en[0] = 0;
-                audio->square1.freq = new_freq;
+                if(new_freq >> 11) audio->en = 0;
+                audio->freq = new_freq;
             }
         }
     }
+#else
+#endif
 }
 
 void envelope(audio_t *audio)
 {
-    static int count = 0;
-    count++;
-    if(count >= audio->square1.period)
+    static int counter = 0;
+    if(audio->en && audio->period)
     {
-        count = 0;
-        if(audio->square1.period)
+        if(counter >= audio->period)
         {
-            if(audio->square1.env_add)
+            counter = 0;
+            if(audio->add_mode)
             {
-                volume = min(volume + 1, 15);
+                audio->volume += 1;
+                if(audio->volume > 15) audio->volume = 15;
             }
             else
             {
-                volume = max(volume - 1, 0);
+                audio->volume -= 1;
+                if(audio->volume < 0) audio->volume = 0;
             }
         }
+        counter++;
+    }
+    else
+    {
+        counter = 0;
     }
 }
 
@@ -230,15 +188,41 @@ void frame_sequencer(audio_t *audio, int clk)
 
 void audio_simulate(audio_t *audio, int clk)
 {
-    int period;
     frame_sequencer(audio, clk);
-    if(audio->square1.freq)
+}
+
+void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
+{
+    //printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
+    if(addr == 0xff10)
     {
-        period = CPU_CLOCK_SPEED / audio->square1.freq;
-        audio->channel_counters[0] = (audio->channel_counters[0] + clk) % period;
-        if(audio->channel_counters[0] < clk)
+        audio->shift        = DOWNTO(data, 2, 0);
+        audio->negate       = DOWNTO(data, 3, 3);
+        audio->sweep_period = DOWNTO(data, 6, 4);
+    }
+    if(addr == 0xff11)
+    {
+        audio->load_len = 64 - DOWNTO(data, 5, 0);
+        audio->duty     = DOWNTO(data, 7, 6);
+    }
+    if(addr == 0xff12)
+    {
+        audio->period        = DOWNTO(data, 2, 0);
+        audio->add_mode      = DOWNTO(data, 3, 3);
+        audio->start_volume  = DOWNTO(data, 7, 4);
+    }
+    if(addr == 0xff13)
+    {
+        audio->freq = (DOWNTO(audio->freq, 10, 8) << 8) | data;
+    }
+    if(addr == 0xff14)
+    {
+        audio->freq   = (DOWNTO(data, 2, 0) << 8) | DOWNTO(audio->freq, 7, 0);
+        audio->len_en = DOWNTO(data, 6, 6);
+        if(BIT_N(data, 7))
         {
-            //Decrement Square1 counter.
+            audio->en = 1;
+            audio->volume = audio->start_volume;
         }
     }
 }

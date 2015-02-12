@@ -305,7 +305,12 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			break;
 		case 0xff50:
 			if(data)
+            {
 				mem->boot_locked = 1;
+#if INTRO_ONLY
+    exit(0);
+#endif
+            }
 			break;
 		case 0xff7f:
 			//This seems to be accessed by accident when cleaning memory.

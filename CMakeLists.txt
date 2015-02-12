@@ -50,7 +50,7 @@ DEFADD(OUTPUT_WARNINGS    Yes  "Enable warning output.")
 DEFADD(OUTPUT_ERRORS      Yes  "Enable error output.")
 DEFADD(OUTPUT_OUTPUT      No   "Enable stdout  output.")
 DEFADD(TESTING            No   "Run tests.")
-DEFADD(REGISTER_WINDOW    No   "Enable GB register window")
+DEFADD(REGISTER_WINDOW    NO   "Enable GB register window")
 DEFADD(OUTPUT_DEBUG_FILES No   "Output debug output files")
 DEFADD(DEBUG_WINDOW       No   "Window with current instruction and register values")
 
