@@ -29,9 +29,9 @@ void AND(struct cpu_state *state,
 reg_t cpu_and(struct cpu_state *state, reg_t d0, reg_t d1)
 {
 	reg_t res         = d0 & d1;
-	state->zero       = res == 0;
-	state->half_carry = 1;
-	state->carry      = 0;
-	state->subtract   = 0;
+	cpu_set_zero(state, res == 0);
+	cpu_set_half_carry(state, 1);
+	cpu_set_carry(state, 0);
+	cpu_set_subtract(state, 0);
 	return res;
 }

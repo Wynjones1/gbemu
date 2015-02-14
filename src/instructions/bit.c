@@ -47,7 +47,7 @@ void BIT(struct cpu_state *state,
 
 void cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0)
 {
-	state->zero = !((d0 >> pos) & 0x1);
-	state->subtract = 0;
-	state->half_carry = 1;
+	cpu_set_zero(state, !((d0 >> pos) & 0x1));
+	cpu_set_subtract(state, 0);
+	cpu_set_half_carry(state, 1);
 }

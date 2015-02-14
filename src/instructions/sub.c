@@ -28,14 +28,14 @@ void SUB(struct cpu_state *state,
 void cpu_sub(struct cpu_state *state, reg_t d0)
 {
 	int16_t res = state->a - d0;
-	state->carry = 0;
+	cpu_set_carry(state, 0);
 	if(res < 0)
 	{
 		res += 0x100;
-		state->carry = 1;
+		cpu_set_carry(state, 1);
 	}
-	state->half_carry = (state->a & 0xf) < (d0 & 0xf);
+	cpu_set_half_carry(state, (state->a & 0xf) < (d0 & 0xf));
 	state->a          = res;
-	state->zero       = (state->a == 0);
-	state->subtract   = 1;
+	cpu_set_zero(state, (state->a == 0));
+	cpu_set_subtract(state, 1);
 }

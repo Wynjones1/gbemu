@@ -28,6 +28,7 @@ typedef struct cpu_state
 			union
 			{
 				reg_t f;
+                /*
 				struct
 				{
 					reg_t             : 4;
@@ -36,6 +37,7 @@ typedef struct cpu_state
 					reg_t subtract    : 1;
 					reg_t zero        : 1;
 				};
+                */
 			};
 			/* the odd arraingment is to ensure correct accesses */
 			reg_t a;

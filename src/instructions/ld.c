@@ -53,8 +53,8 @@ void LD(struct cpu_state *state,
 			//TODO:Check that the signed addition is correct.
 			reg_t d = state->arg;
 			reg16_t addr    = cpu_add8(state, state->sp, d);
-			state->zero     = 0;
-			state->subtract = 0;
+			cpu_set_zero(state, 0);
+			cpu_set_subtract(state, 0);
 			data = cpu_load16(state, addr);
 		}
 		else

@@ -26,8 +26,8 @@ void CP(struct cpu_state *state,
 
 void cpu_cmp(struct cpu_state *state, reg_t d0)
 {
-	state->carry      = state->a < d0;
-	state->zero       = state->a == d0;
-	state->half_carry = (state->a & 0xf) < (d0 & 0xf);
-	state->subtract   = 1;
+	cpu_set_carry(state, state->a < d0);
+	cpu_set_zero(state, state->a == d0);
+	cpu_set_half_carry(state, (state->a & 0xf) < (d0 & 0xf));
+	cpu_set_subtract(state, 1);
 }

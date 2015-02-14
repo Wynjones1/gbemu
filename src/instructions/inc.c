@@ -12,10 +12,10 @@ void INC(struct cpu_state *state,
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
 		reg_t res                = cpu_load8_indirect(state, i0);
-		state->half_carry        = (res == 0xf);
+		cpu_set_half_carry(state, (res == 0xf));
 		res += 1;
-		state->zero              = (res == 0);
-		state->subtract          = 0;
+		cpu_set_zero(state, (res == 0));
+		cpu_set_subtract(state, 0);
 		cpu_store8_indirect(state, i0, res);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
@@ -29,7 +29,7 @@ reg_t cpu_inc8(struct cpu_state *state, reg_t d0)
 {
 	int old_carry = state->carry;
 	reg_t res     = cpu_add8(state, d0, 1);
-	state->carry  = old_carry;
+	cpu_set_carry(state, old_carry);
 	return res;
 }
 
