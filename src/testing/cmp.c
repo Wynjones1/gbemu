@@ -15,10 +15,10 @@ void cmp_test(void)
 		test = tests[i];
 		state.a = test[0];
 		cpu_cmp(&state, test[1]);
-		if(state.zero       == test[2] &&
-		   state.half_carry == test[3] &&
-		   state.subtract   == test[4] &&
-		   state.carry      == test[5])
+		if(cpu_zero(&state)       == test[2] &&
+		   cpu_half_carry(&state) == test[3] &&
+		   cpu_subtract(&state)   == test[4] &&
+		   cpu_carry(&state)      == test[5])
 		{
 			printf("Tests passed.\n");
 		}

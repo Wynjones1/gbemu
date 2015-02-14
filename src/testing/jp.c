@@ -20,10 +20,10 @@ void jp_test(void)
 		cpu_set_carry(&state, test[6]);
 		cpu_jump_rel(&state, test[1]);
 		if(state.pc         == test[2] &&
-		   state.zero       == test[3] &&
-		   state.half_carry == test[4] &&
-		   state.subtract   == test[5] &&
-		   state.carry      == test[6])
+		   cpu_zero(&state)       == test[3] &&
+		   cpu_half_carry(&state) == test[4] &&
+		   cpu_subtract(&state)   == test[5] &&
+		   cpu_carry(&state)      == test[6])
 		{
 			printf("Tests passed.\n");
 		}
@@ -31,10 +31,10 @@ void jp_test(void)
 		{
 			printf("Tests failed.\n");
 			printf("0x%04x %d %d %d %d\n",   (int) state.pc,
-											 (int) state.zero,
-											 (int) state.half_carry,
-											 (int) state.subtract,
-											 (int) state.carry);
+											 (int) cpu_zero(&state),
+											 (int) cpu_half_carry(&state),
+											 (int) cpu_subtract(&state),
+											 (int) cpu_carry(&state));
 		}
 	}
 }

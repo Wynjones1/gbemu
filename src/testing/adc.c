@@ -18,20 +18,20 @@ void adc_test(void)
 		cpu_set_carry(&state, test[2]);
 		reg_t res = cpu_adc(&state, test[0], test[1]);
 		if(res              == test[3] &&
-		   state.zero       == test[4] &&
-		   state.half_carry == test[5] &&
-		   state.subtract   == test[6] &&
-		   state.carry      == test[7])
+		   cpu_zero(&state)       == test[4] &&
+		   cpu_half_carry(&state) == test[5] &&
+		   cpu_subtract(&state)   == test[6] &&
+		   cpu_carry(&state)      == test[7])
 		{
 			printf("Tests passed.\n");
 		}
 		else
 		{
 			printf("Tests failed.\n");
-			printf("0x%02x %d %d %d %d\n",  res, (int) state.zero,
-									 (int) state.half_carry,
-									 (int) state.subtract,
-									 (int) state.carry);
+			printf("0x%02x %d %d %d %d\n",  res, (int) cpu_zero(&state),
+									 (int) cpu_half_carry(&state),
+									 (int) cpu_subtract(&state),
+									 (int) cpu_carry(&state));
 		}
 	}
 }
