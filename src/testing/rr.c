@@ -12,10 +12,10 @@ void rr_test(void)
 	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test             = tests[i];
-		state.carry      = test[1];
-		state.half_carry = rand() % 2;
-		state.subtract   = rand() % 2;
-		state.zero       = rand() % 2;
+		cpu_set_carry(&state, test[1]);
+		cpu_set_half_carry(&state, rand() % 2);
+		cpu_set_subtract(&state, rand() % 2);
+		cpu_set_zero(&state, rand() % 2);
 		reg_t res = cpu_rr(&state, test[0]);
 		if(res              == test[2] &&
 		   state.zero       == test[3] &&

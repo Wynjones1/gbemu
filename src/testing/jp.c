@@ -14,10 +14,10 @@ void jp_test(void)
 	{
 		test = tests[i];
 		state.pc         = test[0];
-		state.zero       = test[3];
-		state.half_carry = test[4];
-		state.subtract   = test[5];
-		state.carry      = test[6];
+		cpu_set_zero(&state, test[3]);
+		cpu_set_half_carry(&state, test[4]);
+		cpu_set_subtract(&state, test[5]);
+		cpu_set_carry(&state, test[6]);
 		cpu_jump_rel(&state, test[1]);
 		if(state.pc         == test[2] &&
 		   state.zero       == test[3] &&

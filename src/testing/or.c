@@ -14,9 +14,9 @@ void or_test(void)
 	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
-		state.half_carry = rand() % 2;
-		state.subtract   = rand() % 2;
-		state.carry      = rand() % 2;
+		cpu_set_half_carry(&state, rand() % 2);
+		cpu_set_subtract(&state, rand() % 2);
+		cpu_set_carry(&state, rand() % 2);
 		uint8_t res      = cpu_or(&state, test[0], test[1]);
 		if(res              == test[2] &&
 		   state.zero       == test[3] &&

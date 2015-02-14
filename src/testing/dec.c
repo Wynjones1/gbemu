@@ -13,7 +13,7 @@ void dec_test(void)
 	{
 		test = tests[i];
 		uint8_t res = cpu_dec8(&state, test[0]);
-		state.carry    = test[5];
+		cpu_set_carry(&state, test[5]);
 		if(res              == test[1] &&
 		   state.zero       == test[2] &&
 		   state.half_carry == test[3] &&
