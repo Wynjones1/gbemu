@@ -13,10 +13,10 @@ void rra_test(void)
 	{
 		test             = tests[i];
 		state.a          = test[0];
-		state.carry      = test[1];
-		state.half_carry = rand() % 2;
-		state.subtract   = rand() % 2;
-		state.zero       = rand() % 2;
+		cpu_set_carry(&state, test[1]);
+		cpu_set_half_carry(&state, rand() % 2);
+		cpu_set_subtract(&state, rand() % 2);
+		cpu_set_zero(&state, rand() % 2);
 		cpu_rra(&state);
 		if(state.a          == test[2] &&
 		   state.zero       == test[3] &&

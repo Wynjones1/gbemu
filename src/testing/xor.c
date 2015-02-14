@@ -13,9 +13,9 @@ void xor_test(void)
 	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
-		state.half_carry = rand() % 2;
-		state.subtract   = rand() % 2;
-		state.carry      = rand() % 2;
+		cpu_set_half_carry(&state, rand() % 2);
+		cpu_set_subtract(&state, rand() % 2);
+		cpu_set_carry(&state, rand() % 2);
 		state.a = test[0];
 		cpu_xor(&state, test[1]);
 		if(state.a          == test[2] &&
