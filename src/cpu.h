@@ -24,22 +24,7 @@ typedef struct cpu_state
 		reg16_t registers16[NUM_REGISTERS16];
 		struct
 		{
-			/* represent the flag register as a reg_t and a bitfield */
-			union
-			{
-				reg_t f;
-                /*
-				struct
-				{
-					reg_t             : 4;
-					reg_t carry       : 1;
-					reg_t half_carry  : 1;
-					reg_t subtract    : 1;
-					reg_t zero        : 1;
-				};
-                */
-			};
-			/* the odd arraingment is to ensure correct accesses */
+            reg_t f;
 			reg_t a;
 			reg_t c;
 			reg_t b;
