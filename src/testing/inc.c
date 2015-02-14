@@ -17,20 +17,20 @@ static void inc8_test(void)
 		uint8_t res = cpu_inc8(&state, test[0]);
 		cpu_set_carry(&state, test[5]);
 		if(res              == test[1] &&
-		   state.zero       == test[2] &&
-		   state.half_carry == test[3] &&
-		   state.subtract   == test[4] &&
-		   state.carry      == test[5])
+		   cpu_zero(&state)       == test[2] &&
+		   cpu_half_carry(&state) == test[3] &&
+		   cpu_subtract(&state)   == test[4] &&
+		   cpu_carry(&state)      == test[5])
 		{
 			printf("Tests passed.\n");
 		}
 		else
 		{
 			printf("Tests failed.\n");
-			printf("%d %d %d %d\n",  (int) state.zero,
-									 (int) state.half_carry,
-									 (int) state.subtract,
-									 (int) state.carry);
+			printf("%d %d %d %d\n",  (int) cpu_zero(&state),
+									 (int) cpu_half_carry(&state),
+									 (int) cpu_subtract(&state),
+									 (int) cpu_carry(&state));
 		}
 	}
 }
