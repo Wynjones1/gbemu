@@ -27,7 +27,7 @@ void INC(struct cpu_state *state,
 
 reg_t cpu_inc8(struct cpu_state *state, reg_t d0)
 {
-	int old_carry = state->carry;
+	int old_carry = cpu_carry(state);
 	reg_t res     = cpu_add8(state, d0, 1);
 	cpu_set_carry(state, old_carry);
 	return res;

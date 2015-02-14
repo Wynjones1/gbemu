@@ -26,7 +26,7 @@ void SBC(struct cpu_state *state,
 
 void cpu_sbc(struct cpu_state *state, reg_t d0)
 {
-	reg16_t t0        = d0 + state->carry;
+	reg16_t t0        = d0 + cpu_carry(state);
 	cpu_set_subtract(state, 1);
 	cpu_set_carry(state, state->a < t0);
 	cpu_set_half_carry(state, (state->a & 0xf) < (t0 & 0xf));
