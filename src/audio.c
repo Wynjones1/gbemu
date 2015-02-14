@@ -1,6 +1,7 @@
 #include "cpu.h"
 #include "audio.h"
 #include "memory.h"
+#include <assert.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include <SDL2/SDL.h>
@@ -10,10 +11,6 @@
 #define FREQUENCY    44100
 #define VOLUME       0.005
 
-void audio_start_thread(void)
-{
-}
-
 static audio_t *g_audio;
 
 typedef struct
@@ -22,32 +19,34 @@ typedef struct
     int16_t right;
 }sample_t;
 
-#define FREQ(x) (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (x)))))
-static int16_t square(float t, float freq, int volume)
+#define FREQ(msb, lsb)\
+    (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (msb << 8 | lsb)))))
+
+static uint8_t duty_table[4][8] =
 {
-    float val  = sin(freq * 2 * PI * t);
-    int16_t out;
-    if(val < 0.0)
-    {
-        out = -(INT16_MAX / 10);
-    }
-    else
-    {
-        out = INT16_MAX / 10;
-    }
-    return (volume * out) / 15;
+    {0,0,0,0,0,0,0,1},
+    {1,0,0,0,0,0,0,1},
+    {1,0,0,0,0,1,1,1},
+    {0,1,1,1,1,1,1,0},
+};
+static int16_t square(float t, float freq, int volume, int duty)
+{
+    int idx = t * freq * 8;
+    int16_t val = duty_table[duty][idx % 8] ? INT16_MAX : INT16_MIN;
+    val = volume * val / (15 * 40);
+    return val;
 }
 static int16_t square1(float t)
 {
-    float freq = FREQ(g_audio->sq1.freq_msb << 8 | g_audio->sq1.freq_lsb);
-    int16_t out = square(t, freq, g_audio->sq1.volume);
+    float freq = FREQ(g_audio->sq1.freq_msb, g_audio->sq1.freq_lsb);
+    int16_t out = square(t, freq, g_audio->sq1.volume, g_audio->sq1.duty);
     return out;
 }
 
 static int16_t square2(float t)
 {
-    float freq = FREQ(g_audio->sq2.freq_msb << 8 | g_audio->sq2.freq_lsb);
-    int16_t out = square(t, freq, g_audio->sq2.volume);
+    float freq = FREQ(g_audio->sq2.freq_msb,  g_audio->sq2.freq_lsb);
+    int16_t out = square(t, freq, g_audio->sq2.volume, g_audio->sq2.duty);
     return out;
 }
 
@@ -116,6 +115,20 @@ reg_t audio_load(audio_t *audio, reg16_t addr)
         case 0xff17: return (NR22 0x00);
         case 0xff18: return (NR23 0xff);
         case 0xff19: return (NR24 0xbf);
+    #undef X
+    #define X(field, msb, lsb) ENCODE(audio->wave.field, msb, lsb) |
+        case 0xff1a: return (NR30 0x7f);
+        case 0xff1b: return (NR31 0xff);
+        case 0xff1c: return (NR32 0x9f);
+        case 0xff1d: return (NR33 0xff);
+        case 0xff1e: return (NR34 0xbf);
+    #undef X
+    #define X(field, msb, lsb) ENCODE(audio->noise.field, msb, lsb) |
+        case 0xff1f: return 0xff;
+        case 0xff20: return (NR41 0xff);
+        case 0xff21: return (NR42 0x00);
+        case 0xff22: return (NR43 0x00);
+        case 0xff23: return (NR44 0xbf);
     #undef X
     }
     return 0;
@@ -230,9 +243,9 @@ void audio_simulate(audio_t *audio, int clk)
 void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 {
     //printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
-    #define X(field, msb, lsb) audio->sq1.field = DECODE(data, msb, lsb);
     switch(addr)
     {
+    #define X(field, msb, lsb) audio->sq1.field = DECODE(data, msb, lsb);
         case 0xff10:
             NR10;
             break;
@@ -275,5 +288,39 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
             }
             break;
     #undef X
+    #define X(field, msb, lsb) audio->wave.field = DECODE(data, msb, lsb);
+        case 0xff1a: NR30; break;
+        case 0xff1b: NR31; break;
+        case 0xff1c: NR32; break;
+        case 0xff1d: NR33; break;
+        case 0xff1e:
+            NR34;
+            if(DECODE(data, 7, 7))
+            {
+                audio->wave.en = 1;
+            }
+            break;
+    #undef X
+    #define X(field, msb, lsb) audio->noise.field = DECODE(data, msb, lsb);
+        case 0xff20: NR41; break;
+        case 0xff21: NR42; break;
+        case 0xff22: NR43; break;
+        case 0xff23: NR44; break;
+    #undef X
+    #define X(field, msb, lsb) audio->control.field = DECODE(data, msb, lsb);
+        case 0xff24: NR50; break;
+        case 0xff25: NR51; break;
+        case 0xff26: NR52; break;
+    #undef X
+        //Wave table.
+        case 0xff30: case 0xff31: case 0xff32: case 0xff33:
+        case 0xff34: case 0xff35: case 0xff36: case 0xff37:
+        case 0xff38: case 0xff39: case 0xff3a: case 0xff3b:
+        case 0xff3c: case 0xff3d: case 0xff3e: case 0xff3f:
+            audio->wave_table[addr - 0xff30] = data;
+            break;
+        default:
+            printf("Write to invalid sound.\n");
+            printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
     }
 }

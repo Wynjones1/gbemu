@@ -157,22 +157,53 @@ static int check_for_interrupts(struct cpu_state *state)
 
 static void frame_limit(int clk)
 {
-	const float sample_time = 0.001; //Sample time in seconds
-	static long int clk_count, time_count;
-	const int sample_clocks= sample_time * CPU_CLOCK_SPEED;
+	uint32_t        sample_time   = 17; //Sample time in milliseconds
+	uint32_t        sample_clocks = 1 * sample_time * CPU_CLOCKS_PER_MS;
+    uint32_t        min_wait      = 2;
+    static uint32_t clk_count     = 0;
+    static uint32_t last_time     = 0;
 
 	clk_count += clk;
-	if(clk_count > sample_clocks)
+    clk_count &= (1 << 23) - 1;
+	if(clk_count >= sample_clocks)
 	{
-		int temp = SDL_GetTicks();
-		clk_count -= sample_clocks;
-		int sleep_time = sample_time * 1000 - (temp - time_count);
-		if(sleep_time > 0)
-		{
-			SDL_Delay(sleep_time);
-		}
-		time_count = temp;
+        int delay;
+#if SPINLOCK
+        do
+        {
+            delay = (sample_time - (SDL_GetTicks()- last_time));
+        }
+        while(delay > 0);
+#else
+        delay = sample_time - (SDL_GetTicks()- last_time);
+        if(delay > 0) SDL_Delay(delay);
+#endif
+        last_time  = SDL_GetTicks();
+        clk_count -= sample_clocks;
 	}
+}
+
+/*
+* Sample the clock speed every second.
+*/
+static void record_clock_speed(int clk)
+{
+    static int time = 0;
+    static long int total;
+
+    total += clk;
+    int wait_time = 10;
+    if(SDL_GetTicks() - time > wait_time)
+    {
+#if 1
+        fprintf(stderr, "%6.2f%%\r", 100 * total / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
+        total = 0;
+#else
+        fprintf(stderr, "%6.2f%%\r", 100 * total  / (CPU_CLOCKS_PER_MS * time));
+        time  = SDL_GetTicks();
+#endif
+        time  = SDL_GetTicks();
+    }
 }
 
 /*
@@ -309,8 +340,10 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 
+#if 0
         memcpy(last_instruction, instruction_buffer, 200);
         debug_print_op(instruction_buffer, state, op);
+#endif
         
         if(cmdline_args.record)
             record(state);
@@ -328,6 +361,7 @@ void cpu_start(struct cpu_state *state)
 		{
 			frame_limit(clk);
 		}
+        record_clock_speed(clk);
 		display_simulate(state);
 	}
 }

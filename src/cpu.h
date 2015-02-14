@@ -7,7 +7,7 @@
 #include "events.h"
 #include "cmdline.h"
 
-#define CPU_CLOCK_SPEED     4194304
+#define CPU_CLOCK_SPEED     (1 << 22) //4194304
 #define CPU_CLOCKS_PER_MS   (CPU_CLOCK_SPEED / 1000.0)
 #define CPU_CLOCKS_PER_LINE (DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS)
 
