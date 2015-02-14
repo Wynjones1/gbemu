@@ -11,6 +11,11 @@
 #define CPU_CLOCKS_PER_MS   (CPU_CLOCK_SPEED / 1000.0)
 #define CPU_CLOCKS_PER_LINE (DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS)
 
+#define CARRY_BIT      4
+#define HALF_CARRY_BIT 5
+#define SUBTRACT_BIT   6
+#define ZERO_BIT       7
+
 typedef struct cpu_state
 {
 	union
@@ -130,3 +135,8 @@ reg_t   cpu_sra(struct cpu_state *state, reg_t d0);
 reg_t   cpu_sla(struct cpu_state *state, reg_t d0);
 reg_t   cpu_srl(struct cpu_state *state, reg_t d0);
 reg_t   cpu_swap(struct cpu_state *state, reg_t d0);
+
+void cpu_set_zero(struct cpu_state *state, reg_t d0);
+void cpu_set_carry(struct cpu_state *state, reg_t d0);
+void cpu_set_half_carry(struct cpu_state *state, reg_t d0);
+void cpu_set_subtract(struct cpu_state *state, reg_t d0);

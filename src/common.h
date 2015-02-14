@@ -48,8 +48,8 @@ FILE *common_fopen(const char *filename, const char *mode);
 void common_print_binary(FILE *fp, uint64_t x, unsigned int width);
 
 #define BIT_N(x, n) ((x >> n) & 0x1)
-#define SET_N(x, n)   x |= (1 << n)
-#define RESET_N(x, n) x &= ~(1 << n)
+#define SET_N(x, n)   (x |= (1 << n))
+#define RESET_N(x, n) (x &= ~(1 << n))
 #define min(x, y) ((x) < (y) ? (x) : (y))
 #define max(x, y) min(y, x)
 #define PI 3.1415926

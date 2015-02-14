@@ -64,6 +64,28 @@ int cpu_zero(struct cpu_state *state)
 	return state->zero;
 }
 
+#define X(field, value) (value) ? SET_N(state->f, field) : RESET_N(state->f, field)
+void cpu_set_zero(struct cpu_state *state, reg_t d0)
+{
+    X(ZERO_BIT, d0);
+}
+
+void cpu_set_carry(struct cpu_state *state, reg_t d0)
+{
+    X(CARRY_BIT, d0);
+}
+
+void cpu_set_half_carry(struct cpu_state *state, reg_t d0)
+{
+    X(HALF_CARRY_BIT, d0);
+}
+
+void cpu_set_subtract(struct cpu_state *state, reg_t d0)
+{
+    X(SUBTRACT_BIT, d0);
+}
+#undef X
+
 #define X(elem) fwrite(&state->elem, sizeof(state->elem), 1, fp)
 void cpu_save_state(cpu_state_t *state, const char *filename)
 {
