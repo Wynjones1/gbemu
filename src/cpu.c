@@ -56,12 +56,22 @@ void cpu_store_reg16(struct cpu_state *state, REG_INPUT reg, reg16_t data)
 
 int cpu_carry(struct cpu_state *state)
 {
-	return cpu_carry(state);
+    return BIT_N(state->f, CARRY_BIT);
 }
 
 int cpu_zero(struct cpu_state *state)
 {
-	return cpu_zero(state);
+    return BIT_N(state->f, ZERO_BIT);
+}
+
+int cpu_half_carry(struct cpu_state *state)
+{
+    return BIT_N(state->f, HALF_CARRY_BIT);
+}
+
+int cpu_subtract(struct cpu_state *state)
+{
+    return BIT_N(state->f, SUBTRACT_BIT);
 }
 
 #define X(field, value) (value) ? SET_N(state->f, field) : RESET_N(state->f, field)
