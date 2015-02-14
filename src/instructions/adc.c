@@ -31,10 +31,10 @@ void ADC(struct cpu_state *state,
 
 reg_t cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1)
 {
-	uint16_t res      = ((uint16_t)d0 + d1) + state->carry;
+	uint16_t res      = ((uint16_t)d0 + d1) + cpu_carry(state);
 	cpu_set_zero(state, (res & 0xff) == 0);
 	cpu_set_subtract(state, 0);
-	cpu_set_half_carry(state, ((d0 & 0xf) + (d1 & 0xf) + state->carry) > 0xf);
+	cpu_set_half_carry(state, ((d0 & 0xf) + (d1 & 0xf) + cpu_carry(state)) > 0xf);
 	cpu_set_carry(state, res > 0xff);
 	return res & 0xff;
 }
