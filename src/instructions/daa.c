@@ -15,13 +15,13 @@ void DAA(struct cpu_state *state,
 				lbits >= 0x0 && lbits <= 0x9 && !state->half_carry)
 			{
 				state->a += 0xA0;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0x6 && hbits <= 0xf &&
 				lbits >= 0x6 && lbits <= 0xf && state->half_carry)
 			{
 				state->a += 0x9A;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 		}
 		else
@@ -30,13 +30,13 @@ void DAA(struct cpu_state *state,
 				lbits >= 0x0 && lbits <= 0x9 && !state->half_carry)
 			{
 				state->a += 0x00;
-				state->carry = 0;
+				cpu_set_carry(state, 0);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x8 &&
 				lbits >= 0x6 && lbits <= 0xf && state->half_carry)
 			{
 				state->a += 0xFA;
-				state->carry = 0;
+				cpu_set_carry(state, 0);
 			}
 		}
 	}
@@ -48,19 +48,19 @@ void DAA(struct cpu_state *state,
 				lbits >= 0x0 && lbits <= 0x3 && state->half_carry)
 			{
 				state->a += 0x66;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x2 &&
 				lbits >= 0xa && lbits <= 0xf && !state->half_carry)
 			{
 				state->a += 0x66;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x2 &&
 				lbits >= 0x0 && lbits <= 0x9 && !state->half_carry)
 			{
 				state->a += 0x60;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 		}
 		else
@@ -69,40 +69,40 @@ void DAA(struct cpu_state *state,
 				lbits >= 0x0 && lbits <= 0x3 && state->half_carry)
 			{
 				state->a += 0x66;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0x9 && hbits <= 0xf &&
 				lbits >= 0xa && lbits <= 0xf && !state->half_carry)
 			{
 				state->a += 0x66;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0xa && hbits <= 0xf &&
 				lbits >= 0x0 && lbits <= 0x9 && !state->half_carry)
 			{
 				state->a += 0x60;
-				state->carry = 1;
+				cpu_set_carry(state, 1);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x9 &&
 				lbits >= 0x0 && lbits <= 0x3 && state->half_carry)
 			{
 				state->a += 0x06;
-				state->carry = 0;
+				cpu_set_carry(state, 0);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x8 &&
 				lbits >= 0xa && lbits <= 0xf && !state->half_carry)
 			{
 				state->a += 0x06;
-				state->carry = 0;
+				cpu_set_carry(state, 0);
 			}
 			else if( hbits >= 0x0 && hbits <= 0x9 &&
 				lbits >= 0x0 && lbits <= 0x9 && !state->half_carry)
 			{
 				state->a += 0x00;
-				state->carry = 0;
+				cpu_set_carry(state, 0);
 			}
 		}
 	}
-	state->half_carry = 0;
-	state->zero       = (state->a == 0);
+	cpu_set_half_carry(state, 0);
+	cpu_set_zero(state, (state->a == 0));
 }

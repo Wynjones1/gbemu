@@ -27,8 +27,8 @@ void XOR(struct cpu_state *state,
 void cpu_xor(struct cpu_state *state, reg_t d0)
 {
 	state->a ^= d0;
-	state->zero       = (state->a == 0);
-	state->half_carry = 0;
-	state->carry      = 0;
-	state->subtract   = 0;
+	cpu_set_zero(state, (state->a == 0));
+	cpu_set_half_carry(state, 0);
+	cpu_set_carry(state, 0);
+	cpu_set_subtract(state, 0);
 }

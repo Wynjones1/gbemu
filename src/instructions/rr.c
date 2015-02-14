@@ -21,10 +21,10 @@ void RR(struct cpu_state *state,
 reg_t   cpu_rr(struct cpu_state *state, reg_t d0)
 {
 	reg_t old_carry = state->carry;
-	state->carry = d0 & 0x1;
+	cpu_set_carry(state, d0 & 0x1);
 	d0 = (d0 >> 1) | (old_carry << 7);
-	state->zero       = (d0 == 0);
-	state->half_carry = 0;
-	state->subtract   = 0;
+	cpu_set_zero(state, (d0 == 0));
+	cpu_set_half_carry(state, 0);
+	cpu_set_subtract(state, 0);
 	return d0;
 }
