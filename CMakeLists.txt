@@ -54,6 +54,7 @@ DEFADD(REGISTER_WINDOW    No   "Enable GB register window")
 DEFADD(OUTPUT_DEBUG_FILES No   "Output debug output files")
 DEFADD(DEBUG_WINDOW       No   "Window with current instruction and register values")
 DEFADD(SPINLOCK           No   "Use busy wait to framelimit.")
+DEFADD(SDLTTF             No   "Have SDL TTF")
 
 if(${TESTING})
 	add_definitions("-DCPU_DUMMY_IO=1")
@@ -61,10 +62,13 @@ else()
 	add_definitions("-DCPU_DUMMY_IO=0")
 endif()
 
+if(SDLTTF)
 include_directories(${DEPS}/SDL2/include)
 include_directories(${DEPS}/SDL2_ttf/)
-#add_definitions(--std=c11)
-#add_definitions(-Wno-unused-variable -Wno-unused-function)
+endif()
+
+add_definitions(--std=c11)
+add_definitions(-Wno-unused-variable -Wno-unused-function)
 
 find_package(Threads)
 target_link_libraries(gbemu ${CMAKE_THREAD_LIBS_INIT})
@@ -85,5 +89,8 @@ else()
 endif()
 
 #add_definitions("--coverage")
-target_link_libraries(gbemu SDL2 SDL2_ttf m gcov)
+target_link_libraries(gbemu SDL2 m gcov)
+if(SDLTTF)
+    target_link_libraries(gbemu SDL2_ttf)
+endif()
 
