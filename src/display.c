@@ -438,7 +438,7 @@ void display_simulate(struct cpu_state *state)
 			state->memory->stat.coincidence = 1;
 			if(state->memory->stat.coincidence_int)
 			{
-				state->memory->interrupt.lcd_status = 1;
+                SET_N(state->memory->IF, LCD_STATUS_BIT);
 			}
 		}
 		else

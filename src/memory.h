@@ -115,32 +115,8 @@ typedef struct memory
 	uint8_t wy;
 	uint8_t wx;
 	//Interrupt flags.
-	union
-	{
-		struct
-		{
-			uint8_t v_blank    : 1;
-			uint8_t lcd_status : 1;
-			uint8_t timer      : 1;
-			uint8_t serial     : 1;
-			uint8_t joypad     : 1;
-			uint8_t            : 3;
-		}interrupt;
-		uint8_t IF;
-	};
-	union
-	{
-		struct
-		{
-			uint8_t v_blank    : 1;
-			uint8_t lcd_status : 1;
-			uint8_t timer      : 1;
-			uint8_t serial     : 1;
-			uint8_t joypad     : 1;
-			uint8_t            : 3;
-		}enabled;
-		uint8_t IE;
-	};
+    uint8_t IF;
+    uint8_t IE;
 	int IME;
 	//Serial Registers
 	uint8_t serial_data;

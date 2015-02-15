@@ -105,7 +105,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 		default:
 			break;
 	}
-	if(down == 0) state->memory->interrupt.joypad = 1;
+	if(down == 0) SET_N(state->memory->IF, JOYPAD_BIT);
 }
 #undef X
 
