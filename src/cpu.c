@@ -257,7 +257,7 @@ static void increment_div(cpu_state_t *state, int clk)
 			state->memory->tima++;\
 			if(state->memory->tima == 0){\
 				state->memory->tima = state->memory->tma;\
-				state->memory->interrupt.timer = 1;\
+				SET_N(state->memory->IF, TIMER_BIT);\
 			}}
 static void increment_tima(cpu_state_t *state, int clk)
 {
