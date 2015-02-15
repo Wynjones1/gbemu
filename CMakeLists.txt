@@ -67,13 +67,10 @@ include_directories(${DEPS}/SDL2/include)
 include_directories(${DEPS}/SDL2_ttf/)
 endif()
 
-add_definitions(--std=c11)
-add_definitions(-Wno-unused-variable -Wno-unused-function)
 
 find_package(Threads)
 target_link_libraries(gbemu ${CMAKE_THREAD_LIBS_INIT})
 
-add_definitions("-Werror -Wall -Wno-unused-result")
 
 if(${BUILD_DEPS} STREQUAL "Yes")
     add_subdirectory(${DEPS}/SDL2)
@@ -86,6 +83,17 @@ else()
     execute_process(COMMAND ${SDL_CONFIG} "--cflags"
                     OUTPUT_VARIABLE sdl_cflags
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
+add_definitions(--std=c99)
+add_definitions(-Wno-unused-variable -Wno-unused-function)
+add_definitions(-Werror -Wall)
+
+if(MINGW)
+    set(CMAKE_C_COMPILER   /usr/bin/i586-mingw32msvc-gcc)
+    set(CMAKE_CXX_COMPILER /usr/bin/i586-mingw32msvc-g++)
+else()
+    add_definitions(-Wno-unused-result)
 endif()
 
 #add_definitions("--coverage")
