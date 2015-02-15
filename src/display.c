@@ -38,11 +38,14 @@ struct display
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 
 	//TTF Data
+#if SDLTTF
 	TTF_Font *font;
+#endif
 	SDL_Texture *font_texture;
 	SDL_Surface *surface;
 };
 
+#if SDL_TTF
 static SDL_Surface *RenderText(TTF_Font *font, const char *string)
 {
     static const int mode = 2;
@@ -74,6 +77,7 @@ static void init_ttf(display_t *d)
 	d->surface      = RenderText(d->font, "1234512345");
 	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
 }
+#endif
 
 static void init_display(display_t *display)
 {
@@ -96,10 +100,12 @@ static void init_display(display_t *display)
 	SDL_Error(
 		SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff) < 0);
 
+#if SDLTTF
 	if(REGISTER_WINDOW)
 	{
 		init_ttf(display);
 	}
+#endif
 }
 
 static void *display_thread(void *display_)
@@ -183,6 +189,7 @@ void display_clear(display_t *disp)
 
 void draw_line(display_t *disp, const char *buf, int line, int column, int width)
 {
+#if SDLTTF
 	int h = 18;
 	SDL_Rect debug_rect = {
 		.x = DISPLAY_WIDTH, .y = 0, 
@@ -203,6 +210,7 @@ void draw_line(display_t *disp, const char *buf, int line, int column, int width
 
 	SDL_DestroyTexture(disp->font_texture);
 	SDL_FreeSurface(disp->surface);
+#endif
 }
 
 void draw_instructions(display_t *display)
