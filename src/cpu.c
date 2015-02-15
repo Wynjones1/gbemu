@@ -196,7 +196,6 @@ static void frame_limit(int clk)
     static uint32_t last_time     = 0;
 
 	clk_count += clk;
-    clk_count &= (1 << 23) - 1;
 	if(clk_count >= sample_clocks)
 	{
         int delay;
@@ -224,7 +223,7 @@ static void record_clock_speed(int clk)
     static long int total;
 
     total += clk;
-    int wait_time = 10;
+    int wait_time = 500;
     if(SDL_GetTicks() - time > wait_time)
     {
 #if 1

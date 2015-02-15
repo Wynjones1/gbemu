@@ -63,8 +63,8 @@ endif()
 
 include_directories(${DEPS}/SDL2/include)
 include_directories(${DEPS}/SDL2_ttf/)
-add_definitions(--std=c11)
-add_definitions(-Wno-unused-variable -Wno-unused-function)
+#add_definitions(--std=c11)
+#add_definitions(-Wno-unused-variable -Wno-unused-function)
 
 find_package(Threads)
 target_link_libraries(gbemu ${CMAKE_THREAD_LIBS_INIT})

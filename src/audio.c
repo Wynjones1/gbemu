@@ -50,6 +50,15 @@ static int16_t square2(float t)
     return out;
 }
 
+static int16_t wave(float t)
+{
+    float freq = 440;
+    int idx = t * freq * 64;
+    uint8_t sample = g_audio->wave_table[idx >> 1];
+    if(idx & 0x1) return sample & MASK(4);
+    return INT16_MAX * (sample >> 4) / 15;
+}
+
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
     static int pos = 0;
@@ -67,6 +76,12 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         {
             val += square2(t);
         }
+#if 0
+        if(g_audio->wave.en)
+        {
+            val += wave(t);
+        }
+#endif
         samples[i]= (sample_t){.left = val, .right = val};
         pos = (pos + 1) % FREQUENCY;
     }

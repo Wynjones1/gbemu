@@ -12,7 +12,7 @@
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
-static int PIXEL_SCALE = 0;
+static int PIXEL_SCALE = 1;
 
 static void *display_thread(void *display_);
 static void draw_debug(display_t *disp);
