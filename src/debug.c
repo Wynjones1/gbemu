@@ -1,6 +1,7 @@
 #include "debug.h"
 #include "ppm.h"
 #include "common.h"
+#include "memory.h"
 #include <signal.h>
 
 struct cpu_state *g_state;
@@ -193,21 +194,15 @@ void debug_output_registers(struct cpu_state *state)
 
 	FOutput(fp, "Interrupt Flags (val/enabled):\n");
 	FOutput(fp, "IME      : %u\n", state->memory->IME);
-	FOutput(fp, "VBLANK   : %u/%u \n",
-						state->memory->interrupt.v_blank,
-						state->memory->enabled.v_blank);
-	FOutput(fp, "LCD STAT : %u/%u \n",
-						state->memory->interrupt.lcd_status,
-						state->memory->enabled.lcd_status);
-	FOutput(fp, "TIMER    : %u/%u \n",
-						state->memory->interrupt.timer,
-						state->memory->enabled.timer);
-	FOutput(fp, "SERIAL   : %u/%u \n",
-						state->memory->interrupt.serial,
-						state->memory->enabled.serial);
-	FOutput(fp, "JOYPAD   : %u/%u \n",
-						state->memory->interrupt.joypad,
-						state->memory->enabled.joypad);
+    #define X(flag) FOutput(fp, #flag " : %u/%u \n", \
+        BIT_N(state->memory->IF, flag ## _BIT),      \
+        BIT_N(state->memory->IE, flag ## _BIT))
+	X(VBLANK);
+	X(LCD_STATUS);
+	X(TIMER);
+	X(SERIAL);
+	X(JOYPAD);
+    #undef X
 
 
 	FOutput(fp, "Joypad\n");

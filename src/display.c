@@ -266,21 +266,13 @@ static void draw_debug(display_t *disp)
         cur_line = 2;
         DRAWLINE("Interrupt Flags (val/en):");
         DRAWLINE("IME      : %u  ", disp->state->memory->IME);
-        DRAWLINE("VBLANK   : %u/%u",
-                            disp->state->memory->interrupt.v_blank,
-                            disp->state->memory->enabled.v_blank);
-        DRAWLINE("LCD STAT : %u/%u",
-                            disp->state->memory->interrupt.lcd_status,
-                            disp->state->memory->enabled.lcd_status);
-        DRAWLINE("TIMER    : %u/%u",
-                            disp->state->memory->interrupt.timer,
-                            disp->state->memory->enabled.timer);
-        DRAWLINE("SERIAL   : %u/%u",
-                            disp->state->memory->interrupt.serial,
-                            disp->state->memory->enabled.serial);
-        DRAWLINE("JOYPAD   : %u/%u",
-                            disp->state->memory->interrupt.joypad,
-                            disp->state->memory->enabled.joypad);
+        #define X(flag) DRAWLINE(#flag " : %u/%u", BIT_N(disp->state->memory->IF, flag ## _BIT), BIT_N(disp->state->memory->IE, flag ## _BIT));
+        X(VBLANK);
+        X(LCD_STATUS);
+        X(TIMER);
+        X(SERIAL);
+        X(JOYPAD);
+        #undef X
 
         DRAWLINE(" ");
         DRAWLINE("TIME REGISTERS ");
@@ -456,7 +448,7 @@ void display_simulate(struct cpu_state *state)
 
 		if(state->memory->ly == 144)
 		{
-			state->memory->interrupt.v_blank = 1;
+            SET_N(state->memory->IF, VBLANK_BIT);
 		}
 		write_display(state);
 	}

@@ -155,8 +155,8 @@ cpu_state_t *cpu_load_state(const char *filename)
 #undef X
 
 #define X(n, addr, addr_in)\
-		if(state->memory->interrupt.n && state->memory->enabled.n){                  \
-			state->memory->interrupt.n = 0;                                          \
+		if(BIT_N(state->memory->IF, n ## _BIT) && BIT_N(state->memory->IE,n ## _BIT)){                  \
+			RESET_N(state->memory->IF, n ## _BIT);                                          \
 			addr = addr_in;                                                          \
 		}
 static int check_for_interrupts(struct cpu_state *state)
@@ -168,11 +168,11 @@ static int check_for_interrupts(struct cpu_state *state)
 		state->memory->IME = 0;
 		state->halt        = 0;
 		//Check each of the interrupts in priority order.
-			 X(v_blank   , addr, 0x40)
-		else X(lcd_status, addr, 0x48)
-		else X(timer     , addr, 0x50)
-		else X(serial    , addr, 0x58)
-		else X(joypad    , addr, 0x60)
+			 X(VBLANK, addr, 0x40)
+		else X(LCD_STATUS, addr, 0x48)
+		else X(TIMER, addr, 0x50)
+		else X(SERIAL, addr, 0x58)
+		else X(JOYPAD, addr, 0x60)
 
 		Output("Interrupt 0x%04x\n", addr);
         if(state->cont)

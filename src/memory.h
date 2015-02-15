@@ -161,3 +161,9 @@ typedef struct memory
 
 	int to_read;
 }memory_t;
+
+#define VBLANK_BIT     0
+#define LCD_STATUS_BIT 1
+#define TIMER_BIT      2
+#define SERIAL_BIT     3
+#define JOYPAD_BIT     4
