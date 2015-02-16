@@ -103,3 +103,12 @@ FILE *common_fopen(const char *filename, const char *mode)
     }
     return fp;
 }
+
+int common_mkdir(const char *dirname, int mode)
+{
+#if 0
+    return mkdir(dirname, mode);
+#else
+    return mkdir(dirname);
+#endif
+}

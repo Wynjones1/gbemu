@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <SDL.h>
+
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1
 #endif
@@ -38,6 +40,7 @@
 #define FOutput(fp, M, ...) common_foutput(fp, M, ##__VA_ARGS__)
 #define FOPEN(filename, mode) common_fopen(filename, mode)
 
+int common_mkdir(const char *dirname, int mode);
 void common_error(const char *format, ...) __attribute__((noreturn));
 void common_warn(const char *format, ...);
 void common_output(const char *format, ...);

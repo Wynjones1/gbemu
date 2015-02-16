@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <SDL2/SDL.h>
 
 #define NUM_CHANNELS 2
 #define NUM_SAMPLES  1024

@@ -14,8 +14,6 @@
 #include "opcodes.h"
 #include "ppm.h"
 
-#include <SDL2/SDL.h>
-
 cpu_state_t *cpu_init()
 {
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
