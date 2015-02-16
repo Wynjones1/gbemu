@@ -106,7 +106,7 @@ FILE *common_fopen(const char *filename, const char *mode)
 
 int common_mkdir(const char *dirname, int mode)
 {
-#if WIN32
+#if __MINGW32__
     return mkdir(dirname);
 #else
     return mkdir(dirname, mode);
