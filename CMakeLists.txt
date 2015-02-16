@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
+if(MINGW)
+    include(toolchain.cmake)
+endif()
 project(gbemu)
 
 set(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
@@ -71,7 +74,7 @@ find_package(Threads)
 target_link_libraries(gbemu ${CMAKE_THREAD_LIBS_INIT})
 
 
-if(0)
+if(NOT MINGW)
     find_program(SDL_CONFIG sdl2-config)
     execute_process(COMMAND "${SDL_CONFIG}" "--libs"
                     OUTPUT_VARIABLE sdl_libs
@@ -87,14 +90,13 @@ add_definitions(-Werror -Wall)
 add_definitions(-Wno-unused-result)
 
 if(MINGW)
-    include(toolchain.cmake)
-endif()
-
-#add_definitions("--coverage")
-set(SDL_LIB /home/stuart/C/SDL2-MinGW/i686-w64-mingw32/lib/libSDL2.a)
-set(SDLMAIN_LIB /home/stuart/C/SDL2-MinGW/i686-w64-mingw32/lib/libSDL2main.a)
-target_link_libraries(gbemu m gcov mingw32 ${SDL_LIB} ${SDLMAIN_LIB} )
-if(SDLTTF)
-    target_link_libraries(gbemu SDL2_ttf)
+    set(MINGW_DIR ./SDL2/i686-w64-mingw32/)
+    add_definitions(-mwindows)
+    include_directories(${MINGW_DIR}/include)
+    find_library(libSDL2     SDL2 ${MINGW_DIR}/lib)
+    find_library(libSDL2main SDL2main ${MINGW_DIR}/lib)
+    target_link_libraries(gbemu mingw32 ${libSDL2main} ${libSDL2})
+else()
+    target_link_libraries(gbemu SDL2)
 endif()
 

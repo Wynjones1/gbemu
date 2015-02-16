@@ -2,10 +2,10 @@ BUILD_CONFIG ?= Release
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
 SPINLOCK     ?= No
-MINGW        ?= Yes
+MINGW        ?= No
 
 all: build
-	cd build; cmake -DMINGW=$(MINGW) -DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) ..; make
+	cd build; cmake -DMINGW=$(MINGW) -DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) ..; make -j5
 
 build:
 	mkdir -p build

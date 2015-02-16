@@ -106,9 +106,9 @@ FILE *common_fopen(const char *filename, const char *mode)
 
 int common_mkdir(const char *dirname, int mode)
 {
-#if 0
-    return mkdir(dirname, mode);
-#else
+#if WIN32
     return mkdir(dirname);
+#else
+    return mkdir(dirname, mode);
 #endif
 }

@@ -2,7 +2,6 @@
 #include "audio.h"
 #include "memory.h"
 #include <assert.h>
-#include <pthread.h>
 #include <stdlib.h>
 
 #define NUM_CHANNELS 2
