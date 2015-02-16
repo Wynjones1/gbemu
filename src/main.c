@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <string.h>
-#include <SDL2/SDL.h>
 
+#include "common.h"
 #include "audio.h"
 #include "cmdline.h"
 #include "cpu.h"

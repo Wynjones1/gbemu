@@ -4,8 +4,6 @@
 #include "opcodes.h"
 #include "debug.h"
 #include <stdlib.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <string.h>
 //TODO: Remove pthreads
 #include <pthread.h>

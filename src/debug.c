@@ -58,7 +58,7 @@ void output_tiles(void)
 	struct stat st = {0};
 	if(stat("./tiles/", &st) == -1)
 	{
-		mkdir("./tiles/", 0700);
+		common_mkdir("./tiles/", 0700);
 	}
 	int w = 32;
 	int h = 6;
