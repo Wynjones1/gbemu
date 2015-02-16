@@ -5,14 +5,11 @@
 #include "debug.h"
 #include <stdlib.h>
 #include <string.h>
-//TODO: Remove pthreads
-#include <pthread.h>
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
 static int PIXEL_SCALE = 1;
 
-static void *display_thread(void *display_);
 static void draw_debug(display_t *disp);
 
 unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
@@ -30,8 +27,6 @@ struct display
 	SDL_Texture  *texture;
 	cpu_state_t  *state;
 	memory_t     *mem;
-	//Thread Data
-	pthread_t thread;
 
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 
@@ -106,7 +101,7 @@ static void init_display(display_t *display)
 #endif
 }
 
-static void *display_thread(void *display_)
+static int display_thread(void *display_)
 {
 	display_t *display = display_;
 	init_display(display);
@@ -117,7 +112,7 @@ static void *display_thread(void *display_)
 		display_display(display);
 		SDL_Delay(17);
 	}
-	return NULL;
+	return 0;
 }
 
 display_t *display_init(cpu_state_t *state)
@@ -129,8 +124,7 @@ display_t *display_init(cpu_state_t *state)
     PIXEL_SCALE = cmdline_args.scale;
 
     SDL_Init(SDL_INIT_VIDEO);
-    pthread_t thread;
-    pthread_create(&thread, NULL, display_thread, display);
+    SDL_CreateThread(display_thread, "Display Thread", display);
 	return display;
 }
 
