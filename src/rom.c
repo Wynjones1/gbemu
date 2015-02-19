@@ -14,7 +14,7 @@ static int verify(FILE *fp)
 	char to_verify[sizeof(nintendo_logo)];
 	fseek(fp, 0x104, SEEK_SET);
 	common_fread(to_verify, 1, sizeof(nintendo_logo), fp);
-	for(int i = 0; i < sizeof(nintendo_logo); i++)
+	for(uint8_t i = 0; i < sizeof(nintendo_logo); i++)
 	{
 		if(to_verify[i] != nintendo_logo[i]) return 0;
 	}
