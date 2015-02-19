@@ -19,17 +19,18 @@ void           memory_save_state(memory_t *memory, FILE *fp);
 memory_t      *memory_load_state(FILE *fp);
 audio_t       *memory_get_audio(memory_t *memory);
 
+#define PALETTE_GBC_BIT 0 //GBC Only (placeholder)
+#define BANK_BIT        3 //GBC Only (placeholder)
+#define PALETTE_BIT     4
+#define X_FLIP_BIT      5
+#define Y_FLIP_BIT      6
+#define PRIORITY_BIT    7
 struct OAM_data
 {
 	uint8_t y_pos;
 	uint8_t x_pos;
 	uint8_t tile;
-	uint8_t palette_gbc : 3; //Only used in gameboy colour, placeholder
-	uint8_t bank        : 1; //Only used in gameboy colour, placeholder
-	uint8_t palette     : 1;
-	uint8_t x_flip      : 1;
-	uint8_t y_flip      : 1;
-	uint8_t priority    : 1;
+    uint8_t flags;
 };
 
 typedef struct memory

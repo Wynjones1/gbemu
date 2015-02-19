@@ -291,11 +291,11 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 	int oy = y - (sprite->y_pos - 16);
 	int second_tile = 0;
 	int size = state->memory->lcdc.obj_size ? 16 : 8;
-	if(sprite->x_flip)
+	if(BIT_N(sprite->flags, X_FLIP_BIT))
 	{
 		ox = 7 - ox;
 	}
-	if(sprite->y_flip)
+	if(BIT_N(sprite->flags,Y_FLIP_BIT))
 	{
 		oy = size - oy - 1;
 	}
@@ -353,8 +353,8 @@ static void write_sprites(struct cpu_state *state, display_t *display, int x)
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)
 	{
-		uint8_t palette = sprite->palette ? state->memory->obp1 : state->memory->obp0;
-        if(sprite->priority == 0 || last_background == 0)
+		uint8_t palette = BIT_N(sprite->flags, PRIORITY_BIT) ? state->memory->obp1 : state->memory->obp0;
+        if(BIT_N(sprite->flags, PRIORITY_BIT) == 0 || last_background == 0)
             data[x] = GET_SHADE(g_shade, palette);
 	}
 }
