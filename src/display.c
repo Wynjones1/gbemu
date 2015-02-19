@@ -118,10 +118,9 @@ static int display_thread(void *display_)
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = malloc(sizeof(display_t));
-	display->state = state;
-	display->mem = state->memory;
-
-    PIXEL_SCALE = cmdline_args.scale;
+	display->state     = state;
+	display->mem       = state->memory;
+    PIXEL_SCALE        = cmdline_args.scale;
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateThread(display_thread, "Display Thread", display);
