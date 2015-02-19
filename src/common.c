@@ -82,7 +82,7 @@ void common_foutput(FILE *fp, const char *format, ...)
 
 void common_fread(void *ptr, size_t size, size_t nmemb, FILE *fp)
 {
-	int read = fread(ptr, size, nmemb, fp);
+	size_t read = fread(ptr, size, nmemb, fp);
 	if(read != nmemb) Error("Could not read all data.\n");
 }
 

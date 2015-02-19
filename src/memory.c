@@ -120,7 +120,8 @@ static void dma(memory_t *mem, reg_t data)
 #endif
 }
 
-#define X(min, max) ((addr >= min) && (addr <= max))
+//#define X(min, max) ((addr >= min) && (addr <= max))
+#define X(min, max) (addr <= max)
 reg_t memory_load8(memory_t *mem, reg16_t addr)
 {
 	if(X(0x0000,0x3fff))
@@ -173,11 +174,10 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	{
 		return mem->stack[addr - 0xff80];
 	}
-	else if(X(0xffff,0xffff))
+	else// if(X(0xffff,0xffff))
 	{
 		return mem->IE;
 	}
-	return 0;
 }
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
@@ -243,7 +243,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 {
 	//TODO:IO Registers.
-	if(X(0xff10, 0xff3f))
+	if(0xff10 <= addr && addr < 0xff40)
 	{
 		audio_store(mem->audio, addr, data);
 		return;
@@ -396,7 +396,7 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	{
 		mem->stack[addr - 0xff80] = data;
 	}
-	else if(X(0xffff,0xffff))
+	else// if(X(0xffff,0xffff))
 	{
 		mem->IE = data;
 	}

@@ -333,7 +333,7 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
             audio->wave_table[addr - 0xff30] = data;
             break;
         default:
-            printf("Write to invalid sound.\n");
+            printf("Write to invalid sound register.\n");
             printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
     }
 }

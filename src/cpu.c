@@ -217,11 +217,11 @@ static void frame_limit(int clk)
 */
 static void record_clock_speed(int clk)
 {
-    static int time = 0;
-    static long int total;
+    static uint32_t time = 0;
+    static uint64_t total;
+    uint32_t wait_time = 500;
 
     total += clk;
-    int wait_time = 500;
     if(SDL_GetTicks() - time > wait_time)
     {
 #if 1

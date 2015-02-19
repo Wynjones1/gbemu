@@ -1,4 +1,6 @@
 #include "cpu.h"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits" 
 
 void DAA(struct cpu_state *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
@@ -106,3 +108,5 @@ void DAA(struct cpu_state *state,
 	cpu_set_half_carry(state, 0);
 	cpu_set_zero(state, (state->a == 0));
 }
+
+#pragma GCC diagnostic pop
