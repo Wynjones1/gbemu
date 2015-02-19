@@ -12,7 +12,6 @@ static int PIXEL_SCALE = 1;
 
 static void draw_debug(display_t *disp);
 
-unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 char instruction_buffer[200];
 char last_instruction[200];
 
@@ -36,6 +35,7 @@ struct display
 #endif
 	SDL_Texture *font_texture;
 	SDL_Surface *surface;
+    uint32_t     pixel_buffer[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 };
 
 #if SDL_TTF
@@ -84,7 +84,7 @@ static void init_display(display_t *display)
 	SDL_Error(display->render == NULL);
 
 	display->texture = SDL_CreateTexture(display->render,
-                                         SDL_PIXELFORMAT_RGB888,
+                                         SDL_PIXELFORMAT_RGBA8888,
                                          SDL_TEXTUREACCESS_STREAMING,
                                          width, height);
 
@@ -135,31 +135,12 @@ void display_delete(display_t *disp)
 }
 
 
-static void transfer_buffer(display_t *d)
-{
-	uint8_t *data;
-	int      pitch;
-	const SDL_Rect rect = {.x = 0, .y = 0,.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT};
-	SDL_LockTexture(d->texture, &rect, (void*)&data, &pitch);
-	for(int j = 0; j < DISPLAY_HEIGHT; j++)
-	{
-		for(int i = 0; i < DISPLAY_WIDTH; i++)
-		{
-			int shade = g_video_data[j][i];
-			data[pitch * j + 4 * i + 0] = shade;
-			data[pitch * j + 4 * i + 1] = shade;
-			data[pitch * j + 4 * i + 2] = shade;
-		}
-	}
-	SDL_UnlockTexture(d->texture);
-}
-
 void display_display(display_t *display)
 {
 	//Display the image.
 	if(display->mem->lcdc.enabled)
 	{
-		transfer_buffer(display);
+        SDL_UpdateTexture(display->texture, NULL, display->pixel_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
         display_present(display);
 	}
 	else
@@ -360,13 +341,14 @@ static uint8_t shade_table[4] =
 };
 
 //TODO: Properly comment this.
-#define GET_SHADE(n, x) shade_table[((x >> (2 * n)) & 0x3)]
+#define MAKE_PIXEL(x) (x << 24 | x << 16 | x << 8 | 0xff)
+#define GET_SHADE(n, x) MAKE_PIXEL(shade_table[((x >> (2 * n)) & 0x3)])
 
 static uint8_t last_background;
-static void write_sprites(struct cpu_state *state, int x)
+static void write_sprites(struct cpu_state *state, display_t *display, int x)
 {
 	int y = state->memory->ly;
-	uint8_t *data = g_video_data[y];
+	uint32_t *data = display->pixel_buffer[y];
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)
 	{
@@ -375,12 +357,12 @@ static void write_sprites(struct cpu_state *state, int x)
 	}
 }
 /* Write the current line that is drawing into the framebuffer */
-static void write_background(struct cpu_state *state, int x)
+static void write_background(struct cpu_state *state, display_t *display, int x)
 {
 	int ty        = (state->memory->ly + state->memory->scy) / 8;
 	int offset    = (state->memory->ly + state->memory->scy) % 8;
 	int scx = state->memory->scx;
-	uint8_t *data = g_video_data[state->memory->ly];
+	uint32_t *data = display->pixel_buffer[state->memory->ly];
 	const uint8_t *tile_data;
 	int tx = ((x + scx) / 8) % 0x20;
 	int ox = (x + scx) % 8;
@@ -389,13 +371,13 @@ static void write_background(struct cpu_state *state, int x)
     last_background = data[x];
 }
 
-static void write_window(struct cpu_state *state, int x)
+static void write_window(struct cpu_state *state, display_t *display, int x)
 {
 	int wx = state->memory->wx - 7;
 	int wy = state->memory->wy;
 	if(state->memory->lcdc.window_display && state->memory->ly > wy && wx <= x)
 	{
-		uint8_t *data = g_video_data[state->memory->ly];
+		uint32_t *data = display->pixel_buffer[state->memory->ly];
 		int tx = (x - wx) / 8;
 		int ox = (x - wx) % 8;
 		int ty = (state->memory->ly - wy) / 8;
@@ -405,15 +387,15 @@ static void write_window(struct cpu_state *state, int x)
 	}
 }
 
-static void write_display(struct cpu_state *state)
+static void write_display(struct cpu_state *state, display_t *display)
 {
 	if(state->memory->ly < DISPLAY_HEIGHT)
 	{
 		for(int i = 0; i < DISPLAY_WIDTH; i++)
 		{
-			write_background(state, i);
-			write_window(state, i);
-			write_sprites(state, i);
+			write_background(state, display, i);
+			write_window(state, display, i);
+			write_sprites(state, display, i);
 		}
 	}
 }
@@ -441,6 +423,6 @@ void display_simulate(struct cpu_state *state)
 		{
             SET_N(state->memory->IF, VBLANK_BIT);
 		}
-		write_display(state);
+		write_display(state, state->display);
 	}
 }
