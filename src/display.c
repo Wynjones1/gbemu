@@ -342,7 +342,8 @@ static uint8_t shade_table[4] =
 
 //TODO: Properly comment this.
 #define MAKE_PIXEL(x) (x << 24 | x << 16 | x << 8 | 0xff)
-#define GET_SHADE(n, x) MAKE_PIXEL(shade_table[((x >> (2 * n)) & 0x3)])
+#define GET_INDEX(n, x) ((x >> (2 * n)) & 0x3)
+#define GET_SHADE(n, x) MAKE_PIXEL(shade_table[GET_INDEX(n, x)])
 
 static uint8_t last_background;
 static void write_sprites(struct cpu_state *state, display_t *display, int x)
@@ -353,9 +354,11 @@ static void write_sprites(struct cpu_state *state, display_t *display, int x)
 	if(sprite)
 	{
 		uint8_t palette = sprite->palette ? state->memory->obp1 : state->memory->obp0;
-        data[x] = GET_SHADE(g_shade, palette);
+        if(sprite->priority == 0 || last_background == 0)
+            data[x] = GET_SHADE(g_shade, palette);
 	}
 }
+
 /* Write the current line that is drawing into the framebuffer */
 static void write_background(struct cpu_state *state, display_t *display, int x)
 {
@@ -368,7 +371,7 @@ static void write_background(struct cpu_state *state, display_t *display, int x)
 	int ox = (x + scx) % 8;
 	tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
 	data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
-    last_background = data[x];
+    last_background = GET_INDEX(display_get_shade(tile_data, ox), state->memory->bgp);
 }
 
 static void write_window(struct cpu_state *state, display_t *display, int x)
