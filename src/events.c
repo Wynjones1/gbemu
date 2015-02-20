@@ -99,6 +99,12 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
                 state->paused = 0;
             }
             break;
+        case SDLK_F11:
+            if(down)
+            {
+                display_toggle_fullscreen(state->display);
+            }
+            break;
 		case SDLK_ESCAPE:
 			exit(0);
 			break;

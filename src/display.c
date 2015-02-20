@@ -35,6 +35,7 @@ struct display
 #endif
 	SDL_Texture *font_texture;
 	SDL_Surface *surface;
+    bool         fullscreen;
     uint32_t     pixel_buffer[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 };
 
@@ -76,12 +77,14 @@ static void init_display(display_t *display)
 {
 	unsigned int width  = DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH;
 	unsigned int height = DISPLAY_HEIGHT;
-	display->window = SDL_CreateWindow("Window", 0, 0, PIXEL_SCALE * width,PIXEL_SCALE * height, 0);
+	display->window = SDL_CreateWindow("Window", 0, 0, 100 + PIXEL_SCALE * width,PIXEL_SCALE * height, SDL_WINDOW_RESIZABLE);
 
 	SDL_Error(display->window == NULL);
 
 	display->render  = SDL_CreateRenderer(display->window, -1, 0);
 	SDL_Error(display->render == NULL);
+    SDL_Error(SDL_RenderSetLogicalSize(display->render, DISPLAY_WIDTH, DISPLAY_HEIGHT) < 0);
+    SDL_Error(SDL_SetRenderDrawColor(display->render, 0, 0, 0, 255) < 0);
 
 	display->texture = SDL_CreateTexture(display->render,
                                          SDL_PIXELFORMAT_RGBA8888,
@@ -89,9 +92,7 @@ static void init_display(display_t *display)
                                          width, height);
 
 	SDL_Error(display->texture == NULL);
-
-	SDL_Error(
-		SDL_SetRenderDrawColor(display->render, 0xff, 0xff, 0xff, 0xff) < 0);
+    SDL_Error(SDL_ShowCursor(SDL_DISABLE) < 0);
 
 #if SDLTTF
 	if(REGISTER_WINDOW)
@@ -261,10 +262,6 @@ static void draw_debug(display_t *disp)
 
 void display_present(display_t *disp)
 {
-	SDL_Rect rect = {
-		.x = 0, .y = 0,
-		.w = DISPLAY_WIDTH, .h = DISPLAY_HEIGHT
-	};
 	if(SDL_RenderClear(disp->render) < 0)
 	{
 		Error("%s\n", SDL_GetError());
@@ -428,4 +425,17 @@ void display_simulate(struct cpu_state *state)
 		}
 		write_display(state, state->display);
 	}
+}
+
+void display_toggle_fullscreen(display_t *display)
+{
+    display->fullscreen = !display->fullscreen;
+    if(display->fullscreen)
+    {
+        SDL_SetWindowFullscreen(display->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    }
+    else
+    {
+        SDL_SetWindowFullscreen(display->window, 0);
+    }
 }
