@@ -77,7 +77,7 @@ static void init_display(display_t *display)
 {
 	unsigned int width  = DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH;
 	unsigned int height = DISPLAY_HEIGHT;
-	display->window = SDL_CreateWindow("Window", 0, 0, 100 + PIXEL_SCALE * width,PIXEL_SCALE * height, SDL_WINDOW_RESIZABLE);
+	display->window = SDL_CreateWindow("Window", 0, 0, PIXEL_SCALE * width,PIXEL_SCALE * height, SDL_WINDOW_RESIZABLE);
 
 	SDL_Error(display->window == NULL);
 
@@ -350,7 +350,7 @@ static void write_sprites(struct cpu_state *state, display_t *display, int x)
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)
 	{
-		uint8_t palette = BIT_N(sprite->flags, PRIORITY_BIT) ? state->memory->obp1 : state->memory->obp0;
+		uint8_t palette = BIT_N(sprite->flags, PALETTE_BIT) ? state->memory->obp1 : state->memory->obp0;
         if(BIT_N(sprite->flags, PRIORITY_BIT) == 0 || last_background == 0)
             data[x] = GET_SHADE(g_shade, palette);
 	}
