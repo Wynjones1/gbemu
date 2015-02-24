@@ -76,51 +76,51 @@ typedef struct audio
 #define X(name, msb, lsb) uint8_t name;
     struct
     {
-        NR10;
-        NR11;
-        NR12;
-        NR13;
-        NR14;
+        NR10
+        NR11
+        NR12
+        NR13
+        NR14
         int8_t volume;
         uint8_t en;
     }sq1;
 
     struct
     {
-        NR21;
-        NR22;
-        NR23;
-        NR24;
+        NR21
+        NR22
+        NR23
+        NR24
         int8_t volume;
         uint8_t en;
     }sq2;
 
     struct
     {
-        NR30;
-        NR31;
-        NR32;
-        NR33;
-        NR34;
+        NR30
+        NR31
+        NR32
+        NR33
+        NR34
         int8_t  volume;
         uint8_t en;
     }wave;
 
     struct
     {
-        NR41;
-        NR42;
-        NR43;
-        NR44;
+        NR41
+        NR42
+        NR43
+        NR44
         int8_t  volume;
         uint8_t en;
     }noise;
 
     struct
     {
-        NR50;
-        NR51;
-        NR52;
+        NR50
+        NR51
+        NR52
     }control;
 
     uint8_t wave_table[16];

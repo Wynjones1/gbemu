@@ -10,7 +10,7 @@ void xor_test(void)
 		{0xff, 0x0f, 0xf0, 0, 0, 0, 0},
 		{0xff, 0x8a, 0x75, 0, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		cpu_set_half_carry(&state, rand() % 2);

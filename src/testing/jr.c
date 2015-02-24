@@ -10,7 +10,7 @@ void jr_test(void)
 		{0x100, -1, 0xff, 0, 0, 1, 0},
 		{0x100, -2, 0xfe, 1, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.pc         = test[0];

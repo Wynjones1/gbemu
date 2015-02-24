@@ -18,7 +18,7 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 
 	fp = FOPEN(rom, "rb");
 	fseek(fp, 0L, SEEK_END);
-	out->to_read = ftell(fp);
+	out->to_read = (size_t) ftell(fp);
 	fseek(fp, 0x0, SEEK_SET);
 	out->bank_0       = malloc(out->to_read);
 	common_fread(out->bank_0, 1, out->to_read, fp);
@@ -120,65 +120,6 @@ static void dma(memory_t *mem, reg_t data)
 #endif
 }
 
-//#define X(min, max) ((addr >= min) && (addr <= max))
-#define X(min, max) (addr <= max)
-reg_t memory_load8(memory_t *mem, reg16_t addr)
-{
-	if(X(0x0000,0x3fff))
-	{
-		if(addr < 0x100 && !mem->boot_locked)
-		{
-			return mem->boot[addr];
-		}
-		return mem->bank_0[addr];
-	}
-	else if(X(0x4000,0x7fff))
-	{
-		return mem->bank_n[mem->current_bank * 0x4000 + addr - 0x4000];
-	}
-	else if(X(0x8000,0x9fff))
-	{
-		return mem->video_ram[addr - 0x8000];
-	}
-	else if(X(0xa000,0xbfff))
-	{
-        if(mem->external_ram)
-            return mem->external_ram[addr - 0xa000];
-        return 0;
-	}
-	else if(X(0xc000,0xcfff))
-	{
-		return mem->working_ram_0[addr - 0xc000];
-	}
-	else if(X(0xd000,0xdfff))
-	{
-		return mem->working_ram_1[addr - 0xd000];
-	}
-	else if(X(0xe000,0xfdff))
-	{
-		return mem->echo[addr - 0xe000];
-	}
-	else if(X(0xfe00,0xfe9f))
-	{
-		return mem->OAM[addr - 0xfe00];
-	}
-	else if(X(0xfea0,0xfeff))
-	{
-		return 0xff;
-	}
-	else if(X(0xff00,0xff7f))
-	{
-		return read_IO_registers(mem, addr);
-	}
-	else if(X(0xff80,0xfffe))
-	{
-		return mem->stack[addr - 0xff80];
-	}
-	else// if(X(0xffff,0xffff))
-	{
-		return mem->IE;
-	}
-}
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 {
@@ -191,16 +132,12 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		//Timer Registers
 		case 0xff04:
 			return mem->div;
-			break;
 		case 0xff05:
 			return mem->tima;
-			break;
 		case 0xff06:
 			return mem->tma;
-			break;
 		case 0xff07:
 			return *(uint8_t*)&mem->tac;
-			break;
 		case 0xff0f:
 			return mem->IF;
 		case 0xff40:
@@ -281,7 +218,6 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			break;
 		case 0xff44:
 			Error("Read only.\n");
-			break;
 		case 0xff45:
 			mem->lyc = data;
 			break;
@@ -329,35 +265,127 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	}
 }
 
+//#define X(min, max) ((addr >= min) && (addr <= max))
+#define X(min, max) (addr <= max)
+reg_t memory_load8(memory_t *mem, reg16_t addr)
+{
+	if(X(0x0000,0x3fff))
+	{
+		if(addr < 0x100 && !mem->boot_locked)
+		{
+			return mem->boot[addr];
+		}
+		return mem->bank_0[addr];
+	}
+	else if(X(0x4000,0x7fff))
+	{
+		return mem->bank_n[mem->current_bank * 0x4000 + addr - 0x4000];
+	}
+	else if(X(0x8000,0x9fff))
+	{
+		return mem->video_ram[addr - 0x8000];
+	}
+	else if(X(0xa000,0xbfff))
+	{
+        if(mem->external_ram && mem->ram_enabled)
+            return mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000];
+        else
+            Warning("Accessing invalid memory.\n");
+        return 0;
+	}
+	else if(X(0xc000,0xcfff))
+	{
+		return mem->working_ram_0[addr - 0xc000];
+	}
+	else if(X(0xd000,0xdfff))
+	{
+		return mem->working_ram_1[addr - 0xd000];
+	}
+	else if(X(0xe000,0xfdff))
+	{
+		return mem->echo[addr - 0xe000];
+	}
+	else if(X(0xfe00,0xfe9f))
+	{
+		return mem->OAM[addr - 0xfe00];
+	}
+	else if(X(0xfea0,0xfeff))
+	{
+		return 0xff;
+	}
+	else if(X(0xff00,0xff7f))
+	{
+		return read_IO_registers(mem, addr);
+	}
+	else if(X(0xff80,0xfffe))
+	{
+		return mem->stack[addr - 0xff80];
+	}
+	else// if(X(0xffff,0xffff))
+	{
+		return mem->IE;
+	}
+}
+
 void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 {
 	if(X(0x0000, 0x1fff))//RAM Enable
 	{
-		mem->ram_enabled = data;
+        if((data & MASK(4)) == 0x0A)
+        {
+            mem->ram_enabled = 1;
+        }
+        else
+        {
+            mem->ram_enabled = 0;
+        }
 	}
 	else if(X(0x2000, 0x3fff))//Select the lower 5 bits of the rom bank.
 	{
-		data = data & 0x1f;
-        if((mem->cart_type == CART_TYPE_MBC1              ||
-            mem->cart_type == CART_TYPE_MBC1_RAM          ||
-            mem->cart_type == CART_TYPE_MBC1_RAM_BATTERY) &&
-            data == 0x0)
+        if(IS_MBC1(mem))
         {
-            data = 0x1;
+            data = data & MASK(5);
+            if(data == 0x0)
+                data = 0x1;
+            mem->current_bank = (mem->current_bank & 0x60) | data;
+            if(mem->current_bank == 0) mem->current_bank = 1;
         }
-        mem->current_bank = (mem->current_bank & 0x60) | data;
-        if(mem->current_bank == 0) mem->current_bank = 1;
+        if(IS_MBC3(mem))
+        {
+            mem->current_bank = data & MASK(7);
+            if(mem->current_bank == 0) mem->current_bank = 1;
+        }
 	}
-	else if(X(0x4000, 0x5fff))//Select the upper 2 bits of the ROM bank or the RAM bank.
+	else if(X(0x4000, 0x5fff))//Select the upper 2 bits of the ROM or RAM bank.
 	{
-		data = (data & 0x3) << 5;
-        mem->current_bank = data | (mem->current_bank & 0x1f);
-        if(mem->current_bank == 0) mem->current_bank = 1;
+        if(IS_MBC1(mem))
+        {
+            if(mem->rom_ram_mode)
+            {
+                mem->ram_bank = data & MASK(2);
+            }
+            else
+            {
+                data = (data & MASK(2)) << 5;
+                mem->current_bank = data | (mem->current_bank & MASK(5));
+                if(mem->current_bank == 0) mem->current_bank = 1;
+            }
+        }
+        if(IS_MBC3(mem))
+        {
+            if(data <= 0x3)
+            {
+    
+            }
+            else if(data <= 0x8)
+            {
+    
+            }
+        }
 	}
 	else if(X(0x6000, 0x7fff))//ROM/RAM mode select.
 	{
-		data &= 0x1;
-		mem->rom_ram_mode = data;
+		mem->rom_ram_mode = data & 0x1;
 	}
 	else if(X(0x8000,0x9fff))
 	{
@@ -365,8 +393,10 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	else if(X(0xa000,0xbfff))
 	{
-        if(mem->external_ram)
-            mem->external_ram[addr - 0xa000] = data;
+        if(mem->external_ram && mem->ram_enabled)
+            mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000] = data;
+        else
+            Warning("Writing to invalid memory.\n");
 	}
 	else if(X(0xc000,0xcfff))
 	{
@@ -437,7 +467,7 @@ const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset
 	return tile_data + 2 * offset;
 }
 
-int memory_get_tile_index(memory_t *memory, int tx, int ty, int map)
+uint8_t memory_get_tile_index(memory_t *memory, int tx, int ty, int map)
 {
 	uint8_t *video_ram = memory->video_ram;
 	int tile_num = ty * 32 + tx;

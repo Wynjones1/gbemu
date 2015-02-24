@@ -11,7 +11,7 @@ static void inc8_test(void)
 		{0xff, 0x00, 1, 1, 0, 0},
 		{0xf0, 0xf1, 0, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		uint8_t res = cpu_inc8(&state, test[0]);
@@ -46,7 +46,7 @@ static void inc16_test(void)
 		{0xffff, 0x0000},
 		{0x0fff, 0x1000},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		REG_INPUT reg = {.r16 = REG16_BC};

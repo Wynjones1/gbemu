@@ -29,7 +29,7 @@ void ADD(struct cpu_state *state,
 		reg_t d1;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			d1 = state->arg;
+			d1 = (reg_t)state->arg;
 		}
 		else if(arg1 == ARG_TYPE_REG16_INDIRECT)
 		{

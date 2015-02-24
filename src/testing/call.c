@@ -9,7 +9,7 @@ void call_test(void)
 		//PC, SP, ADDR, (SP - 1), (SP - 2), new SP
 		{0x8000, 0xfffe, 0x1234, 0x8003, 0xfffc},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.pc = test[0] + 3;

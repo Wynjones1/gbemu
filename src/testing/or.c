@@ -11,7 +11,7 @@ void or_test(void)
 		{0x5a, 0x03, 0x5b, 0, 0, 0, 0},
 		{0x5a, 0x0f, 0x5f, 0, 0, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		cpu_set_half_carry(&state, rand() % 2);
