@@ -14,7 +14,7 @@ void           memory_store8(memory_t *mem, reg16_t addr, reg_t data);
 reg16_t        memory_load16(memory_t *mem, reg16_t addr);
 void           memory_store16(memory_t *mem, reg16_t addr, reg16_t data);
 const uint8_t *memory_get_tile_data(memory_t *memory, int tx, int ty, int offset, int map);
-int            memory_get_tile_index(memory_t *state, int tx, int ty, int map);
+uint8_t        memory_get_tile_index(memory_t *state, int tx, int ty, int map);
 void           memory_save_state(memory_t *memory, FILE *fp);
 memory_t      *memory_load_state(FILE *fp);
 audio_t       *memory_get_audio(memory_t *memory);
@@ -58,6 +58,7 @@ typedef struct memory
 	reg_t boot[0x100];
 	//Banking information and game rom data.
     uint8_t current_bank;
+    uint8_t ram_bank;
 	enum CART_TYPE cart_type;
 	enum SAVE_RAM_SIZE  ram_size;
 	enum ROM_SIZE       rom_size;
@@ -136,7 +137,7 @@ typedef struct memory
 	cpu_state_t *state;
 	audio_t     *audio;
 
-	int to_read;
+	size_t to_read;
 }memory_t;
 
 #define VBLANK_BIT     0

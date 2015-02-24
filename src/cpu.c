@@ -187,8 +187,9 @@ static int check_for_interrupts(struct cpu_state *state)
 
 static void frame_limit(int clk)
 {
+    uint32_t        target_percent= 100;
 	uint32_t        sample_time   = 17; //Sample time in milliseconds
-	uint32_t        sample_clocks = 1 * sample_time * CPU_CLOCKS_PER_MS;
+	uint32_t        sample_clocks = target_percent * sample_time * CPU_CLOCKS_PER_MS / 100;
     uint32_t        min_wait      = 2;
     static uint32_t clk_count     = 0;
     static uint32_t last_time     = 0;

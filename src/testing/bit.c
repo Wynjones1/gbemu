@@ -9,7 +9,7 @@ void bit_test(void)
 		{7, 0x80, 0, 1, 0, 0},
 		{4, 0xef, 1, 1, 0, 0},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		cpu_bit(&state, test[0], test[1]);

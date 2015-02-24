@@ -7,6 +7,14 @@ enum REG
 	REG_E,REG_D, 
 	REG_L,REG_H, 
 	NUM_REGISTERS
+    /*
+	REG16_AF = 0,
+	REG16_BC,
+	REG16_DE,
+	REG16_HL,
+	REG16_SP,
+	NUM_REGISTERS16
+    */
 };
 
 enum REG16

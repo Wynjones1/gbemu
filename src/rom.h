@@ -34,6 +34,18 @@ enum CART_TYPE
 	CART_TYPE_HUC1_RAM_BATTERY        = 0xff
 };
 
+#define IS_MBC(x, y) (x->cart_type == y)
+#define IS_MBC1(x) (IS_MBC(x, CART_TYPE_MBC1)     ||\
+                    IS_MBC(x, CART_TYPE_MBC1_RAM) ||\
+                    IS_MBC(x, CART_TYPE_MBC1_RAM_BATTERY))
+
+#define IS_MBC3(x) IS_MBC(x, CART_TYPE_MBC3_TIMER_BATTERY)     ||\
+                   IS_MBC(x, CART_TYPE_MBC3_TIMER_RAM_BATTERY) ||\
+                   IS_MBC(x, CART_TYPE_MBC3)                   ||\
+                   IS_MBC(x, CART_TYPE_MBC3_RAM)               ||\
+                   IS_MBC(x, CART_TYPE_MBC3_RAM_BATTERY)
+#undef X
+
 enum ROM_SIZE
 {
     ROM_SIZE_32K   = 0x0,

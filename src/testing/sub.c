@@ -10,7 +10,7 @@ void sub_test(void)
 		{0x3e, 0x0f, 0x2f, 0, 1, 1, 0},
 		{0x3e, 0x40, 0xfe, 0, 0, 1, 1},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
 		state.a = test[0];

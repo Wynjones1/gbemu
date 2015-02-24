@@ -36,7 +36,13 @@ struct display
 	SDL_Texture *font_texture;
 	SDL_Surface *surface;
     bool         fullscreen;
-    uint32_t     pixel_buffer[DISPLAY_HEIGHT][DISPLAY_WIDTH];
+    bool         cur_buffer;
+    uint32_t   (*pixel_buffer)[DISPLAY_WIDTH];
+    uint32_t   (*draw_buffer)[DISPLAY_WIDTH];
+    uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
+
+    SDL_cond    *cond;
+    SDL_mutex   *lock;
 };
 
 #if SDL_TTF
@@ -110,8 +116,11 @@ static int display_thread(void *display_)
 	while(1)
 	{
 		events_handle(display->state);
+        //SDL_CondWait(display->cond, display->lock);
+        SDL_Delay(17);
+        SDL_LockMutex(display->lock);
 		display_display(display);
-		SDL_Delay(17);
+        SDL_UnlockMutex(display->lock);
 	}
 	return 0;
 }
@@ -121,7 +130,12 @@ display_t *display_init(cpu_state_t *state)
 	display_t *display = malloc(sizeof(display_t));
 	display->state     = state;
 	display->mem       = state->memory;
+    display->cond      = SDL_CreateCond();
+    display->lock      = SDL_CreateMutex();
     PIXEL_SCALE        = cmdline_args.scale;
+
+    display->pixel_buffer = display->buffers[display->cur_buffer];
+    display->draw_buffer  = display->buffers[!display->cur_buffer];
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateThread(display_thread, "Display Thread", display);
@@ -141,7 +155,7 @@ void display_display(display_t *display)
 	//Display the image.
 	if(display->mem->lcdc.enabled)
 	{
-        SDL_UpdateTexture(display->texture, NULL, display->pixel_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+        SDL_UpdateTexture(display->texture, NULL, display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
         display_present(display);
 	}
 	else
@@ -422,6 +436,7 @@ void display_simulate(struct cpu_state *state)
 		if(state->memory->ly == 144)
 		{
             SET_N(state->memory->IF, VBLANK_BIT);
+            display_draw(state->display);
 		}
 		write_display(state, state->display);
 	}
@@ -438,4 +453,14 @@ void display_toggle_fullscreen(display_t *display)
     {
         SDL_SetWindowFullscreen(display->window, 0);
     }
+}
+
+void display_draw(display_t *display)
+{
+    display->cur_buffer   = !display->cur_buffer;
+    display->pixel_buffer = display->buffers[display->cur_buffer];
+    display->draw_buffer  = display->buffers[!display->cur_buffer];
+    SDL_LockMutex(display->lock);
+    SDL_CondSignal(display->cond);
+    SDL_UnlockMutex(display->lock);
 }

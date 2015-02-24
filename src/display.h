@@ -37,6 +37,7 @@ void       display_display(display_t *display);
 void       display_simulate(cpu_state_t *state);
 void       display_toggle_fullscreen(display_t *display);
 uint8_t    display_get_shade(const uint8_t *tile_data, int i);
+void       display_draw(display_t *display);
 
 extern unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
 extern char instruction_buffer[];

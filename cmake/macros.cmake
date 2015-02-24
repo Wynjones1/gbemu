@@ -1,0 +1,13 @@
+macro(DEFADD NAME DEFAULT DESC)
+	set(${NAME} ${DEFAULT} CACHE BOOL ${DESC})
+	if(${NAME})
+		add_definitions(-D${NAME}=1)
+	else()
+		add_definitions(-D${NAME}=0)
+	endif()
+endmacro()
+
+macro(ADD_CFLAG arg)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${arg}")
+	set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} ${arg}")
+endmacro()

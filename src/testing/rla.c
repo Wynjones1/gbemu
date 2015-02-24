@@ -8,7 +8,7 @@ void rla_test(void)
 	{
 		{0x95, 1,  0x2b, 0, 0, 0, 1},
 	};
-	for(int i = 0; i < sizeof(tests) / sizeof(*tests); i++)
+	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test             = tests[i];
 		state.a          = test[0];
