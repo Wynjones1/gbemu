@@ -375,11 +375,11 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
         {
             if(data <= 0x3)
             {
-    
+                mem->ram_bank = data;
             }
             else if(data <= 0x8)
             {
-    
+                Error("Not implemented.\n");
             }
         }
 	}
