@@ -39,7 +39,11 @@
 #endif
 
 #ifndef EMBEDDED_ROM
-    #define EMBEDDED_ROM 0
+    #define EMBEDDED_ROM 1
+#endif
+
+#ifndef EMBEDDED
+    #define EMBEDDED 1
 #endif
 
 

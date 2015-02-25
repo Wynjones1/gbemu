@@ -78,7 +78,10 @@ static void init_display(display_t *display)
 {
 	unsigned int width  = DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH;
 	unsigned int height = DISPLAY_HEIGHT;
-	display->window = SDL_CreateWindow("Window", 0, 0, PIXEL_SCALE * width,PIXEL_SCALE * height, SDL_WINDOW_RESIZABLE);
+	display->window = SDL_CreateWindow("Window", 0, 0,
+                                       PIXEL_SCALE * width,
+                                       PIXEL_SCALE * height,
+                                       SDL_WINDOW_RESIZABLE);
 
 	SDL_Error(display->window == NULL);
 
