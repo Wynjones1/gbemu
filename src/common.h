@@ -7,7 +7,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1
@@ -24,9 +24,30 @@
 	#define WARN_LIMIT 100
 #endif
 
+#ifndef TESTING
+    #define TESTING 0
+#endif
+
+#if TESTING
+    #define CPU_DUMMY_IO 1
+#else
+    #define CPU_DUMMY_IO 0
+#endif
+
+#ifndef OUTPUT_DEBUG_FILES
+    #define OUTPUT_DEBUG_FILES 0
+#endif
+
+#ifndef EMBEDDED_ROM
+    #define EMBEDDED_ROM 0
+#endif
+
+
 #if 1
 #define OUTPUT_FILENAME "log.txt"
 #endif
+
+#define SDLTTF 1
 
 #ifndef DEBUG
 #define DEBUG 1

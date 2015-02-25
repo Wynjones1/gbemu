@@ -10,8 +10,6 @@ static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
 static int PIXEL_SCALE = 1;
 
-static void draw_debug(display_t *disp);
-
 char instruction_buffer[200];
 char last_instruction[200];
 
@@ -30,9 +28,6 @@ struct display
 	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
 
 	//TTF Data
-#if SDLTTF
-	TTF_Font *font;
-#endif
 	SDL_Texture *font_texture;
 	SDL_Surface *surface;
     bool         fullscreen;
@@ -99,13 +94,6 @@ static void init_display(display_t *display)
 
 	SDL_Error(display->texture == NULL);
     SDL_Error(SDL_ShowCursor(SDL_DISABLE) < 0);
-
-#if SDLTTF
-	if(REGISTER_WINDOW)
-	{
-		init_ttf(display);
-	}
-#endif
 }
 
 static int display_thread(void *display_)
@@ -167,111 +155,7 @@ void display_display(display_t *display)
 void display_clear(display_t *disp)
 {
 	SDL_RenderClear(disp->render);
-	if(DEBUG)
-	{
-		draw_debug(disp);
-	}
 	SDL_RenderPresent(disp->render);
-}
-
-void draw_line(display_t *disp, const char *buf, int line, int column, int width)
-{
-#if SDLTTF
-	int h = 18;
-	SDL_Rect debug_rect = {
-		.x = DISPLAY_WIDTH, .y = 0, 
-		.w = DEBUG_REGISTER_WIDTH  , .h = DISPLAY_HEIGHT
-	};
-	SDL_Rect temp = {
-		.x = PIXEL_SCALE * (DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH * column)  , .y = h * line,
-		.w = PIXEL_SCALE * width , .h = h 
-	};
-
-	disp->surface = RenderText(disp->font, buf);
-	disp->font_texture = SDL_CreateTextureFromSurface(disp->render, disp->surface);
-
-	SDL_Error(SDL_UpdateTexture(disp->texture, &debug_rect,
-							disp->debug_data, PIXEL_SIZE * DEBUG_REGISTER_WIDTH) < 0);
-
-	SDL_Error(SDL_RenderCopy(disp->render, disp->font_texture, NULL, &temp) < 0);
-
-	SDL_DestroyTexture(disp->font_texture);
-	SDL_FreeSurface(disp->surface);
-#endif
-}
-
-void draw_instructions(display_t *display)
-{
-    char buf[100];
-	sprintf(buf, "%-35s", last_instruction);
-	draw_line(display, buf, 0, 1, DEBUG_INSTRUCTION_WIDTH);
-	sprintf(buf, "%-35s", instruction_buffer);
-	draw_line(display, buf, 1, 1, DEBUG_INSTRUCTION_WIDTH);
-}
-
-#define DRAWLINE(format, ...)\
-    do\
-    {\
-        sprintf(buf, format, ##__VA_ARGS__);\
-        draw_line(disp, buf, cur_line++, column, DEBUG_REGISTER_WIDTH);\
-    }\
-    while(false)
-
-static void draw_debug(display_t *disp)
-{
-    if(DEBUG_WINDOW)
-    {
-        char buf[1024];
-        int cur_line = 0;
-        int column   = 0;
-        DRAWLINE("REGISTERS:    ");
-        DRAWLINE("PC    = 0x%04x", disp->state->pc);
-        DRAWLINE("AF    = 0x%04x", disp->state->af);
-        DRAWLINE("BC    = 0x%04x", disp->state->bc);
-        DRAWLINE("DE    = 0x%04x", disp->state->de);
-        DRAWLINE("HL    = 0x%04x", disp->state->hl);
-        DRAWLINE("SP    = 0x%04x", disp->state->sp);
-        DRAWLINE("SCX   = 0x%04x", disp->state->memory->scx);
-        DRAWLINE("SCY   = 0x%04x", disp->state->memory->scy);
-        DRAWLINE("LY    = 0x%04x", disp->state->memory->ly);
-        DRAWLINE("LXC   = 0x%04x", disp->state->memory->lyc);
-        DRAWLINE("WX    = 0x%04x", disp->state->memory->wx);
-        DRAWLINE("WY    = 0x%04x", disp->state->memory->wy);
-        DRAWLINE("Bank  = 0x%04x", disp->state->memory->current_bank);
-        DRAWLINE(" ");
-        DRAWLINE("LCDC:          ");
-        DRAWLINE("BG Display : %u", disp->state->memory->lcdc.bg_display);
-        DRAWLINE("OBJ Enable : %u", disp->state->memory->lcdc.obj_enable);
-        DRAWLINE("OBJ Size   : %u", disp->state->memory->lcdc.obj_size);
-        DRAWLINE("Map Select : %u", disp->state->memory->lcdc.map_select);
-        DRAWLINE("Tile Select: %u", disp->state->memory->lcdc.tile_data_select);
-        DRAWLINE("Window Disp: %u", disp->state->memory->lcdc.window_display);
-        DRAWLINE("Window Map : %u", disp->state->memory->lcdc.window_map);
-        DRAWLINE("Enabled    : %u", disp->state->memory->lcdc.enabled);
-
-        column   = 1;
-        cur_line = 2;
-        DRAWLINE("Interrupt Flags (val/en):");
-        DRAWLINE("IME      : %u  ", disp->state->memory->IME);
-        #define X(flag) DRAWLINE(#flag " : %u/%u", BIT_N(disp->state->memory->IF, flag ## _BIT), BIT_N(disp->state->memory->IE, flag ## _BIT));
-        X(VBLANK);
-        X(LCD_STATUS);
-        X(TIMER);
-        X(SERIAL);
-        X(JOYPAD);
-        #undef X
-
-        DRAWLINE(" ");
-        DRAWLINE("TIME REGISTERS ");
-        DRAWLINE("TIMA     : %03u", disp->state->memory->tima);
-        DRAWLINE("TMA      : %03u", disp->state->memory->tma);
-        DRAWLINE("CLK SEL  :   %01u", disp->state->memory->tac.clock_select);
-        DRAWLINE("TAC EN   :   %01u", disp->state->memory->tac.enable);
-        DRAWLINE(" ");
-        DRAWLINE("CONT     :  %03d", disp->state->cont);
-
-        draw_instructions(disp);
-    }
 }
 
 void display_present(display_t *disp)
@@ -283,10 +167,6 @@ void display_present(display_t *disp)
 	if(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0)
 	{
 		Error("%s\n", SDL_GetError());
-	}
-	if(DEBUG)
-	{
-		draw_debug(disp);
 	}
 	SDL_RenderPresent(disp->render);
 }

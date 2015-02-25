@@ -1,0 +1,6 @@
+set(MINGW_DIR ./SDL2/i686-w64-mingw32/)
+add_definitions(-mwindows)
+include_directories(${MINGW_DIR}/include)
+find_library(libSDL2     SDL2 ${MINGW_DIR}/lib)
+find_library(libSDL2main SDL2main ${MINGW_DIR}/lib)
+target_link_libraries(gbemu mingw32 ${libSDL2main} ${libSDL2})
