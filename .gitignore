@@ -42,3 +42,6 @@ tiles/
 *.s
 core
 callgrind*
+
+src/boot_image.c
+src/rom_image.c
