@@ -96,12 +96,16 @@ void common_print_binary(FILE *fp, uint64_t x, unsigned int width)
 
 FILE *common_fopen(const char *filename, const char *mode)
 {
+#if !EMBEDDED
     FILE *fp = fopen(filename, mode);
     if(!fp)
     {
         Error("Could not open file %s\n", filename, strerror(errno));
     }
     return fp;
+#else
+    return NULL;
+#endif
 }
 
 int common_mkdir(const char *dirname, int mode)

@@ -404,8 +404,10 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	{
         if(mem->external_ram && mem->ram_enabled)
             mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000] = data;
+#if !EMBEDDED
         else
             Warning("Writing to invalid memory.\n");
+#endif
 	}
 	else if(X(0xc000,0xcfff))
 	{

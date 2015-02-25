@@ -255,7 +255,6 @@ void audio_simulate(audio_t *audio, int clk)
 
 void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 {
-    //printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
     switch(addr)
     {
     #define X(field, msb, lsb) audio->sq1.field = DECODE(data, msb, lsb);
@@ -333,7 +332,10 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
             audio->wave_table[addr - 0xff30] = data;
             break;
         default:
+    #if !EMBEDDED
             printf("Write to invalid sound register.\n");
             printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
+    #endif
+            break;
     }
 }
