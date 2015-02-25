@@ -218,6 +218,7 @@ static void frame_limit(int clk)
 */
 static void record_clock_speed(int clk)
 {
+#if !EMBEDDED
     static uint32_t time = 0;
     static uint64_t total;
     uint32_t wait_time = 500;
@@ -234,6 +235,7 @@ static void record_clock_speed(int clk)
 #endif
         time  = SDL_GetTicks();
     }
+#endif
 }
 
 /*
@@ -285,20 +287,24 @@ static void increment_tima(cpu_state_t *state, int clk)
 
 static void record(struct cpu_state *state)
 {
+#if !EMBEDDED
     static FILE *fp;
-    if(!fp) fp = fopen("record.txt", "wb");
+    if(!fp) fp = common_fopen("record.txt", "wb");
     fwrite(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fwrite(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
     fflush(fp);
+#endif
 }
 
 static void replay(struct cpu_state *state)
 {
+#if !EMBEDDED
     static FILE *fp;
-    if(!fp) fp = fopen("record.txt", "rb");
+    if(!fp) fp = common_fopen("record.txt", "rb");
     if(feof(fp)) exit(0);
     fread(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
+#endif
 }
 
 void cpu_start(struct cpu_state *state)
