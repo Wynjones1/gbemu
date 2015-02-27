@@ -1,4 +1,5 @@
 #include "events.h"
+#include "logging.h"
 
 #define X(new, old) do{\
 					mem->dpad.new = down;\
@@ -6,6 +7,12 @@
 						mem->dpad.old = 1;\
 					}while(0);
 
+#if 1
+#define LogInput(format)\
+    log_message(format ": %s", down ? "up" : "down")
+#else
+#define LogInput(format, ...)
+#endif
 static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 {
 	memory_t *mem = state->memory;
@@ -17,28 +24,36 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 	{
 		//DPad
 		case SDLK_w:
+            LogInput("Up");
 			X(up, down);
 			break;
 		case SDLK_a:
+            LogInput("Left");
 			X(left, right);
 			break;
 		case SDLK_d:
+            LogInput("Right");
 			X(right, left);
 			break;
 		case SDLK_s:
+            LogInput("Down");
 			X(down, up);
 			break;
 		//Buttons
 		case SDLK_i:
+            LogInput("A");
 			mem->buttons.a     = down;
 			break;
 		case SDLK_j:
+            LogInput("B");
 			mem->buttons.b     = down;
 			break;
 		case SDLK_f:
+            LogInput("Select");
 			mem->buttons.start = down;
 			break;
 		case SDLK_g:
+            LogInput("Start");
 			mem->buttons.select = down;
 			break;
 		//Other
@@ -128,6 +143,18 @@ void events_handle(cpu_state_t *state)
 			case SDL_KEYUP:
 				key(event.key.keysym, 1, state);
 				break;
+            case SDL_FINGERDOWN:
+                event.type = SDL_KEYDOWN;
+                event.key.keysym.sym = SDLK_f;
+                SDL_PushEvent(&event);
+                log_message("FingerDown   %f %f", event.tfinger.x, event.tfinger.y);
+                break;
+            case SDL_FINGERUP:
+                event.type = SDL_KEYUP;
+                event.key.keysym.sym = SDLK_f;
+                SDL_PushEvent(&event);
+                log_message("FingerUp   %f %f", event.tfinger.x, event.tfinger.y);
+                break;
 			case SDL_QUIT:
 				exit(0);
 				break;

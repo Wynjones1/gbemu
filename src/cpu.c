@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <assert.h>
 
+#include "logging.h"
 #include "audio.h"
 #include "cmdline.h"
 #include "common.h"
@@ -19,7 +20,7 @@ cpu_state_t *cpu_init()
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
-	out->frame_limit = 1;
+	out->frame_limit = 0;
 	out->pc          = 0;
 	out->store_state = 0;
 	return out;
@@ -126,11 +127,11 @@ cpu_state_t *cpu_load_state(const char *filename)
 	temp = fscanf(fp, "GBEMU%d", &version);
 	if(temp != 1)
 	{
-		Error("%s is not a savestate.\n");
+        log_error("%s is not a savestate.\n");
 	}
 	if(version != VERSION)
 	{
-		Warning("Timestamp of emulator does not match that of the save state.\n");
+        log_warning("Timestamp of emulator does not match that of the save state.\n");
 	}
 	temp = getc(fp);
 	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
@@ -172,7 +173,7 @@ static int check_for_interrupts(struct cpu_state *state)
 		else X(SERIAL, addr, 0x58)
 		else X(JOYPAD, addr, 0x60)
 
-		Output("Interrupt 0x%04x\n", addr);
+		log_verbose("Interrupt 0x%04x\n", addr);
         if(state->cont)
         {
             state->cont += 1;
@@ -218,24 +219,17 @@ static void frame_limit(int clk)
 */
 static void record_clock_speed(int clk)
 {
-#if !EMBEDDED
     static uint32_t time = 0;
     static uint64_t total;
-    uint32_t wait_time = 500;
+    uint32_t wait_time = 100;
 
     total += clk;
     if(SDL_GetTicks() - time > wait_time)
     {
-#if 1
-        fprintf(stderr, "%6.2f%%\r", 100 * total / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
+        log_message("%6.2f%%", 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
         total = 0;
-#else
-        fprintf(stderr, "%6.2f%%\r", 100 * total  / (CPU_CLOCKS_PER_MS * time));
-        time  = SDL_GetTicks();
-#endif
         time  = SDL_GetTicks();
     }
-#endif
 }
 
 /*
@@ -287,20 +281,18 @@ static void increment_tima(cpu_state_t *state, int clk)
 
 static void record(struct cpu_state *state)
 {
-#if !EMBEDDED
     static FILE *fp;
-    if(!fp) fp = common_fopen("record.txt", "wb");
+    if(!fp) fp = FOPEN("record.txt", "wb");
     fwrite(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fwrite(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
     fflush(fp);
-#endif
 }
 
 static void replay(struct cpu_state *state)
 {
 #if !EMBEDDED
     static FILE *fp;
-    if(!fp) fp = common_fopen("record.txt", "rb");
+    if(!fp) fp = FOPEN("record.txt", "rb");
     if(feof(fp)) exit(0);
     fread(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
@@ -313,14 +305,12 @@ void cpu_start(struct cpu_state *state)
 	atexit(debug_on_exit);
 	reg_t instruction;
 	struct opcode *op;
-	//state->pc = 0;
-	//TODO: Check if we need this.
 	while(1)
 	{
 		if(state->store_state)
 		{
 			cpu_save_state(state, "game.state");
-			exit(0);
+            return;
 		}
 
         if(state->memory->boot_locked &&

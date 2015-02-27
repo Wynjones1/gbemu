@@ -5,6 +5,7 @@
 #include "debug.h"
 #include <stdlib.h>
 #include <string.h>
+#include "controls_image.h"
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
@@ -13,9 +14,13 @@ static int PIXEL_SCALE = 1;
 char instruction_buffer[200];
 char last_instruction[200];
 
+#if DEBUG
 #define SDL_Error(cond)                       \
 	if(cond)                                  \
-		Error("%s\n", SDL_GetError());        \
+		Error("%s\n", SDL_GetError());        
+#else
+#define SDL_Error(cond)do{int i = (cond);}while(0)
+#endif
 
 struct display
 {
@@ -76,25 +81,24 @@ static void init_ttf(display_t *d)
 
 static void init_display(display_t *display)
 {
-	unsigned int width  = DISPLAY_WIDTH + DEBUG_REGISTER_WIDTH + DEBUG_INSTRUCTION_WIDTH;
+	unsigned int width  = DISPLAY_WIDTH;
 	unsigned int height = DISPLAY_HEIGHT;
 	display->window = SDL_CreateWindow("Window", 0, 0,
                                        PIXEL_SCALE * width,
-                                       PIXEL_SCALE * height,
+                                       PIXEL_SCALE * (height + 100),
                                        SDL_WINDOW_RESIZABLE);
 
 	SDL_Error(display->window == NULL);
 
-	display->render  = SDL_CreateRenderer(display->window, -1, 0);
+	display->render  = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_Error(display->render == NULL);
-    SDL_Error(SDL_RenderSetLogicalSize(display->render, DISPLAY_WIDTH, DISPLAY_HEIGHT) < 0);
+    SDL_Error(SDL_RenderSetLogicalSize(display->render, DISPLAY_WIDTH, DISPLAY_HEIGHT + 100) < 0);
     SDL_Error(SDL_SetRenderDrawColor(display->render, 0, 0, 0, 255) < 0);
 
 	display->texture = SDL_CreateTexture(display->render,
                                          SDL_PIXELFORMAT_RGBA8888,
                                          SDL_TEXTUREACCESS_STREAMING,
-                                         width, height);
-
+                                         DISPLAY_WIDTH, DISPLAY_HEIGHT + 100);
 	SDL_Error(display->texture == NULL);
     SDL_Error(SDL_ShowCursor(SDL_DISABLE) < 0);
 }
@@ -107,7 +111,6 @@ static int display_thread(void *display_)
 	while(1)
 	{
 		events_handle(display->state);
-        //SDL_CondWait(display->cond, display->lock);
         SDL_Delay(17);
         SDL_LockMutex(display->lock);
 		display_display(display);
@@ -116,6 +119,7 @@ static int display_thread(void *display_)
 	return 0;
 }
 
+uint32_t fake_buffer[100 * DISPLAY_HEIGHT * 100];
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = malloc(sizeof(display_t));
@@ -130,6 +134,13 @@ display_t *display_init(cpu_state_t *state)
 
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateThread(display_thread, "Display Thread", display);
+    char *temp = header_data;
+    for(uint32_t i = 0; i < width * height; i++)
+    {
+        uint8_t pixel[3];
+        HEADER_PIXEL(temp, pixel);
+        fake_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
+    }
 	return display;
 }
 
@@ -146,7 +157,10 @@ void display_display(display_t *display)
 	//Display the image.
 	if(display->mem->lcdc.enabled)
 	{
-        SDL_UpdateTexture(display->texture, NULL, display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+        SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
+        SDL_Rect controls = {0, DISPLAY_HEIGHT, DISPLAY_WIDTH, 100};
+        SDL_UpdateTexture(display->texture, &screen  , display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+        SDL_UpdateTexture(display->texture, &controls, fake_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
         display_present(display);
 	}
 	else
@@ -163,14 +177,8 @@ void display_clear(display_t *disp)
 
 void display_present(display_t *disp)
 {
-	if(SDL_RenderClear(disp->render) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
-	if(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0)
-	{
-		Error("%s\n", SDL_GetError());
-	}
+	SDL_Error(SDL_RenderClear(disp->render) < 0)
+	SDL_Error(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0);
 	SDL_RenderPresent(disp->render);
 }
 
@@ -207,7 +215,7 @@ static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 {
 	struct OAM_data *sprite, *out = NULL;
 	uint8_t size = state->memory->lcdc.obj_size ? 16 : 8;
-	for(int i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
+	for(uint8_t i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
 	{
 		sprite = state->memory->oam_data + i;
 		int x_pos = sprite->x_pos - 8;
@@ -242,7 +250,7 @@ static uint8_t shade_table[4] =
 static uint8_t last_background;
 static void write_sprites(struct cpu_state *state, display_t *display, int x)
 {
-	int y = state->memory->ly;
+	uint8_t y = state->memory->ly;
 	uint32_t *data = display->pixel_buffer[y];
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)

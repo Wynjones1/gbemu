@@ -52,7 +52,6 @@ void common_warn(const char *format, ...)
 
 void common_output(const char *format, ...)
 {
-#if !EMBEDDED
 #if OUTPUT_OUTPUT
 	if(!output_fp)
 	{
@@ -68,19 +67,16 @@ void common_output(const char *format, ...)
 	va_end(arg_list);
 	fflush(output_fp);
 #endif
-#endif
 }
 
 void common_foutput(FILE *fp, const char *format, ...)
 {
-#if !EMBEDDED
 #if OUTPUT_OUTPUT
 	va_list arg_list;
 	va_start(arg_list, format);
 	vfprintf(fp, format, arg_list);
 	va_end(arg_list);
 	fflush(fp);
-#endif
 #endif
 }
 
@@ -100,16 +96,12 @@ void common_print_binary(FILE *fp, uint64_t x, unsigned int width)
 
 FILE *common_fopen(const char *filename, const char *mode)
 {
-#if !EMBEDDED
     FILE *fp = fopen(filename, mode);
     if(!fp)
     {
         Error("Could not open file %s\n", filename, strerror(errno));
     }
     return fp;
-#else
-    return NULL;
-#endif
 }
 
 int common_mkdir(const char *dirname, int mode)
