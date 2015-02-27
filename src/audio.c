@@ -1,5 +1,6 @@
 #include "cpu.h"
 #include "audio.h"
+#include "logging.h"
 #include "memory.h"
 #include <assert.h>
 #include <stdlib.h>
@@ -103,8 +104,7 @@ audio_t *audio_init(cpu_state_t *state)
 	/* Open the audio device, forcing the desired format */
 	if ( SDL_OpenAudio(&wanted, NULL) < 0 )
 	{
-		fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
-		return NULL;
+        log_error("Couldn't open audio: %s\n", SDL_GetError());
 	}
 	SDL_PauseAudio(0);
 	return out;
@@ -332,10 +332,7 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
             audio->wave_table[addr - 0xff30] = data;
             break;
         default:
-    #if !EMBEDDED
-            printf("Write to invalid sound register.\n");
-            printf("%04X ", addr); common_print_binary(stdout, data, 8); printf("\n");
-    #endif
+            log_warning("Write to invalid sound register 0x%04X 0x%04X.\n", addr, data);
             break;
     }
 }

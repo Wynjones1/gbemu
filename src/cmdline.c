@@ -2,6 +2,7 @@
 #include <string.h>
 #include <assert.h>
 #include "cmdline.h"
+#include "logging.h"
 #include "common.h"
 
 #define SET_DEFAULT (i == -1)
@@ -98,8 +99,7 @@ print_help_label:
         OPTION_STRING("b", "boot-rom",  boot_rom, "./data/boot_roms/DMG.bin","first 256 bytes to be run.");
         OPTION_STRING("", "break-file", break_file, NULL, "addresses to break on.");
         OPTION_HELP();
-        if(i > 1)
-            Error("Unrecognised option %s\n", argv[i]);
+        if(i > 1) log_error("Unrecognised option %s\n", argv[i]);
 	}
 }
 

@@ -7,7 +7,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#if ANDROID
+#include <SDL.h>
+#else
 #include <SDL2/SDL.h>
+#endif
 
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1
@@ -39,11 +43,15 @@
 #endif
 
 #ifndef EMBEDDED_ROM
-    #define EMBEDDED_ROM 1
+    #define EMBEDDED_ROM 0
 #endif
 
 #ifndef EMBEDDED
-    #define EMBEDDED 1
+    #define EMBEDDED 0
+#endif
+
+#ifndef SPINLOCK
+    #define SPINLOCK 0
 #endif
 
 
