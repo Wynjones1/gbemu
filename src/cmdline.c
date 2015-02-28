@@ -12,7 +12,7 @@
 	(strcmp("-" s, str) == 0 || strcmp("--" l, str) == 0)
 #define OPTION(s, l) CMP(s, l, argv[i])
 #define ARGS cmdline_args
-#define OPTION_INT(s, l, name, default_val, description)        \
+#define OPTION_int(s, l, name, default_val, description)        \
     if(PRINT_HELP)                                              \
     {                                                           \
         printf("-%s/--%-10s: %s (default : %d)\n",              \
@@ -32,7 +32,7 @@
         }                                                       \
         else Error("Must supply argument for --%s/-%s\n", l, s);\
     }
-#define OPTION_BOOL(s, l, name, description)                    \
+#define OPTION__Bool(s, l, name, _, description)                    \
     if(PRINT_HELP)                                              \
     {                                                           \
         printf("-%s/--%-10s: %s\n", s,l, description);          \
@@ -42,7 +42,7 @@
         ARGS.name = true;                                        \
         continue;                                               \
     }
-#define OPTION_STRING(s, l, name, default_val, description)     \
+#define OPTION_string(s, l, name, default_val, description)     \
     if(PRINT_HELP)                                              \
     {                                                           \
         if(default_val)                                         \
@@ -90,14 +90,9 @@ void cmdline_read(int argc, char **argv)
 	for(int i = -1; i < argc; i++)
 	{
 print_help_label:
-        OPTION_BOOL(  "v", "verbose",   verbose,                             "verbose output.");
-        OPTION_BOOL(  "a", "audio",     audio,                               "enable audio");
-        OPTION_BOOL(  "r", "record",    record,                              "record input for playback.");
-        OPTION_BOOL(  "p", "replay",    replay,                              "replay previously recorded input."); 
-        OPTION_STRING("i", "in",        in,        "./data/roms/pokemon_blue.gb",   "rom that will be run.");
-        OPTION_INT(   "s", "scale",     scale,     3,                        "scale window size.");
-        OPTION_STRING("b", "boot-rom",  boot_rom, "./data/boot_roms/DMG.bin","first 256 bytes to be run.");
-        OPTION_STRING("", "break-file", break_file, NULL, "addresses to break on.");
+        #define X(type, short, long, var, default, desc) OPTION_ ## type(short, long, var, default, desc);
+        OPTION_LIST
+        #undef X
         OPTION_HELP();
         if(i > 1) log_error("Unrecognised option %s\n", argv[i]);
 	}
