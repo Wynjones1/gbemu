@@ -54,6 +54,10 @@
     #define SPINLOCK 0
 #endif
 
+#ifndef SORT_OAM
+    #define SORT_OAM 0
+#endif
+
 
 #if 1
 #define OUTPUT_FILENAME "log.txt"

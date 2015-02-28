@@ -1,5 +1,5 @@
-BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= RelWithDebInfo
+BUILD_CONFIG ?= Debug
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
 ROM          ?= pokemon_blue.gb

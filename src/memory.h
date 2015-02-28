@@ -47,6 +47,7 @@ typedef struct memory
 		reg_t OAM[0xa0];
 		struct OAM_data oam_data[40];
 	};
+    uint8_t oam_index_sort[40];
 	//unused                     // 0xfea0 -> 0xfeff
 	reg_t io_registers[0x80];    // 0xff00 -> 0xff7f
 	reg_t stack[0x7F];           // 0xff80 -> 0xfffe
