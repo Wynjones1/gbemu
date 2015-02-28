@@ -43,6 +43,10 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	out->cart_type = out->bank_0[0x147];
 	out->rom_size  = out->bank_0[0x148];
 	out->ram_size  = out->bank_0[0x149];
+    for(int i = 0; i < 40; i++)
+    {
+        out->oam_index_sort[i] = i;
+    }
 	//Set all of the buttons to off.
 	*(uint8_t*)&out->buttons = 0xff;
 	*(uint8_t*)&out->dpad    = 0xff;
@@ -96,7 +100,25 @@ static reg_t joypad_read(memory_t *mem)
 
 static void status(memory_t *mem, reg_t data)
 {
-	*(uint8_t*)&mem->stat = data & 0x78;
+    uint8_t mask = MASK(6) << 2;
+	*(uint8_t*)&mem->stat = ((*(uint8_t*)&mem->stat) & ~ mask) | (data & mask);
+}
+
+struct OAM_data *oam_sort_data;
+static int cmp_func(const void *a, const void *b)
+{
+    uint8_t xa = oam_sort_data[*(uint8_t*)a].x_pos;
+    uint8_t xb = oam_sort_data[*(uint8_t*)b].x_pos;
+    if(xa < xb) return -1;
+    return 1;
+}
+
+static void sort_oam(memory_t *mem)
+{
+#if SORT_OAM
+    oam_sort_data = mem->oam_data;
+    qsort(mem->oam_index_sort, 40, sizeof(uint8_t), cmp_func);
+#endif
 }
 
 static void dma(memory_t *mem, reg_t data)
@@ -124,6 +146,7 @@ static void dma(memory_t *mem, reg_t data)
 		}
 #endif
 	}
+    sort_oam(mem);
 #if DEBUG_DMA
 	fprintf(fp, "\n");
 #endif

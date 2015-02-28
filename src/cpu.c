@@ -221,13 +221,13 @@ static void record_clock_speed(int clk)
 {
     static uint32_t time = 0;
     static uint64_t total;
-    uint32_t wait_time = 100;
+    uint32_t wait_time = CPU_CLOCK_SPEED;
 
     total += clk;
-    if(SDL_GetTicks() - time > wait_time)
+    if(total > wait_time)
     {
-        log_message("%6.2f%%", 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
-        total = 0;
+        log_message("CLKSPEED %6.2f%%", 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
+        total -= wait_time;
         time  = SDL_GetTicks();
     }
 }
@@ -285,18 +285,15 @@ static void record(struct cpu_state *state)
     if(!fp) fp = FOPEN("record.txt", "wb");
     fwrite(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fwrite(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
-    fflush(fp);
 }
 
 static void replay(struct cpu_state *state)
 {
-#if !EMBEDDED
     static FILE *fp;
     if(!fp) fp = FOPEN("record.txt", "rb");
     if(feof(fp)) exit(0);
     fread(&state->memory->buttons, 1, sizeof(state->memory->buttons), fp);
     fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
-#endif
 }
 
 void cpu_start(struct cpu_state *state)

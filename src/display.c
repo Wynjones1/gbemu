@@ -3,6 +3,7 @@
 #include "cpu.h"
 #include "opcodes.h"
 #include "debug.h"
+#include "logging.h"
 #include <stdlib.h>
 #include <string.h>
 #include "controls_image.h"
@@ -214,10 +215,11 @@ int g_shade;
 static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 {
 	struct OAM_data *sprite, *out = NULL;
-	uint8_t size = state->memory->lcdc.obj_size ? 16 : 8;
+    memory_t *memory = state->memory;
+	uint8_t size = memory->lcdc.obj_size ? 16 : 8;
 	for(uint8_t i = 0; i < NUMBER_OF_OAM_ELEMENTS; i++)
 	{
-		sprite = state->memory->oam_data + i;
+		sprite = memory->oam_data + memory->oam_index_sort[i];
 		int x_pos = sprite->x_pos - 8;
 		int y_pos = sprite->y_pos - 16;
 		if( (x_pos <= x && x < x_pos + 8) && (y_pos <= y && y < y_pos + size) )
@@ -228,6 +230,7 @@ static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
 				//TODO:Remove the global state.
 				g_shade = shade;
 				out = sprite;
+                return out;
 			}
 		}
 	}
