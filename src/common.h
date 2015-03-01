@@ -63,8 +63,6 @@
 #define OUTPUT_FILENAME "log.txt"
 #endif
 
-#define SDLTTF 1
-
 #ifndef DEBUG
 #define DEBUG 0
 #endif

@@ -25,20 +25,13 @@
 	#define DISPLAY_HEIGHT LCD_HEIGHT
 #endif
 
+#define CONTROLS_HEIGHT 100
+
 typedef struct display   display_t;
 typedef struct cpu_state cpu_state_t;
 
 display_t *display_init(cpu_state_t *state);
 void       display_delete(display_t *disp);
-void       display_draw_pixel(display_t *disp, int x, int y, char *rgb);
-void       display_present(display_t *disp);
-void       display_clear(display_t *disp);
-void       display_display(display_t *display);
 void       display_simulate(cpu_state_t *state);
 void       display_toggle_fullscreen(display_t *display);
-uint8_t    display_get_shade(const uint8_t *tile_data, int i);
-void       display_draw(display_t *display);
-
-extern unsigned char g_video_data[DISPLAY_HEIGHT][DISPLAY_WIDTH];
-extern char instruction_buffer[];
-extern char last_instruction[];
+void       display_output_framebuffer(display_t *display, const char *filename);

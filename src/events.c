@@ -92,17 +92,6 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			break;
 		case SDLK_r:
 			state->slow = !down;
-			/*
-			if(slow == 0 && down == 0)
-			{
-				slow = 1;
-				state->slow = !state->slow;
-			}
-			else if(slow == 1 && down == 1)
-			{
-				slow = 0;
-			}
-			*/
 			break;
 		case SDLK_k:
 			state->store_state = 1;
