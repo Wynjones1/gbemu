@@ -1,4 +1,0 @@
-#!/bin/bash
-NDKARGS=APP_CFLAGS=--std=c11 androidbuild.sh com.wynjones1.gbemu < sources.list
-cd /home/stuart/C/SDL2-2.0.3/build/com.wynjones1.gbemu
-ant debug install

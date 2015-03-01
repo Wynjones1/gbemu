@@ -59,7 +59,6 @@ typedef struct cpu_state
 	int slow;
 	int store_state;
     int cont;
-    int fullscreen;
 
 }cpu_state_t;
 

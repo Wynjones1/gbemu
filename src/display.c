@@ -1,4 +1,5 @@
 #include "display.h"
+#include "ppm.h"
 #include "events.h"
 #include "cpu.h"
 #include "opcodes.h"
@@ -12,9 +13,10 @@ static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
 static int PIXEL_SCALE = 1;
 
-char instruction_buffer[200];
-char last_instruction[200];
+static uint8_t get_shade(const uint8_t *tile_data, int i);
 
+uint32_t control_buffer[DISPLAY_WIDTH * CONTROLS_HEIGHT];
+uint32_t white_buffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
 struct display
 {
@@ -24,54 +26,13 @@ struct display
 	cpu_state_t  *state;
 	memory_t     *mem;
 
-	unsigned char debug_data[DISPLAY_HEIGHT][DEBUG_REGISTER_WIDTH][4];
-
-	//TTF Data
-	SDL_Texture *font_texture;
 	SDL_Surface *surface;
-    bool         fullscreen;
     bool         cur_buffer;
+    bool         fullscreen;
     uint32_t   (*pixel_buffer)[DISPLAY_WIDTH];
     uint32_t   (*draw_buffer)[DISPLAY_WIDTH];
     uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
-
-    SDL_cond    *cond;
-    SDL_mutex   *lock;
 };
-
-#if SDL_TTF
-static SDL_Surface *RenderText(TTF_Font *font, const char *string)
-{
-    static const int mode = 2;
-    static const SDL_Color fg = {255, 255, 255};
-    static const SDL_Color bg = {0, 0, 0};
-    if(mode == 1)
-    {
-        return TTF_RenderText_Shaded(font, string, fg, bg);
-    }
-    else if(mode == 2)
-    {
-        return TTF_RenderText_Blended(font, string, fg);
-    }
-    return TTF_RenderText_Solid(font, string, fg);
-}
-
-static void init_ttf(display_t *d)
-{
-	SDL_Error(TTF_Init() < 0);
-
-	d->font = TTF_OpenFont("./data/fonts/font0.ttf", 102);
-	SDL_Error(d->font == NULL);
-
-	TTF_SetFontStyle(d->font,   0);
-	TTF_SetFontOutline(d->font, 0);
-	TTF_SetFontKerning(d->font, 0);
-	TTF_SetFontHinting(d->font, 0);
-
-	d->surface      = RenderText(d->font, "1234512345");
-	d->font_texture = SDL_CreateTextureFromSurface(d->render, d->surface);
-}
-#endif
 
 static void init_display(display_t *display)
 {
@@ -84,7 +45,8 @@ static void init_display(display_t *display)
 
 	SDL_Error(display->window == NULL);
 
-	display->render  = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
+	display->render     = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
+    display->fullscreen = true;
 	SDL_Error(display->render == NULL);
     SDL_Error(SDL_RenderSetLogicalSize(display->render, DISPLAY_WIDTH, DISPLAY_HEIGHT + 100) < 0);
     SDL_Error(SDL_SetRenderDrawColor(display->render, 0, 0, 0, 255) < 0);
@@ -97,6 +59,31 @@ static void init_display(display_t *display)
     SDL_Error(SDL_ShowCursor(SDL_DISABLE) < 0);
 }
 
+static uint8_t get_shade(const uint8_t *tile_data, int i)
+{
+	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
+}
+
+static void write_framebuffer(display_t *display)
+{
+	//Display the image.
+    SDL_Error(SDL_RenderClear(display->render) < 0);
+    SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
+    SDL_Rect controls = {0, DISPLAY_HEIGHT, DISPLAY_WIDTH, CONTROLS_HEIGHT};
+	if(display->mem->lcdc.enabled)
+	{
+        SDL_UpdateTexture(display->texture, &screen  , display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+	}
+    else
+    {
+        SDL_UpdateTexture(display->texture, &screen, white_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+    }
+    SDL_UpdateTexture(display->texture, &controls, control_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
+
+    SDL_Error(SDL_RenderCopy(display->render, display->texture, NULL, NULL) < 0);
+    SDL_RenderPresent(display->render);
+}
+
 static int display_thread(void *display_)
 {
 	display_t *display = display_;
@@ -104,23 +91,18 @@ static int display_thread(void *display_)
 	g_state = display->state;
 	while(1)
 	{
-		events_handle(display->state);
         SDL_Delay(17);
-        SDL_LockMutex(display->lock);
-		display_display(display);
-        SDL_UnlockMutex(display->lock);
+		events_handle(display->state);
+        write_framebuffer(display);
 	}
 	return 0;
 }
 
-uint32_t fake_buffer[100 * DISPLAY_HEIGHT * 100];
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = malloc(sizeof(display_t));
 	display->state     = state;
 	display->mem       = state->memory;
-    display->cond      = SDL_CreateCond();
-    display->lock      = SDL_CreateMutex();
     PIXEL_SCALE        = cmdline_args.scale;
 
     display->pixel_buffer = display->buffers[display->cur_buffer];
@@ -133,7 +115,7 @@ display_t *display_init(cpu_state_t *state)
     {
         uint8_t pixel[3];
         HEADER_PIXEL(temp, pixel);
-        fake_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
+        control_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
     }
 	return display;
 }
@@ -146,40 +128,6 @@ void display_delete(display_t *disp)
 }
 
 
-void display_display(display_t *display)
-{
-	//Display the image.
-	if(display->mem->lcdc.enabled)
-	{
-        SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
-        SDL_Rect controls = {0, DISPLAY_HEIGHT, DISPLAY_WIDTH, 100};
-        SDL_UpdateTexture(display->texture, &screen  , display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
-        SDL_UpdateTexture(display->texture, &controls, fake_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
-        display_present(display);
-	}
-	else
-	{
-		display_clear(display);
-	}
-}
-
-void display_clear(display_t *disp)
-{
-	SDL_RenderClear(disp->render);
-	SDL_RenderPresent(disp->render);
-}
-
-void display_present(display_t *disp)
-{
-	SDL_Error(SDL_RenderClear(disp->render) < 0);
-	SDL_Error(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0);
-	SDL_RenderPresent(disp->render);
-}
-
-uint8_t display_get_shade(const uint8_t *tile_data, int i)
-{
-	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
-}
 
 static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, int x, int y)
 {
@@ -201,7 +149,7 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 		second_tile = 1;
 	}
 	uint8_t *tile_data = state->memory->video_ram + sprite->tile * 16 + 2 * oy + 16 * second_tile;
-	return display_get_shade(tile_data, ox);
+	return get_shade(tile_data, ox);
 }
 
 int g_shade;
@@ -261,14 +209,14 @@ static void write_background(struct cpu_state *state, display_t *display, uint8_
 {
 	int ty        = (y + state->memory->scy) / 8;
 	int offset    = (y + state->memory->scy) % 8;
-	int scx = state->memory->scx;
+	uint8_t scx = state->memory->scx;
 	uint32_t *data = display->pixel_buffer[y];
 	const uint8_t *tile_data;
 	int tx = ((x + scx) / 8) % 0x20;
 	int ox = (x + scx) % 8;
 	tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
-	data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
-    last_background = GET_INDEX(display_get_shade(tile_data, ox), state->memory->bgp);
+	data[x] = GET_SHADE(get_shade(tile_data, ox), state->memory->bgp);
+    last_background = GET_INDEX(get_shade(tile_data, ox), state->memory->bgp);
 }
 
 static void write_window(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
@@ -283,7 +231,7 @@ static void write_window(struct cpu_state *state, display_t *display, uint8_t x,
 		int ty = (y - wy) / 8;
 		int oy = (y - wy) % 8;
 		const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
-		data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
+		data[x] = GET_SHADE(get_shade(tile_data, ox), state->memory->bgp);
 	}
 }
 
@@ -299,6 +247,13 @@ static void write_display(struct cpu_state *state, display_t *display)
 			write_sprites(state, display, i, y);
 		}
 	}
+}
+
+static void signal_draw_thread(display_t *display)
+{
+    display->cur_buffer   = !display->cur_buffer;
+    display->pixel_buffer = display->buffers[display->cur_buffer];
+    display->draw_buffer  = display->buffers[!display->cur_buffer];
 }
 
 void display_simulate(struct cpu_state *state)
@@ -323,7 +278,7 @@ void display_simulate(struct cpu_state *state)
 		if(state->memory->ly == 144)
 		{
             SET_N(state->memory->IF, VBLANK_BIT);
-            display_draw(state->display);
+            signal_draw_thread(state->display);
 		}
 		write_display(state, state->display);
 	}
@@ -332,22 +287,29 @@ void display_simulate(struct cpu_state *state)
 void display_toggle_fullscreen(display_t *display)
 {
     display->fullscreen = !display->fullscreen;
-    if(display->fullscreen)
-    {
-        SDL_SetWindowFullscreen(display->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-    }
-    else
-    {
-        SDL_SetWindowFullscreen(display->window, 0);
-    }
+    uint32_t flags = display->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+    SDL_SetWindowFullscreen(display->window, flags);
 }
 
-void display_draw(display_t *display)
+
+void display_output_framebuffer(display_t *display, const char *filename)
 {
-    display->cur_buffer   = !display->cur_buffer;
-    display->pixel_buffer = display->buffers[display->cur_buffer];
-    display->draw_buffer  = display->buffers[!display->cur_buffer];
-    SDL_LockMutex(display->lock);
-    SDL_CondSignal(display->cond);
-    SDL_UnlockMutex(display->lock);
+	ppm_t *ppm = ppm_new(256, 256, filename);
+    cpu_state_t *state = display->state;
+	for(int i = 0; i < 32; i++)
+	{
+		for(int j = 0; j < 32; j++)
+		{
+			for(int o = 0; o < 8; o++)
+			{
+				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o, state->memory->lcdc.map_select);
+				for(int k = 0; k < 8;k++)
+				{
+					uint8_t shade = shade_table[get_shade(data, k)];
+					uint8_t pixel[] = {shade, shade, shade};
+					ppm_write_pixel(ppm,  8 * i + k, 8 * j + o, pixel);
+				}
+			}
+		}
+	}
 }

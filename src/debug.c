@@ -94,30 +94,9 @@ void output_tiles(void)
 	}
 }
 
-uint8_t tab[] =
-{
-	0, 128, 196, 255
-};
-
 void debug_output_framebuffer(struct cpu_state *state)
 {
-	ppm_t *ppm = ppm_new(256, 256, "framebuffer.ppm");
-	for(int i = 0; i < 32; i++)
-	{
-		for(int j = 0; j < 32; j++)
-		{
-			for(int o = 0; o < 8; o++)
-			{
-				const uint8_t *data = memory_get_tile_data(state->memory, i, j, o, state->memory->lcdc.map_select);
-				for(int k = 0; k < 8;k++)
-				{
-					uint8_t shade = tab[display_get_shade(data, k)];
-					uint8_t pixel[] = {shade, shade, shade};
-					ppm_write_pixel(ppm,  8 * i + k, 8 * j + o, pixel);
-				}
-			}
-		}
-	}
+    display_output_framebuffer(state->display, "framebuffer.ppm");
 }
 
 void debug_output_tile_maps(struct cpu_state *state)
