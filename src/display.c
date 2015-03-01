@@ -244,9 +244,8 @@ static uint8_t shade_table[4] =
 #define GET_SHADE(n, x) MAKE_PIXEL(shade_table[GET_INDEX(n, x)])
 
 static uint8_t last_background;
-static void write_sprites(struct cpu_state *state, display_t *display, int x)
+static void write_sprites(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
 {
-	uint8_t y = state->memory->ly;
 	uint32_t *data = display->pixel_buffer[y];
 	struct OAM_data *sprite = get_sprite(state, x, y);
 	if(sprite)
@@ -258,12 +257,12 @@ static void write_sprites(struct cpu_state *state, display_t *display, int x)
 }
 
 /* Write the current line that is drawing into the framebuffer */
-static void write_background(struct cpu_state *state, display_t *display, int x)
+static void write_background(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
 {
-	int ty        = (state->memory->ly + state->memory->scy) / 8;
-	int offset    = (state->memory->ly + state->memory->scy) % 8;
+	int ty        = (y + state->memory->scy) / 8;
+	int offset    = (y + state->memory->scy) % 8;
 	int scx = state->memory->scx;
-	uint32_t *data = display->pixel_buffer[state->memory->ly];
+	uint32_t *data = display->pixel_buffer[y];
 	const uint8_t *tile_data;
 	int tx = ((x + scx) / 8) % 0x20;
 	int ox = (x + scx) % 8;
@@ -272,17 +271,17 @@ static void write_background(struct cpu_state *state, display_t *display, int x)
     last_background = GET_INDEX(display_get_shade(tile_data, ox), state->memory->bgp);
 }
 
-static void write_window(struct cpu_state *state, display_t *display, int x)
+static void write_window(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
 {
 	int wx = state->memory->wx - 7;
 	int wy = state->memory->wy;
-	if(state->memory->lcdc.window_display && state->memory->ly > wy && wx <= x)
+	if(state->memory->lcdc.window_display && y > wy && wx <= x)
 	{
-		uint32_t *data = display->pixel_buffer[state->memory->ly];
+		uint32_t *data = display->pixel_buffer[y];
 		int tx = (x - wx) / 8;
 		int ox = (x - wx) % 8;
-		int ty = (state->memory->ly - wy) / 8;
-		int oy = (state->memory->ly - wy) % 8;
+		int ty = (y - wy) / 8;
+		int oy = (y - wy) % 8;
 		const uint8_t *tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.window_map);
 		data[x] = GET_SHADE(display_get_shade(tile_data, ox), state->memory->bgp);
 	}
@@ -294,16 +293,17 @@ static void write_display(struct cpu_state *state, display_t *display)
 	{
 		for(int i = 0; i < DISPLAY_WIDTH; i++)
 		{
-			write_background(state, display, i);
-			write_window(state, display, i);
-			write_sprites(state, display, i);
+            uint8_t y = state->memory->ly;
+			write_background(state, display, i, y);
+			write_window(state, display, i, y);
+			write_sprites(state, display, i, y);
 		}
 	}
 }
 
 void display_simulate(struct cpu_state *state)
 {
-	if(state->clock_counter >= CPU_CLOCKS_PER_LINE) //This should take 16ms
+	if(state->clock_counter >= CPU_CLOCKS_PER_LINE)
 	{
 		state->clock_counter -= CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;

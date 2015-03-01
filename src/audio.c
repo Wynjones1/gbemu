@@ -88,11 +88,12 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 
 audio_t *audio_init(cpu_state_t *state)
 {
-	SDL_AudioSpec wanted;
 	audio_t *out = (audio_t*) calloc(1, sizeof(audio_t));
 	out->state   = state;
     g_audio = out;
 
+#if AUDIO
+	SDL_AudioSpec wanted;
 	/* Set the audio format */
 	wanted.freq     = FREQUENCY;
 	wanted.format   = AUDIO_S16;
@@ -107,6 +108,7 @@ audio_t *audio_init(cpu_state_t *state)
         log_error("Couldn't open audio: %s\n", SDL_GetError());
 	}
 	SDL_PauseAudio(0);
+#endif
 	return out;
 }
 
