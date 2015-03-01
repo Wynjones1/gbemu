@@ -3,8 +3,8 @@
 static REG_INPUT HL_REG = {.r16 = REG16_HL};
 
 void LD(struct cpu_state *state,
-		const const enum ARG_TYPE arg0, const union REG_INPUT i0,
-		const const enum ARG_TYPE arg1, const union REG_INPUT i1)
+		const enum ARG_TYPE arg0, const union REG_INPUT i0,
+		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
 	if(arg0 == ARG_TYPE_DATA16_UNSIGNED_INDIRECT)
 	{

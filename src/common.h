@@ -66,7 +66,14 @@
 #define SDLTTF 1
 
 #ifndef DEBUG
-#define DEBUG 1
+#define DEBUG 0
+#endif
+
+#if DEBUG
+#define SDL_Error(cond)                       \
+    do{if(cond) Error("%s\n", SDL_GetError());}while(0)
+#else
+#define SDL_Error(cond)do{int i = (cond);}while(0)
 #endif
 
 #define VERSION 1

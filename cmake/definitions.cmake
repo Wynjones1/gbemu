@@ -1,7 +1,10 @@
 add_definitions(--std=c11)
-add_definitions(-Wno-unused-variable -Wno-unused-function)
 add_definitions(-Werror -Wall -Wextra)
-add_definitions(-Wno-unused-result -Wno-unused-parameter)
+add_definitions(-Wno-enum-conversion)
+add_definitions(-Wno-unused-function
+                -Wno-unused-parameter
+                -Wno-unused-result
+                -Wno-unused-variable)
 if(CHECK)
     add_definitions(-Weverything)
     add_definitions(-Wno-missing-prototypes)

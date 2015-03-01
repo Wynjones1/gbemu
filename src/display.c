@@ -15,13 +15,6 @@ static int PIXEL_SCALE = 1;
 char instruction_buffer[200];
 char last_instruction[200];
 
-#if DEBUG
-#define SDL_Error(cond)                       \
-	if(cond)                                  \
-		Error("%s\n", SDL_GetError());        
-#else
-#define SDL_Error(cond)do{int i = (cond);}while(0)
-#endif
 
 struct display
 {
@@ -178,7 +171,7 @@ void display_clear(display_t *disp)
 
 void display_present(display_t *disp)
 {
-	SDL_Error(SDL_RenderClear(disp->render) < 0)
+	SDL_Error(SDL_RenderClear(disp->render) < 0);
 	SDL_Error(SDL_RenderCopy(disp->render, disp->texture, NULL, NULL) < 0);
 	SDL_RenderPresent(disp->render);
 }
