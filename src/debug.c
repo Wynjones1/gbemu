@@ -55,7 +55,7 @@ void debug_on_exit(void)
 
 void output_tiles(void)
 {
-	struct stat st = {0};
+	struct stat st = {};
 	if(stat("./tiles/", &st) == -1)
 	{
 		common_mkdir("./tiles/", 0700);

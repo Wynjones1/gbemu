@@ -8,6 +8,7 @@ SPINLOCK     ?= No
 MINGW        ?= No
 EXE          := gbemu
 CHECK        ?= No
+CC           := clang
 
 
 all: build
@@ -15,7 +16,7 @@ all: build
 
 build/Makefile:
 	mkdir -p build
-	cd build; cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
+	cd build; CC=$(CC) cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
 		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) -DCHECK=$(CHECK) ..
 
 build: build/Makefile

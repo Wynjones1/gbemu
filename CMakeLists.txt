@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(gbemu)
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
-set(CMAKE_C_COMPILER gcc     CACHE STRING "Compiler")
 
 include(cmake/macros.cmake)
 
