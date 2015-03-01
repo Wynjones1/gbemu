@@ -1,4 +1,5 @@
 #include "memory.h"
+#include "logging.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,23 +34,23 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	fclose(fp);
 #endif
 
-	out->state              = state;
-	out->audio              = audio_init(state);
-	out->bank_n             = out->bank_0;
-	out->echo               = out->working_ram_0;
-	out->current_bank       = 1;
-	out->boot_locked        = 0;
-	out->io_registers[0x44] = 0x90; //TODO: Why did I set it to this?
-	out->cart_type = out->bank_0[0x147];
-	out->rom_size  = out->bank_0[0x148];
-	out->ram_size  = out->bank_0[0x149];
+	out->state        = state;
+	out->audio        = audio_init(state);
+	out->bank_n       = out->bank_0;
+	out->echo         = out->working_ram_0;
+	out->current_bank = 1;
+	out->boot_locked  = 0;
+	out->cart_type    = out->bank_0[0x147];
+	out->rom_size     = out->bank_0[0x148];
+	out->ram_size     = out->bank_0[0x149];
+	//Set all of the buttons to off.
+	*(uint8_t*)&out->buttons = 0xff;
+	*(uint8_t*)&out->dpad    = 0xff;
+
     for(int i = 0; i < 40; i++)
     {
         out->oam_index_sort[i] = i;
     }
-	//Set all of the buttons to off.
-	*(uint8_t*)&out->buttons = 0xff;
-	*(uint8_t*)&out->dpad    = 0xff;
 
 	switch(out->ram_size)
 	{
@@ -66,7 +67,7 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
             out->external_ram = malloc(32 * 1024);
             break;
         default:
-            Error("Invalid Ram Size %d\n", out->ram_size);
+            log_error("Invalid Ram Size %d\n", out->ram_size);
 	}
 	return out;
 }
@@ -203,7 +204,7 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 		case 0xff02:
 			return mem->serial_control;
 		default:
-			Output("IO register not finished 0x%04x\n", addr);
+			log_error("IO register not finished 0x%04x\n", addr);
 	}
 	return 0;
 }
@@ -293,12 +294,12 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			mem->serial_control = data;
 			break;
 		default:
-			Output("IO register not finished 0x%04x\n", addr);
+			log_verbose("IO register not finished 0x%04x\n", addr);
 	}
 }
 
-//#define X(min, max) ((addr >= min) && (addr <= max))
 #define X(min, max) (addr <= max)
+//#define X(min, max) ((addr >= min) && (addr <= max))
 reg_t memory_load8(memory_t *mem, reg16_t addr)
 {
 	if(X(0x0000,0x3fff))
@@ -322,7 +323,7 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
         if(mem->external_ram && mem->ram_enabled)
             return mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000];
         else
-            Warning("Accessing invalid memory.\n");
+            log_warning("Accessing invalid memory.\n");
         return 0;
 	}
 	else if(X(0xc000,0xcfff))
@@ -411,7 +412,7 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
             }
             else if(data <= 0x8)
             {
-                Error("Not implemented.\n");
+                log_error("Not implemented.\n");
             }
         }
 	}
@@ -427,10 +428,8 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	{
         if(mem->external_ram && mem->ram_enabled)
             mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000] = data;
-#if !EMBEDDED
         else
-            Warning("Writing to invalid memory.\n");
-#endif
+            log_warning("Writing to invalid memory.\n");
 	}
 	else if(X(0xc000,0xcfff))
 	{

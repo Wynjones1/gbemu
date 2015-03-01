@@ -8,7 +8,7 @@ SPINLOCK     ?= No
 MINGW        ?= No
 EXE          := gbemu
 CHECK        ?= No
-CC           := clang
+CC           := gcc
 
 
 all: build
