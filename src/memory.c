@@ -124,10 +124,6 @@ static void sort_oam(memory_t *mem)
 
 static void dma(memory_t *mem, reg_t data)
 {
-#if DEBUG_DMA
-	static FILE *fp;
-	if(!fp) fp = common_fopen("dma_log.txt", "w");
-#endif
 	//Writing to the DMA register initiates a 0xa0 byte DMA transfer.
 
 	//TODO:Make this occur over multiple clock cycles.
@@ -136,21 +132,13 @@ static void dma(memory_t *mem, reg_t data)
 	for(reg16_t i = 0; i < 0xa0; i++)
 	{
 		mem->OAM[i] = memory_load8(mem, source + i);
-#if DEBUG_DMA
-		static int count;
-		fprintf(fp, "%02x ", mem->OAM[i]);
-		count++;
-		if(count == 0x10)
-		{
-			fprintf(fp,"\n");
-			count = 0;
-		}
-#endif
 	}
     sort_oam(mem);
-#if DEBUG_DMA
-	fprintf(fp, "\n");
-#endif
+}
+
+static void hdma(memory_t *mem, reg_t data)
+{
+    //TODO: Implement (GBC Only?)
 }
 
 
@@ -162,6 +150,12 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 	}
 	switch(addr)
 	{
+		case 0xff00:
+			return joypad_read(mem);
+		case 0xff01:
+			return mem->serial_data;
+		case 0xff02:
+			return mem->serial_control;
 		//Timer Registers
 		case 0xff04:
 			return mem->div;
@@ -197,12 +191,6 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->wy;
 		case 0xff4b:
 			return mem->wx;
-		case 0xff00:
-			return joypad_read(mem);
-		case 0xff01:
-			return mem->serial_data;
-		case 0xff02:
-			return mem->serial_control;
 		default:
 			log_error("IO register not finished 0x%04x\n", addr);
 	}
@@ -220,6 +208,20 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 	}
 	switch(addr)
 	{
+		case 0xff00: // Joypad.
+			joypad_write(mem, data);
+			break;
+		case 0xff01: //TODO:Implement Serial transfer.
+			mem->serial_data = data;
+			break;
+		case 0xff02:
+			mem->serial_control = data;
+            if(data == 0x81)
+            {
+                printf("%c", mem->serial_data);
+                fflush(stdout);
+            }
+			break;
 		//Timer Registers
 		case 0xff04:
 			mem->div = 0;
@@ -281,17 +283,11 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 #endif
             }
 			break;
+        case 0xff55:
+            hdma(mem, data);
+            break;
 		case 0xff7f:
 			//This seems to be accessed by accident when cleaning memory.
-			break;
-		case 0xff00: // Joypad.
-			joypad_write(mem, data);
-			break;
-		case 0xff01: //TODO:Implement Serial transfer.
-			mem->serial_data = data;
-			break;
-		case 0xff02:
-			mem->serial_control = data;
 			break;
 		default:
 			log_verbose("IO register not finished 0x%04x\n", addr);

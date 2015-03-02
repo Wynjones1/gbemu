@@ -301,7 +301,7 @@ void cpu_start(struct cpu_state *state)
 	g_state = state;
 	atexit(debug_on_exit);
 	reg_t instruction;
-	struct opcode *op;
+	struct opcode *op = NULL;
 	while(1)
 	{
 		if(state->store_state)
@@ -315,6 +315,7 @@ void cpu_start(struct cpu_state *state)
         {
             state->paused = 1;
         }
+
 
 		//Halt emulation.
 		while(state->paused && !state->step && !state->slow)
@@ -363,9 +364,15 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 
+
 #if 0
-        memcpy(last_instruction, instruction_buffer, 200);
-        debug_print_op(instruction_buffer, state, op);
+        if(state->paused)
+        {
+            char buf[100];
+            debug_print_op(buf, state, op);
+            printf("%s\n", buf);
+            fflush(stdout);
+        }
 #endif
         
         if(cmdline_args.record)

@@ -111,6 +111,7 @@ display_t *display_init(cpu_state_t *state)
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateThread(display_thread, "Display Thread", display);
     char *temp = header_data;
+    memset(white_buffer, 0xff, sizeof(white_buffer));
     for(uint32_t i = 0; i < width * height; i++)
     {
         uint8_t pixel[3];
@@ -256,6 +257,18 @@ static void signal_draw_thread(display_t *display)
     display->draw_buffer  = display->buffers[!display->cur_buffer];
 }
 
+static void set_mode(struct cpu_state *state)
+{
+    if(state->memory->ly >= 144)
+    {
+        state->memory->stat.mode = 0x1;
+    }
+    else
+    {
+        state->memory->stat.mode = 0x0;
+    }
+}
+
 void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE)
@@ -280,6 +293,7 @@ void display_simulate(struct cpu_state *state)
             SET_N(state->memory->IF, VBLANK_BIT);
             signal_draw_thread(state->display);
 		}
+        set_mode(state);
 		write_display(state, state->display);
 	}
 }
