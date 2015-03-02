@@ -1,6 +1,6 @@
 set(COVERAGE                         Yes    CACHE BOOL   "Generate coverage data")
 set(CHECK                            No     CACHE BOOL   "add everything option")
-DEFADD(AUDIO                         No   "Build with audio")
+DEFADD(AUDIO                         Yes   "Build with audio")
 DEFADD(OUTPUT_WARNINGS               Yes  "Enable warning output.")
 DEFADD(OUTPUT_ERRORS                 Yes  "Enable error output.")
 DEFADD(OUTPUT_OUTPUT                 No   "Enable stdout  output.")
