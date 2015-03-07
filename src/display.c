@@ -5,9 +5,11 @@
 #include "opcodes.h"
 #include "debug.h"
 #include "logging.h"
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include "controls_image.h"
+#include "embedded_font.h"
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
@@ -18,6 +20,20 @@ static uint8_t get_shade(const uint8_t *tile_data, int i);
 uint32_t control_buffer[DISPLAY_WIDTH * CONTROLS_HEIGHT];
 uint32_t white_buffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
+typedef struct
+{
+    uint32_t width, height;
+    uint32_t font_width, font_height;
+    uint32_t x, y;
+    SDL_Color     fg;
+    TTF_Font     *font;
+    SDL_Renderer *renderer;
+    SDL_Surface  *glyphs[128 - 20];
+    SDL_Texture  *glyph_textures[128 - 20];
+    SDL_Rect      rect;
+    char          lines[];
+}text_area_t;
+
 struct display
 {
 	SDL_Window   *window;
@@ -25,6 +41,7 @@ struct display
 	SDL_Texture  *texture;
 	cpu_state_t  *state;
 	memory_t     *mem;
+    text_area_t  *text_area;
 
 	SDL_Surface *surface;
     bool         cur_buffer;
@@ -34,29 +51,125 @@ struct display
     uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
 };
 
+char *text_area_get_line(text_area_t *ta, uint32_t line);
+
+text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font, uint32_t width, uint32_t height, uint32_t x, uint32_t y)
+{
+    text_area_t *out = calloc(1, sizeof(text_area_t) + (width + 1) * height);
+    out->width       = width;
+    out->height      = height;
+    out->renderer    = render;
+    out->fg          = (SDL_Color){255, 255, 255, 255};
+    out->font        = font;
+    out->x           = x;
+    out->y           = y;
+    int xx, yy;
+    TTF_SizeText(out->font, "A", &xx, &yy);
+    out->rect        = (SDL_Rect){x, y, xx * width, yy * height};
+    out->font_width  = xx;
+    out->font_height = yy;
+    for(uint8_t i = 20; i < 128; i++)
+    {
+        out->glyphs[i - 20]         = TTF_RenderGlyph_Blended(font, i, out->fg);
+        out->glyph_textures[i - 20] = SDL_CreateTextureFromSurface(out->renderer, out->glyphs[i - 20]);
+    }
+    for(uint32_t i = 0; i < height; i++)
+    {
+        memset(text_area_get_line(out, i), ' ', width);
+    }
+    return out;
+}
+
+char *text_area_get_line(text_area_t *ta, uint32_t line)
+{
+    if(line >= ta->height) return NULL;
+    return &ta->lines[(ta->width + 1) * line];
+}
+
+void text_area_printf(text_area_t *ta, int lineno, const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    char *line = text_area_get_line(ta, lineno);
+    vsnprintf(line, (ta->width + 1), format, ap);
+    line[ta->width] = '\0';
+    va_end(ap);
+}
+
+void text_area_draw(text_area_t *ta)
+{
+    for(uint32_t i = 0; i < ta->height; i++)
+    {
+        char *line = text_area_get_line(ta, i);
+        bool end = false;
+        for(uint32_t j = 0; j < ta->width; j++)
+        {
+            SDL_Rect dest = {ta->x + (ta->font_width  * j),
+                             ta->y + (ta->font_height * i),
+                             ta->font_width,
+                             ta->font_height};
+            SDL_Texture *tex;
+            if(!end)
+            {
+                if(line[j] == '\0')
+                    end = true;
+                else
+                    tex = ta->glyph_textures[line[j] - 20];
+            }
+
+            if(end)
+            {
+                tex = ta->glyph_textures[' ' - 20];
+            }
+            SDL_RenderCopy(ta->renderer, tex, NULL, &dest);
+        }
+    }
+}
+
+SDL_RWops *read_font(void)
+{
+#if 1
+    return SDL_RWFromMem(droid_font_array, droid_font_size);
+#else
+    return SDL_RWFromFile("./data/fonts/DroidSansMono.ttf", "rb");
+#endif
+}
 static void init_display(display_t *display)
 {
-	unsigned int width  = DISPLAY_WIDTH;
-	unsigned int height = DISPLAY_HEIGHT;
-	display->window = SDL_CreateWindow("Window", 0, 0,
-                                       PIXEL_SCALE * width,
-                                       PIXEL_SCALE * (height + 100),
+    TTF_Init();
+    TTF_Font *font = NULL;
+    SDL_RWops *font_src = read_font();
+    TTF_Error((font = TTF_OpenFontRW(font_src, 0, 15)) == NULL);
+    int fwidth, fheight;
+    TTF_SizeText(font, "A", &fwidth, &fheight);
+    uint32_t text_width  = 27;
+    uint32_t text_height = 50;
+
+	uint32_t width  = DISPLAY_WIDTH ;
+	uint32_t height = DISPLAY_HEIGHT + 100;
+	display->window = SDL_CreateWindow("GBemu", 0, 0,
+                                       PIXEL_SCALE * width + (text_width * fwidth),
+                                       max(PIXEL_SCALE * height, text_height * fheight),
                                        SDL_WINDOW_RESIZABLE);
 
 	SDL_Error(display->window == NULL);
 
-	display->render     = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
-    display->fullscreen = true;
+	display->render = SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
 	SDL_Error(display->render == NULL);
-    SDL_Error(SDL_RenderSetLogicalSize(display->render, DISPLAY_WIDTH, DISPLAY_HEIGHT + 100) < 0);
+    SDL_Error(SDL_RenderSetLogicalSize(display->render,
+                                       PIXEL_SCALE * width + (text_width * fwidth),
+                                       max(PIXEL_SCALE * height, text_height * fheight)) < 0);
     SDL_Error(SDL_SetRenderDrawColor(display->render, 0, 0, 0, 255) < 0);
 
 	display->texture = SDL_CreateTexture(display->render,
                                          SDL_PIXELFORMAT_RGBA8888,
                                          SDL_TEXTUREACCESS_STREAMING,
-                                         DISPLAY_WIDTH, DISPLAY_HEIGHT + 100);
+                                         width, height);
 	SDL_Error(display->texture == NULL);
     SDL_Error(SDL_ShowCursor(SDL_DISABLE) < 0);
+
+    display->text_area  = text_area_init(display->render, font, text_width, text_height, PIXEL_SCALE * DISPLAY_WIDTH, 0);
+    display->fullscreen = true;
 }
 
 static uint8_t get_shade(const uint8_t *tile_data, int i)
@@ -66,8 +179,9 @@ static uint8_t get_shade(const uint8_t *tile_data, int i)
 
 static void write_framebuffer(display_t *display)
 {
-	//Display the image.
     SDL_Error(SDL_RenderClear(display->render) < 0);
+
+    // Write the framebuffer onto the the texture.
     SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
     SDL_Rect controls = {0, DISPLAY_HEIGHT, DISPLAY_WIDTH, CONTROLS_HEIGHT};
 	if(display->mem->lcdc.enabled)
@@ -80,10 +194,38 @@ static void write_framebuffer(display_t *display)
     }
     SDL_UpdateTexture(display->texture, &controls, control_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
 
-    SDL_Error(SDL_RenderCopy(display->render, display->texture, NULL, NULL) < 0);
+    // Draw the framebuffer texture onto the screen.
+    SDL_Rect output = {0, 0, PIXEL_SCALE * DISPLAY_WIDTH, PIXEL_SCALE * (DISPLAY_HEIGHT + CONTROLS_HEIGHT)};
+    SDL_Error(SDL_RenderCopy(display->render, display->texture, NULL, &output) < 0);
+
+    text_area_draw(display->text_area);
+
     SDL_RenderPresent(display->render);
 }
 
+static void draw_debug(display_t *display)
+{
+    text_area_t *ta = display->text_area;
+    memory_t *memory = display->state->memory;
+    int line = 0;
+    text_area_printf(ta, line++, "+-------------------------+");
+    text_area_printf(ta, line++, "|        Registers:       |");
+    text_area_printf(ta, line++, "| AF = 0x%04x BC = 0x%04x |", display->state->af, display->state->bc);
+    text_area_printf(ta, line++, "| DE = 0x%04x HL = 0x%04x |", display->state->de, display->state->hl);
+    text_area_printf(ta, line++, "| SP = 0x%04x PC = 0x%04x |", display->state->sp, display->state->pc);
+    text_area_printf(ta, line++, "+-------------------------+");
+    text_area_printf(ta, line++, "| LCDC    = 0x%02x          |", *(uint8_t*)&memory->lcdc);
+    text_area_printf(ta, line++, "| STAT    = 0x%02x          |", *(uint8_t*)&memory->stat);
+    text_area_printf(ta, line++, "| DIV     = 0x%02x          |", *(uint8_t*)&memory->div);
+    text_area_printf(ta, line++, "| TIMA    = 0x%02x          |", *(uint8_t*)&memory->tima);
+    text_area_printf(ta, line++, "| TMA     = 0x%02x          |", *(uint8_t*)&memory->tma);
+    text_area_printf(ta, line++, "| TAC     = 0x%02x          |", *(uint8_t*)&memory->tac);
+    text_area_printf(ta, line++, "| IE      = 0x%02x          |", *(uint8_t*)&memory->IE);
+    text_area_printf(ta, line++, "| IF      = 0x%02x          |", *(uint8_t*)&memory->IF);
+    text_area_printf(ta, line++, "| DPD = 0x%02x BTN = 0x%02x   |", *(uint8_t*)&memory->dpad, *(uint8_t*)&memory->buttons);
+    text_area_printf(ta, line++, "| SCX = 0x%02x SCY = 0x%02x   |", memory->scx, memory->scy);
+    text_area_printf(ta, line++, "+-------------------------+");
+}
 static int display_thread(void *display_)
 {
 	display_t *display = display_;
@@ -93,6 +235,7 @@ static int display_thread(void *display_)
 	{
         SDL_Delay(17);
 		events_handle(display->state);
+        draw_debug(display);
         write_framebuffer(display);
 	}
 	return 0;
@@ -118,6 +261,7 @@ display_t *display_init(cpu_state_t *state)
         HEADER_PIXEL(temp, pixel);
         control_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
     }
+
 	return display;
 }
 

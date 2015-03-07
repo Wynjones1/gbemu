@@ -3,14 +3,16 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if ANDROID
+#if ANDROID || __MINGW32__
 #include <SDL.h>
 #else
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #endif
 
 #ifndef OUTPUT_ERRORS
@@ -42,12 +44,8 @@
     #define OUTPUT_DEBUG_FILES 0
 #endif
 
-#ifndef EMBEDDED_ROM
-    #define EMBEDDED_ROM 0
-#endif
-
-#ifndef EMBEDDED
-    #define EMBEDDED 0
+#ifndef AUDIO
+    #define AUDIO 1
 #endif
 
 #ifndef SPINLOCK
@@ -67,11 +65,14 @@
 #define DEBUG 0
 #endif
 
-#if DEBUG
+#if DEBUG || 1
 #define SDL_Error(cond)                       \
     do{if(cond) Error("%s\n", SDL_GetError());}while(0)
+#define TTF_Error(cond)                       \
+    do{if(cond) Error("%s\n", TTF_GetError());}while(0)
 #else
 #define SDL_Error(cond)do{int i = (cond);}while(0)
+#define TTF_Error(cond)do{int i = (cond);}while(0)
 #endif
 
 #define VERSION 1
@@ -96,7 +97,7 @@ void common_print_binary(FILE *fp, uint64_t x, unsigned int width);
 #define SET_N(x, n)   (x |= (1 << n))
 #define RESET_N(x, n) (x &= ~(1 << n))
 #define min(x, y) ((x) < (y) ? (x) : (y))
-#define max(x, y) min(y, x)
+#define max(x, y) ((x) > (y) ? (x) : (y))
 #define PI 3.1415926
 
 #define MASK(width) ((1 << (width)) - 1)

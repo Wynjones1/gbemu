@@ -4,33 +4,30 @@
 #include <stdio.h>
 #include <string.h>
 #include "common.h"
-#if EMBEDDED_ROM
-    #include "embedded.h"
-#endif
+#include "embedded.h"
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
 static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
-
-#define DEBUG_DMA 0
 
 memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
 	memory_t *out = calloc(1, sizeof(memory_t));
 
-#if EMBEDDED_ROM
+#if EMBEDDED
     out->bank_0 = malloc(rom_size);
     memcpy(out->bank_0, rom_array, rom_size);
     memcpy(out->boot, boot_array, 0x100);
 #else
 	FILE *fp = FOPEN(boot, "rb");
-	common_fread(out->boot, 1, 0x100, fp);
-	fclose(fp);
+        common_fread(out->boot, 1, 0x100, fp);
+    fclose(fp);
+
 	fp = FOPEN(rom, "rb");
-	fseek(fp, 0L, SEEK_END);
-	out->to_read = (size_t) ftell(fp);
-	fseek(fp, 0x0, SEEK_SET);
-	out->bank_0       = malloc(out->to_read);
-	common_fread(out->bank_0, 1, out->to_read, fp);
+        fseek(fp, 0L, SEEK_END);
+        out->to_read = (size_t) ftell(fp);
+        fseek(fp, 0x0, SEEK_SET);
+        out->bank_0       = malloc(out->to_read);
+        common_fread(out->bank_0, 1, out->to_read, fp);
 	fclose(fp);
 #endif
 
