@@ -66,17 +66,17 @@ typedef struct memory
 	int ram_enabled;
 	int rom_ram_mode;
 	//IO Status registers.
-	struct
-	{
-		uint8_t bg_display       : 1;
-		uint8_t obj_enable       : 1;
-		uint8_t obj_size         : 1;
-		uint8_t map_select       : 1;
-		uint8_t tile_data_select : 1;
-		uint8_t window_display   : 1;
-		uint8_t window_map       : 1;
-		uint8_t enabled          : 1;
-	}lcdc;
+    struct
+    {
+        uint8_t bg_display       : 1;
+        uint8_t obj_enable       : 1;
+        uint8_t obj_size         : 1;
+        uint8_t map_select       : 1;
+        uint8_t tile_data_select : 1;
+        uint8_t window_display   : 1;
+        uint8_t window_map       : 1;
+        uint8_t enabled          : 1;
+    }lcdc;
 	struct
 	{
 		uint8_t a        : 1;

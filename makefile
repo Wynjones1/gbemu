@@ -1,7 +1,9 @@
+BUILD_CONFIG ?= Release
 BUILD_CONFIG ?= RelWithDebInfo
 BUILD_CONFIG ?= Debug
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
+ROM          ?= cpu_instrs/cpu_instrs.gb
 ROM          ?= pokemon_blue.gb
 COVERAGE     ?= No
 SPINLOCK     ?= No
@@ -34,3 +36,6 @@ clean:
 android:
 	cd android-project/jni/src/ && ndk-build -j5
 	cd android-project/ && ant release && ant debug install
+
+windows:
+	make -f mingw.mk

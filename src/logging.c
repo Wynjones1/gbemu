@@ -1,5 +1,5 @@
 #include "logging.h"
-#include <SDL2/SDL.h>
+#include "common.h"
 #include <stdarg.h>
 
 void log_message(const char *format, ...)

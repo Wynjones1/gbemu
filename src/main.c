@@ -9,7 +9,8 @@
 #include "display.h"
 #include "ppm.h"
 #include "rom.h"
-#if !EMBEDDED
+
+#if TESTING
 #include "testing/testing.h"
 #endif
 
@@ -17,17 +18,12 @@ int main(int argc, char **argv)
 {
 	cmdline_read(argc, argv);
     debug_init();
-#if !EMBEDDED
-	if(TESTING)
-	{
-		testing(argc, argv);
-	}
-	else
+#if TESTING
+    testing(argc, argv);
+#else
+    struct cpu_state *state = cpu_init();
+    cpu_start(state);
+    cpu_delete(state);
 #endif
-	{
-		struct cpu_state *state = cpu_init();
-		cpu_start(state);
-		cpu_delete(state);
-	}
 	return 0;
 }

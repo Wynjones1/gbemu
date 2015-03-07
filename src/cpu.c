@@ -3,7 +3,6 @@
 #include <signal.h>
 #include <assert.h>
 
-#include "logging.h"
 #include "audio.h"
 #include "cmdline.h"
 #include "common.h"
@@ -11,6 +10,7 @@
 #include "debug.h"
 #include "display.h"
 #include "events.h"
+#include "logging.h"
 #include "memory.h"
 #include "opcodes.h"
 #include "ppm.h"
@@ -296,6 +296,10 @@ static void replay(struct cpu_state *state)
     fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
 }
 
+static void log_instruction(struct opcode *op, reg16_t arg)
+{
+}
+
 void cpu_start(struct cpu_state *state)
 {
 	g_state = state;
@@ -363,6 +367,8 @@ void cpu_start(struct cpu_state *state)
 		{
 			op = &op_table[0]; //NOP
 		}
+
+        log_instruction(op, state->arg);
 
 
 #if 0
