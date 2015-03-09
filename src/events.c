@@ -7,7 +7,7 @@
 						mem->dpad.old = 1;\
 					}while(0);
 
-#if 1
+#if 0
 #define LogInput(format)\
     log_message(format ": %s", down ? "up" : "down")
 #else
@@ -119,10 +119,11 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 }
 #undef X
 
-void events_handle(cpu_state_t *state)
+static int event_thread(void *_state)
 {
+    cpu_state_t *state = (cpu_state_t*)_state;
 	SDL_Event event;
-	while(SDL_PollEvent(&event))
+	while(SDL_WaitEvent(&event))
 	{
 		switch(event.type)
 		{
@@ -151,4 +152,10 @@ void events_handle(cpu_state_t *state)
 				break;
 		}
 	}
+    return 0;
+}
+
+void start_event_thread(cpu_state_t *state)
+{
+    SDL_CreateThread(event_thread, "Event Thread", state);
 }

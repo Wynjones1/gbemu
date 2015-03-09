@@ -59,6 +59,7 @@ typedef struct cpu_state
 	int slow;
 	int store_state;
     int cont;
+    float fps;
 
 }cpu_state_t;
 
