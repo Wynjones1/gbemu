@@ -5,6 +5,7 @@
 #include <string.h>
 #include "common.h"
 #include "embedded.h"
+#include "cpu.h"
 
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
 static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
@@ -275,6 +276,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			if(data)
             {
 				mem->boot_locked = 1;
+                mem->state->paused = 1;
 #if INTRO_ONLY
     exit(0);
 #endif

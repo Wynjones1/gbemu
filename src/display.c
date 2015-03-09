@@ -10,6 +10,7 @@
 #include <string.h>
 #include "controls_image.h"
 #include "embedded_font.h"
+#include "instruction_strings.h"
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
@@ -143,11 +144,11 @@ static void init_display(display_t *display)
     int fwidth, fheight;
     TTF_SizeText(font, "A", &fwidth, &fheight);
     uint32_t text_width  = 27;
-    uint32_t text_height = 50;
+    uint32_t text_height = 40;
 
 	uint32_t width  = DISPLAY_WIDTH ;
 	uint32_t height = DISPLAY_HEIGHT + 100;
-	display->window = SDL_CreateWindow("GBemu", 0, 0,
+	display->window = SDL_CreateWindow("GBemu", 1650, 0,
                                        PIXEL_SCALE * width + (text_width * fwidth),
                                        max(PIXEL_SCALE * height, text_height * fheight),
                                        SDL_WINDOW_RESIZABLE);
@@ -206,13 +207,17 @@ static void write_framebuffer(display_t *display)
 static void draw_debug(display_t *display)
 {
     text_area_t *ta = display->text_area;
+    cpu_state_t *state = display->state;
     memory_t *memory = display->state->memory;
-    int line = 0;
+    uint32_t line = 0;
+    
+    #define X(n) ((state->f >> n ## _BIT) & 0x1)
     text_area_printf(ta, line++, "+-------------------------+");
     text_area_printf(ta, line++, "|        Registers:       |");
-    text_area_printf(ta, line++, "| AF = 0x%04x BC = 0x%04x |", display->state->af, display->state->bc);
-    text_area_printf(ta, line++, "| DE = 0x%04x HL = 0x%04x |", display->state->de, display->state->hl);
-    text_area_printf(ta, line++, "| SP = 0x%04x PC = 0x%04x |", display->state->sp, display->state->pc);
+    text_area_printf(ta, line++, "| AF = 0x%04x BC = 0x%04x |", state->af, state->bc);
+    text_area_printf(ta, line++, "| DE = 0x%04x HL = 0x%04x |", state->de, state->hl);
+    text_area_printf(ta, line++, "| SP = 0x%04x PC = 0x%04x |", state->sp, state->pc);
+    text_area_printf(ta, line++, "| C=%d   HC=%d  Z=%d  S=%d    |", X(CARRY), X(HALF_CARRY), X(ZERO), X(SUBTRACT));
     text_area_printf(ta, line++, "+-------------------------+");
     text_area_printf(ta, line++, "| LCDC    = 0x%02x          |", *(uint8_t*)&memory->lcdc);
     text_area_printf(ta, line++, "| STAT    = 0x%02x          |", *(uint8_t*)&memory->stat);
@@ -220,11 +225,26 @@ static void draw_debug(display_t *display)
     text_area_printf(ta, line++, "| TIMA    = 0x%02x          |", *(uint8_t*)&memory->tima);
     text_area_printf(ta, line++, "| TMA     = 0x%02x          |", *(uint8_t*)&memory->tma);
     text_area_printf(ta, line++, "| TAC     = 0x%02x          |", *(uint8_t*)&memory->tac);
-    text_area_printf(ta, line++, "| IE      = 0x%02x          |", *(uint8_t*)&memory->IE);
-    text_area_printf(ta, line++, "| IF      = 0x%02x          |", *(uint8_t*)&memory->IF);
+    text_area_printf(ta, line++, "| IE  = 0x%02x IF  = 0x%02x   |", *(uint8_t*)&memory->IE, *(uint8_t*)&memory->IF);
+    text_area_printf(ta, line++, "| LY  = 0x%02x LYC = 0x%02x   |", *(uint8_t*)&memory->ly, *(uint8_t*)&memory->lyc);
     text_area_printf(ta, line++, "| DPD = 0x%02x BTN = 0x%02x   |", *(uint8_t*)&memory->dpad, *(uint8_t*)&memory->buttons);
     text_area_printf(ta, line++, "| SCX = 0x%02x SCY = 0x%02x   |", memory->scx, memory->scy);
     text_area_printf(ta, line++, "+-------------------------+");
+    text_area_printf(ta, line++, "|  %6s   | %11s |", state->paused ? "paused" : "", state->frame_limit ? "frame limit" : "");
+    text_area_printf(ta, line++, "+-------------------------+");
+    text_area_printf(ta, line++, "|         %6.2f%%         |", state->fps);
+    text_area_printf(ta, line++, "+-------------------------+");
+    text_area_printf(ta, line++, "|          %04x           |", memory_load16(state->memory, state->pc + 0x1));
+    text_area_printf(ta, line++, "+-------------------------+");
+
+    reg16_t pc = state->pc;
+    reg16_t addr = pc;
+    for(uint32_t i = line; i < ta->height; i++)
+    {
+        reg_t  inst = memory_load8(state->memory, addr);
+        addr += op_table[inst].size;
+        text_area_printf(ta, i, "0x%04x: %02x %s", addr, inst, instruction_strings[inst]);
+    }
 }
 static int display_thread(void *display_)
 {
@@ -234,7 +254,6 @@ static int display_thread(void *display_)
 	while(1)
 	{
         SDL_Delay(17);
-		events_handle(display->state);
         draw_debug(display);
         write_framebuffer(display);
 	}

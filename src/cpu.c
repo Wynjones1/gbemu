@@ -20,9 +20,8 @@ cpu_state_t *cpu_init()
 	cpu_state_t *out = calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
-	out->frame_limit = 0;
-	out->pc          = 0;
-	out->store_state = 0;
+    out->frame_limit = 1;
+    start_event_thread(out);
 	return out;
 }
 
@@ -221,12 +220,13 @@ static void record_clock_speed(int clk)
 {
     static uint32_t time = 0;
     static uint64_t total;
-    uint32_t wait_time = CPU_CLOCK_SPEED;
+    uint32_t wait_time = CPU_CLOCK_SPEED / 2;
 
     total += clk;
     if(total > wait_time)
     {
-        log_message("CLKSPEED %6.2f%%", 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time))));
+        g_state->fps = 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time)));
+        log_message("CLKSPEED %07.02f%%", g_state->fps);
         total -= wait_time;
         time  = SDL_GetTicks();
     }
@@ -371,13 +371,14 @@ void cpu_start(struct cpu_state *state)
         log_instruction(op, state->arg);
 
 
-#if 0
-        if(state->paused)
+#if 1
+        static FILE *fp;
+        if(!fp) fp = fopen("instr.txt", "w");
+        if(state->memory->boot_locked)//state->paused)
         {
             char buf[100];
             debug_print_op(buf, state, op);
-            printf("%s\n", buf);
-            fflush(stdout);
+            fprintf(fp,"%s\n", buf);
         }
 #endif
         
