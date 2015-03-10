@@ -14,7 +14,7 @@ void pop_test(void)
 		state.sp = test[0];
 		cpu_store8(&state, test[0], test[1]);
 		cpu_store8(&state, test[2], test[3]);
-		REG_INPUT input = {.r16 = REG16_BC};
+		REG_INPUT input = REG16_BC;
 		cpu_pop(&state, input);
 		if(state.sp == test[4] && state.b == test[3] && state.c == test[1])
 		{

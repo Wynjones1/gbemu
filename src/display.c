@@ -54,9 +54,19 @@ struct display
 
 char *text_area_get_line(text_area_t *ta, uint32_t line);
 
+SDL_Rect make_rect(uint32_t xmin, uint32_t ymin, uint32_t width, uint32_t height)
+{
+    SDL_Rect out;
+    out.x  = xmin;
+    out.y  = ymin;
+    out.w  = width;
+    out.h  = height;
+    return out;
+}
+
 text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font, uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
-    text_area_t *out = calloc(1, sizeof(text_area_t) + (width + 1) * height);
+    text_area_t *out = (text_area_t*) calloc(1, sizeof(text_area_t) + (width + 1) * height);
     out->width       = width;
     out->height      = height;
     out->renderer    = render;
@@ -66,7 +76,7 @@ text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font, uint32_t width
     out->y           = y;
     int xx, yy;
     TTF_SizeText(out->font, "A", &xx, &yy);
-    out->rect        = (SDL_Rect){x, y, xx * width, yy * height};
+    out->rect        = make_rect(x, y, xx * width, yy * height);
     out->font_width  = xx;
     out->font_height = yy;
     for(uint8_t i = 20; i < 128; i++)
@@ -105,10 +115,10 @@ void text_area_draw(text_area_t *ta)
         bool end = false;
         for(uint32_t j = 0; j < ta->width; j++)
         {
-            SDL_Rect dest = {ta->x + (ta->font_width  * j),
+            SDL_Rect dest = make_rect(ta->x + (ta->font_width  * j),
                              ta->y + (ta->font_height * i),
                              ta->font_width,
-                             ta->font_height};
+                             ta->font_height);
             SDL_Texture *tex;
             if(!end)
             {
@@ -148,7 +158,7 @@ static void init_display(display_t *display)
 
 	uint32_t width  = DISPLAY_WIDTH ;
 	uint32_t height = DISPLAY_HEIGHT + 100;
-	display->window = SDL_CreateWindow("GBemu", 1650, 0,
+	display->window = SDL_CreateWindow("GBemu", 0, 0,
                                        PIXEL_SCALE * width + (text_width * fwidth),
                                        max(PIXEL_SCALE * height, text_height * fheight),
                                        SDL_WINDOW_RESIZABLE);
@@ -199,13 +209,16 @@ static void write_framebuffer(display_t *display)
     SDL_Rect output = {0, 0, PIXEL_SCALE * DISPLAY_WIDTH, PIXEL_SCALE * (DISPLAY_HEIGHT + CONTROLS_HEIGHT)};
     SDL_Error(SDL_RenderCopy(display->render, display->texture, NULL, &output) < 0);
 
+#if DEBUG_WINDOW
     text_area_draw(display->text_area);
+#endif
 
     SDL_RenderPresent(display->render);
 }
 
 static void draw_debug(display_t *display)
 {
+#if DEBUG_WINDOW
     text_area_t *ta = display->text_area;
     cpu_state_t *state = display->state;
     memory_t *memory = display->state->memory;
@@ -245,10 +258,11 @@ static void draw_debug(display_t *display)
         addr += op_table[inst].size;
         text_area_printf(ta, i, "0x%04x: %02x %s", addr, inst, instruction_strings[inst]);
     }
+#endif
 }
 static int display_thread(void *display_)
 {
-	display_t *display = display_;
+	display_t *display = (display_t*) display_;
 	init_display(display);
 	g_state = display->state;
 	while(1)
@@ -262,7 +276,7 @@ static int display_thread(void *display_)
 
 display_t *display_init(cpu_state_t *state)
 {
-	display_t *display = malloc(sizeof(display_t));
+	display_t *display = (display_t*)malloc(sizeof(display_t));
 	display->state     = state;
 	display->mem       = state->memory;
     PIXEL_SCALE        = cmdline_args.scale;

@@ -12,7 +12,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
 memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
-	memory_t *out = calloc(1, sizeof(memory_t));
+	memory_t *out = (memory_t*)calloc(1, sizeof(memory_t));
 
 #if EMBEDDED
     out->bank_0 = malloc(rom_size);
@@ -27,7 +27,7 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
         fseek(fp, 0L, SEEK_END);
         out->to_read = (size_t) ftell(fp);
         fseek(fp, 0x0, SEEK_SET);
-        out->bank_0       = malloc(out->to_read);
+        out->bank_0       = (reg_t*)malloc(out->to_read);
         common_fread(out->bank_0, 1, out->to_read, fp);
 	fclose(fp);
 #endif
@@ -38,9 +38,9 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	out->echo         = out->working_ram_0;
 	out->current_bank = 1;
 	out->boot_locked  = 0;
-	out->cart_type    = out->bank_0[0x147];
-	out->rom_size     = out->bank_0[0x148];
-	out->ram_size     = out->bank_0[0x149];
+	out->cart_type    = (enum CART_TYPE)     out->bank_0[0x147];
+	out->rom_size     = (enum ROM_SIZE)      out->bank_0[0x148];
+	out->ram_size     = (enum SAVE_RAM_SIZE) out->bank_0[0x149];
 	//Set all of the buttons to off.
 	*(uint8_t*)&out->buttons = 0xff;
 	*(uint8_t*)&out->dpad    = 0xff;
@@ -56,13 +56,13 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
             out->external_ram = NULL;
             break;
         case SAVE_RAM_SIZE_2K:
-            out->external_ram = malloc(2 * 1024);
+            out->external_ram = (uint8_t*) malloc(2 * 1024);
             break;
         case SAVE_RAM_SIZE_8K:
-            out->external_ram = malloc(8 * 1024);
+            out->external_ram = (uint8_t*) malloc(8 * 1024);
             break;
         case SAVE_RAM_SIZE_32K:
-            out->external_ram = malloc(32 * 1024);
+            out->external_ram = (uint8_t*) malloc(32 * 1024);
             break;
         default:
             log_error("Invalid Ram Size %d\n", out->ram_size);
@@ -558,7 +558,7 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 #define Y(elem) fread(memory->elem, 1, sizeof(memory->elem), fp)
 memory_t *memory_load_state(FILE *fp)
 {
-	memory_t *memory = malloc(sizeof(memory_t));
+	memory_t *memory = (memory_t*) malloc(sizeof(memory_t));
 	Y(video_ram);
 	Y(working_ram_0);
 	Y(working_ram_1);
@@ -597,10 +597,10 @@ memory_t *memory_load_state(FILE *fp)
 	X(tma);
 	X(tac);
 	X(to_read);
-	memory->bank_0 = malloc(memory->to_read);
+	memory->bank_0 = (uint8_t*) malloc(memory->to_read);
 	fread(memory->bank_0, memory->to_read, 1, fp);
 	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
-	memory->external_ram = malloc(10 * 1024);
+	memory->external_ram = (uint8_t*) malloc(10 * 1024);
 	memory->echo         = memory->working_ram_0;
 	return memory;
 }
