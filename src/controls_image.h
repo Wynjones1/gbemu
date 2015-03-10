@@ -11,7 +11,7 @@ pixel[1] = ((((data[1] - 33) & 0xF) << 4) | ((data[2] - 33) >> 2)); \
 pixel[2] = ((((data[2] - 33) & 0x3) << 6) | ((data[3] - 33))); \
 data += 4; \
 }
-static char *header_data =
+static char header_data[] =
 	"P,GVPLKWPLOWP\\SYQ,SZPLKYPLOXPLOXP<KWPLOXP<OWP\\OXP\\SYP\\WZP\\SYPLOX"
 	"P\\SYQ<[[P\\SYQ,WZQ,SYQ,SZQ,SYP\\OXP\\OXP\\SXQ<WZQ,SYQ<[ZQ,WYQ,WYP\\SY"
 	"P\\SYQ,[ZQ,WYP\\OXP\\SXP\\SXP\\SXP\\SYP\\SYQ,SZQ<[ZQ,[ZQ,WZQ,SYQ<[ZQ,WZ"

@@ -32,7 +32,7 @@
         }                                                       \
         else Error("Must supply argument for --%s/-%s\n", l, s);\
     }
-#define OPTION__Bool(s, l, name, _, description)                    \
+#define OPTION_bool(s, l, name, _, description)                    \
     if(PRINT_HELP)                                              \
     {                                                           \
         printf("-%s/--%-10s: %s\n", s,l, description);          \

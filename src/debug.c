@@ -35,7 +35,8 @@ void debug_on_exit(void)
                         uint8_t x = tx * 8 + (7 - i);
                         uint8_t y = ty * 8 + j;
                         #if 1
-                            uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
+                            shade *= 64;
+                            uint8_t data[] = {shade, shade, shade};
                             ppm_write_pixel(ppm, x, y , data);
                         #else
                             ppm_write_pixel(ppm, x, y , GET_SHADE(mem->bgp, shade));
@@ -85,7 +86,8 @@ void output_tiles(void)
 									((tile_data[0] >> i) & 0x1);
 					uint8_t x = tx * 8 + (7 - i);
 					uint8_t y = ty * 8 + j;
-					uint8_t data[] = {64 * shade, 64 * shade, 64 * shade};
+                    shade *= 64;
+					uint8_t data[] = {shade, shade, shade};
 					ppm_write_pixel(ppm, 7 - i, j , data);
 					ppm_write_pixel(full, x, y , data);
 				}
@@ -338,7 +340,7 @@ void debug_init(void)
         fgets(buf, 49, fp);
         while(!feof(fp))
         {
-            out = realloc(out, sizeof(int) * 2 * (count + 1));
+            out = (int*) realloc(out, sizeof(int) * 2 * (count + 1));
             if(sscanf(buf, "%X:%X", &bank, &pc) == 2)
             {
                 out[2 * count]     = bank;

@@ -1,5 +1,6 @@
 #pragma once
 #include <stdlib.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <signal.h>
@@ -54,6 +55,10 @@
 
 #ifndef SORT_OAM
     #define SORT_OAM 0
+#endif
+
+#ifndef DEBUG_WINDOW
+    #define DEBUG_WINDOW 0
 #endif
 
 

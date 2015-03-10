@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-static REG_INPUT HL_REG = {.r16 = REG16_HL};
+static REG_INPUT HL_REG = REG16_HL;
 
 void LD(struct cpu_state *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
