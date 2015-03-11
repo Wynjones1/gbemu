@@ -1,4 +1,3 @@
-add_definitions(--std=c11)
 add_definitions(-Werror -Wall -Wextra)
 add_definitions(-Wno-enum-conversion)
 add_definitions(-Wno-unused-function
