@@ -1,16 +1,18 @@
-BUILD_CONFIG ?= Release
-BUILD_CONFIG ?= RelWithDebInfo
 BUILD_CONFIG ?= Debug
+BUILD_CONFIG ?= Release
 ROM_DIR      ?= ~/roms/
-ROM          ?= cpu_instrs/cpu_instrs.gb
+ROM          ?= "cpu_instrs/individual/01-special.gb"
+ROM          ?= "cpu_instrs/individual/04-op r,imm.gb"
 ROM          ?= mario.gb
-ROM          ?= pokemon_blue.gb
+ROM          ?= cpu_instrs/cpu_instrs.gb
 COVERAGE     ?= No
 SPINLOCK     ?= No
 MINGW        ?= No
 EXE          := gbemu
 CHECK        ?= No
 CC           := gcc
+TESTING      ?= No
+AUDIO        ?= Yes
 
 
 all: build
@@ -19,7 +21,8 @@ all: build
 build/Makefile:
 	mkdir -p build
 	cd build; CC=$(CC) cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
-		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) -DCHECK=$(CHECK) ..
+		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) \
+		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING) ..
 
 build: build/Makefile
 	cd build; make -j5

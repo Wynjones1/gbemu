@@ -1,6 +1,6 @@
 #include "opcodes.h"
 
-#define X(n, a0, d0, a1, d1, s, suc, f) opcode(n, a0, d0, a1, d1, s, suc, f)
+#define X(n, a0, d0, a1, d1, s, suc, f) opcode(#n, n, a0, d0, a1, d1, s, suc, f)
 
 struct opcode op_table[] = {
 X(NOP,ARG_TYPE_NONE,REG_A,ARG_TYPE_NONE,REG_A,1,4,0) /*opcode 0x0*/,

@@ -145,8 +145,10 @@ SDL_RWops *read_font(void)
     return SDL_RWFromFile("./data/fonts/DroidSansMono.ttf", "rb");
 #endif
 }
+
 static void init_display(display_t *display)
 {
+    SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
     TTF_Font *font = NULL;
     SDL_RWops *font_src = read_font();
@@ -260,6 +262,7 @@ static void draw_debug(display_t *display)
     }
 #endif
 }
+
 static int display_thread(void *display_)
 {
 	display_t *display = (display_t*) display_;
@@ -270,13 +273,14 @@ static int display_thread(void *display_)
         SDL_Delay(17);
         draw_debug(display);
         write_framebuffer(display);
+        handle_events(display->state);
 	}
 	return 0;
 }
 
 display_t *display_init(cpu_state_t *state)
 {
-	display_t *display = (display_t*)malloc(sizeof(display_t));
+	display_t *display = (display_t*)calloc(1, sizeof(display_t));
 	display->state     = state;
 	display->mem       = state->memory;
     PIXEL_SCALE        = cmdline_args.scale;
@@ -284,7 +288,6 @@ display_t *display_init(cpu_state_t *state)
     display->pixel_buffer = display->buffers[display->cur_buffer];
     display->draw_buffer  = display->buffers[!display->cur_buffer];
 
-    SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateThread(display_thread, "Display Thread", display);
     char *temp = header_data;
     memset(white_buffer, 0xff, sizeof(white_buffer));

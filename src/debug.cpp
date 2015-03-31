@@ -218,54 +218,73 @@ const char *reg16_strings[] =
 };
 
 #define X(n) case ARG_TYPE_ ## n:sprintf(buf, #n);break
-void debug_print_arg(char *buf, struct cpu_state *state, struct opcode *op,enum ARG_TYPE arg, REG_INPUT r)
+void debug_print_arg(char *buf, struct cpu_state *state,
+                     struct opcode *op,enum ARG_TYPE arg, REG_INPUT r, bool print_values)
 {
 	uint8_t rel;
 	switch(arg)
 	{
 		case ARG_TYPE_REG8:
-			sprintf(buf, "%s = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+            if(print_values)
+                sprintf(buf, "%s = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+            else
+                sprintf(buf, "%s", reg_strings[r.r8]);
 			break;
 		case ARG_TYPE_REG8_INDIRECT:
-			sprintf(buf, "(%s) = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+            if(print_values)
+                sprintf(buf, "(%s) = 0x%02x", reg_strings[r.r8], state->registers[r.r8]);
+            else
+                sprintf(buf, "(%s)", reg_strings[r.r8]);
 			break;
 		case ARG_TYPE_REG16:
-			sprintf(buf, "%s = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+            if(print_values)
+                sprintf(buf, "%s = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+            else
+                sprintf(buf, "%s", reg16_strings[r.r16]);
 			break;
 		case ARG_TYPE_REG16_INDIRECT:
-			sprintf(buf, "(%s) = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+            if(print_values)
+                sprintf(buf, "(%s) = 0x%04x", reg16_strings[r.r16], state->registers16[r.r16]);
+            else
+                sprintf(buf, "(%s)", reg16_strings[r.r16]);
 			break;
 		case ARG_TYPE_DATA8:
 			sprintf(buf, "0x%02x", state->arg);
 			break;
 		case ARG_TYPE_DATA8_UNSIGNED:
-			sprintf(buf, "0x%02x", state->arg);
+			sprintf(buf, "%d", state->arg);
 			break;
 		case ARG_TYPE_DATA8_UNSIGNED_INDIRECT:
 			sprintf(buf, "(0x%02x)", state->arg);
 			break;
 		case ARG_TYPE_DATA16:
-			sprintf(buf, "0x%02x", state->arg);
+			sprintf(buf, "0x%04x", state->arg);
 			break;
 		case ARG_TYPE_DATA16_UNSIGNED:
-			sprintf(buf, "0x%02x", state->arg);
+			sprintf(buf, "0x%04x", state->arg);
 			break;
 		case ARG_TYPE_DATA16_UNSIGNED_INDIRECT:
-			sprintf(buf, "(0x%02x)", state->arg);
+			sprintf(buf, "(0x%04x)", state->arg);
 			break;
 		case ARG_TYPE_REL8:
-			rel = state->arg;
-			sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
-			break;
+            rel = state->arg;
+            sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
+            break;
 		case ARG_TYPE_REL8_ADD_SP:
 			rel = state->arg;
 			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel);
 			break;
 		case ARG_TYPE_HL_INDIRECT_DEC:
-			sprintf(buf, "(HL-) = 0x%04x", state->hl);
+            if(print_values)
+                sprintf(buf, "(HL-) = 0x%04x", state->hl);
+            else
+                sprintf(buf, "(HL-)");
 			break;
 		case ARG_TYPE_HL_INDIRECT_INC:
-			sprintf(buf, "(HL+) = 0x%04x", state->hl);
+            if(print_values)
+                sprintf(buf, "(HL+) = 0x%04x", state->hl);
+            else
+                sprintf(buf, "(HL+)");
 			break;
 		X(00H);
 		X(08H);
@@ -302,11 +321,13 @@ void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
 	{
 		op = &cb_op_table[state->arg];
 	}
-	debug_print_arg(arg0, state, op,op->arg0, op->i0);
-	debug_print_arg(arg1, state, op,op->arg1, op->i1);
+	debug_print_arg(arg0, state, op,op->arg0, op->i0, false);
+	debug_print_arg(arg1, state, op,op->arg1, op->i1, false);
 	char sep;
 	sep = op->arg1  == ARG_TYPE_NONE ? ' ' : ',';
-	sprintf(buffer, "0x%04x %s %s %c %s", state->pc - op->size, op->name, arg0, sep, arg1);
+	sprintf(buffer, "0x%04x:0x%04x:%s %s%c%s", state->memory->current_bank,
+                                                 state->pc - op->size,
+                                                 op->name, arg0, sep, arg1);
 }
 
 

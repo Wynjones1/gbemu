@@ -276,7 +276,6 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
 			if(data)
             {
 				mem->boot_locked = 1;
-                mem->state->paused = 1;
 #if INTRO_ONLY
     exit(0);
 #endif

@@ -21,7 +21,6 @@ cpu_state_t *cpu_init()
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
     out->frame_limit = 1;
-    start_event_thread(out);
 	return out;
 }
 
@@ -226,7 +225,9 @@ static void record_clock_speed(int clk)
     if(total > wait_time)
     {
         g_state->fps = 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time)));
+#if LOG_CLKSPEED
         log_message("CLKSPEED %07.02f%%", g_state->fps);
+#endif
         total -= wait_time;
         time  = SDL_GetTicks();
     }
@@ -304,7 +305,7 @@ void cpu_start(struct cpu_state *state)
 {
 	g_state = state;
 	atexit(debug_on_exit);
-	reg_t instruction;
+	reg_t instruction = 0;
 	struct opcode *op = NULL;
 	while(1)
 	{
@@ -369,9 +370,7 @@ void cpu_start(struct cpu_state *state)
 		}
 
         log_instruction(op, state->arg);
-
-
-#if 1
+#if 0
         static FILE *fp;
         if(!fp) fp = fopen("instr.txt", "w");
         if(state->memory->boot_locked)//state->paused)
@@ -388,6 +387,7 @@ void cpu_start(struct cpu_state *state)
             replay(state);
 
 		op->op(state, op->arg0, op->i0, op->arg1, op->i1);
+
 		//Increment program counter.
 		int clk = state->success ? op->success : op->fail;
 		state->clock_counter += clk;
