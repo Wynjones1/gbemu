@@ -12,8 +12,8 @@ typedef void (*cpu_opcode)(
 
 struct opcode
 {
-	cpu_opcode       op;
 	const char      *name;
+	cpu_opcode       op;
 	enum  ARG_TYPE   arg0;
 	union REG_INPUT  i0;
 	enum  ARG_TYPE   arg1;
@@ -21,9 +21,10 @@ struct opcode
 	char  size;    //Size of instruction in bytes
 	char  success; //Cycles on success
 	char  fail;    //Cycles on failure
-    opcode(cpu_opcode op, ARG_TYPE arg0, REG_INPUT d0, ARG_TYPE arg1, REG_INPUT d1,
+    opcode(const char *name, cpu_opcode op, ARG_TYPE arg0, REG_INPUT d0, ARG_TYPE arg1, REG_INPUT d1,
            char size, char success, char fail)
-    : op(op)
+    : name(name)
+    , op(op)
     , arg0(arg0)
     , i0(d0)
     , arg1(arg1)

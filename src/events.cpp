@@ -119,11 +119,10 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 }
 #undef X
 
-static int event_thread(void *_state)
+int handle_events(cpu_state_t *state)
 {
-    cpu_state_t *state = (cpu_state_t*)_state;
 	SDL_Event event;
-	while(SDL_WaitEvent(&event))
+	while(SDL_PollEvent(&event))
 	{
 		switch(event.type)
 		{
@@ -153,9 +152,4 @@ static int event_thread(void *_state)
 		}
 	}
     return 0;
-}
-
-void start_event_thread(cpu_state_t *state)
-{
-    SDL_CreateThread(event_thread, "Event Thread", state);
 }
