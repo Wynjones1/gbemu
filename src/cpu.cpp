@@ -14,13 +14,14 @@
 #include "memory.h"
 #include "opcodes.h"
 #include "ppm.h"
+#include "instruction_strings.h"
 
 cpu_state_t *cpu_init()
 {
 	cpu_state_t *out = (cpu_state_t*) calloc(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
-    out->frame_limit = 1;
+    out->frame_limit = 0;
 	return out;
 }
 
@@ -321,7 +322,6 @@ void cpu_start(struct cpu_state *state)
             state->paused = 1;
         }
 
-
 		//Halt emulation.
 		while(state->paused && !state->step && !state->slow)
 		{
@@ -362,6 +362,10 @@ void cpu_start(struct cpu_state *state)
 			{
 				state->arg = cpu_load16(state, state->pc + 1);
 			}
+            else
+            {
+                state->arg = 0;
+            }
 			state->pc  += op->size;
 		}
 		else
@@ -369,8 +373,9 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 
+
+#if 0
         log_instruction(op, state->arg);
-#if 1
         static FILE *fp;
         if(!fp) fp = fopen("instr.txt", "w");
         if(!state->halt && state->memory->boot_locked)//state->paused)
