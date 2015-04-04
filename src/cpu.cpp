@@ -165,11 +165,11 @@ static int check_for_interrupts(struct cpu_state *state)
 		state->memory->IME = 0;
 		state->halt        = 0;
 		//Check each of the interrupts in priority order.
-			 X(VBLANK, addr, 0x40)
+			 X(VBLANK,     addr, 0x40)
 		else X(LCD_STATUS, addr, 0x48)
-		else X(TIMER, addr, 0x50)
-		else X(SERIAL, addr, 0x58)
-		else X(JOYPAD, addr, 0x60)
+		else X(TIMER,      addr, 0x50)
+		else X(SERIAL,     addr, 0x58)
+		else X(JOYPAD,     addr, 0x60)
 
 		log_verbose("Interrupt 0x%04x\n", addr);
         if(state->cont)
@@ -370,7 +370,7 @@ void cpu_start(struct cpu_state *state)
 		}
 
         log_instruction(op, state->arg);
-#if 0
+#if 1
         static FILE *fp;
         if(!fp) fp = fopen("instr.txt", "w");
         if(state->memory->boot_locked)//state->paused)

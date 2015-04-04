@@ -225,6 +225,7 @@ static void draw_debug(display_t *display)
     cpu_state_t *state = display->state;
     memory_t *memory = display->state->memory;
     uint32_t line = 0;
+    uint32_t bank = display->state->memory->current_bank;
     
     #define X(n) ((state->f >> n ## _BIT) & 0x1)
     text_area_printf(ta, line++, "+-------------------------+");
@@ -258,7 +259,10 @@ static void draw_debug(display_t *display)
     {
         reg_t  inst = memory_load8(state->memory, addr);
         addr += op_table[inst].size;
-        text_area_printf(ta, i, "0x%04x: %02x %s", addr, inst, instruction_strings[inst]);
+        if(addr > 0x3fff)
+            text_area_printf(ta, i, "%02x:0x%04x: %02x %s", bank, addr, inst, instruction_strings[inst]);
+        else
+            text_area_printf(ta, i, "%02x:0x%04x: %02x %s", 0, addr, inst, instruction_strings[inst]);
     }
 #endif
 }
