@@ -16,12 +16,12 @@ else()
     include(cmake/options.cmake)
     include(cmake/add_source.cmake)
 
+    set(CMAKE_C_FLAGS_RELEASE -Os)
+    add_executable(gbemu ${ALL_SRC} ${ALL_HEADER})
+
     if(COVERAGE)
         include(cmake/coverage.cmake)
     endif()
-
-    set(CMAKE_C_FLAGS_RELEASE -Os)
-    add_executable(gbemu ${ALL_SRC} ${ALL_HEADER})
     if(MINGW)
         set(DIRECTX No)
         add_definitions(-mwindows)

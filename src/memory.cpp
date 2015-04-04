@@ -44,6 +44,7 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 	//Set all of the buttons to off.
 	*(uint8_t*)&out->buttons = 0xff;
 	*(uint8_t*)&out->dpad    = 0xff;
+    *(uint8_t*)&out->lcdc    = 0x83;
 
     for(int i = 0; i < 40; i++)
     {
@@ -127,7 +128,7 @@ static void dma(memory_t *mem, reg_t data)
 	//TODO:Make this occur over multiple clock cycles.
 	//We need to restrict accesses to HRAM also.
 	reg16_t source = data * 0x100;
-	for(reg16_t i = 0; i < 0xa0; i++)
+	for(reg16_t i = 0; i < 0xa0; i++) //Transfer 40 * 32bit = 0xa0 bytes
 	{
 		mem->OAM[i] = memory_load8(mem, source + i);
 	}
