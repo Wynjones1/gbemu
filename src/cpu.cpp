@@ -373,7 +373,7 @@ void cpu_start(struct cpu_state *state)
 #if 1
         static FILE *fp;
         if(!fp) fp = fopen("instr.txt", "w");
-        if(state->memory->boot_locked)//state->paused)
+        if(!state->halt && state->memory->boot_locked)//state->paused)
         {
             char buf[100];
             debug_print_op(buf, state, op);

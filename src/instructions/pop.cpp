@@ -11,4 +11,7 @@ void cpu_pop(struct cpu_state *state, REG_INPUT reg)
 {
 	state->registers16[reg.r16]  = cpu_load16(state, state->sp);
 	state->sp += 2;
+    //If AF is specified the bottom 4bits of f cannot be set.
+    //We just mask for all cases.
+    state->f &= 0xf0;
 }

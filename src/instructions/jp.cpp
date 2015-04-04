@@ -15,7 +15,6 @@ void JP(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		//TODO:Make sure of this.
 		cpu_jump(state, state->hl);
 	}
 	else
