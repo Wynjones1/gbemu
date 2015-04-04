@@ -250,7 +250,9 @@ static void draw_debug(display_t *display)
     text_area_printf(ta, line++, "+-------------------------+");
     text_area_printf(ta, line++, "|         %6.2f%%         |", state->fps);
     text_area_printf(ta, line++, "+-------------------------+");
-    text_area_printf(ta, line++, "|          %04x           |", memory_load16(state->memory, state->pc + 0x1));
+    text_area_printf(ta, line++, "|     (HL) = 0x%04x       |", memory_load16(state->memory, state->hl));
+    text_area_printf(ta, line++, "|      arg = 0x%04x       |", memory_load16(state->memory, state->pc + 1));
+    text_area_printf(ta, line++, "|    stack = 0x%04x       |", memory_load16(state->memory, state->sp));
     text_area_printf(ta, line++, "+-------------------------+");
 
     reg16_t pc = state->pc;
@@ -259,10 +261,16 @@ static void draw_debug(display_t *display)
     {
         reg_t  inst = memory_load8(state->memory, addr);
         addr += op_table[inst].size;
+        const char *inst_string = instruction_strings[inst];
         if(addr > 0x3fff)
-            text_area_printf(ta, i, "%02x:0x%04x: %02x %s", bank, addr, inst, instruction_strings[inst]);
-        else
-            text_area_printf(ta, i, "%02x:0x%04x: %02x %s", 0, addr, inst, instruction_strings[inst]);
+            bank = 0;
+        if(inst == 0xCB)
+        {
+            inst = memory_load8(state->memory, addr);
+            addr += 1;
+            inst_string = instruction_strings_cb[inst];
+        }
+        text_area_printf(ta, i, "%02x:0x%04x: %02x %s", bank, addr, inst, inst_string);
     }
 #endif
 }

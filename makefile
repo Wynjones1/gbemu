@@ -34,7 +34,7 @@ mingw: MINGW := Yes EXE
 mingw: all
 
 run: all
-	./build/$(EXE) -i $(ROM_DIR)/$(ROM)
+	./build/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file ./break.txt
 
 clean:
 	rm -Rf build bin *.svg *.out *.ppm *.log coverage

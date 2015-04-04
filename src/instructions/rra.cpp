@@ -11,8 +11,6 @@ void cpu_rra(struct cpu_state *state)
 {
 	state->a = cpu_rr(state, state->a);
 #if PROPER_FLAGS
-    cpu_set_half_carry(state, 0);
     cpu_set_zero(state, 0);
-    cpu_set_subtract(state, 0);
 #endif
 }
