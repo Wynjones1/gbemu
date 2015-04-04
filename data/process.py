@@ -8,4 +8,5 @@ if __name__ == "__main__":
             time, clks = map(int, i.strip().split())
             time = time / 1000.0
             print(clks / (CLK_SPEED * time))
-        except ValueError: pass
+        except ValueError as e:
+            continue
