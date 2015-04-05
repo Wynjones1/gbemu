@@ -1,20 +1,25 @@
-BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= RelWithDebInfo
+BUILD_CONFIG ?= Debug
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
-ROM          := "cpu_instrs/individual/01-special.gb"
-ROM          := "cpu_instrs/individual/02-interrupts.gb"
-ROM          := "cpu_instrs/individual/03-op sp,hl.gb"
-ROM          := "cpu_instrs/individual/04-op r,imm.gb"
 
-ROM          := "cpu_instrs/individual/11-op a,(hl).gb"
-ROM          := "cpu_instrs/individual/09-op r,r.gb"
-ROM          := "cpu_instrs/individual/08-misc instrs.gb"
-ROM          := "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
-
-ROM          := "cpu_instrs/individual/10-bit ops.gb"
+#Succeeding
 ROM          := "cpu_instrs/individual/06-ld r,r.gb"
+ROM          := "cpu_instrs/individual/09-op r,r.gb"
 ROM          := "cpu_instrs/individual/05-op rp.gb"
+ROM          := "cpu_instrs/individual/10-bit ops.gb"
+ROM          := "cpu_instrs/individual/04-op r,imm.gb"
+ROM          := "cpu_instrs/individual/02-interrupts.gb"
+ROM          := "cpu_instrs/individual/01-special.gb"
+ROM          := "cpu_instrs/individual/11-op a,(hl).gb"
+
+#Failing
+ROM          := "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
+ROM          := "cpu_instrs/individual/08-misc instrs.gb"
+ROM          := "cpu_instrs/individual/03-op sp,hl.gb"
+
+
+
 COVERAGE     ?= No
 SPINLOCK     ?= No
 MINGW        ?= No
