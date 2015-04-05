@@ -10,12 +10,9 @@ void INC(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		reg_t res                = cpu_load8_indirect(state, i0);
-		cpu_set_half_carry(state, (res == 0xf));
-		res += 1;
-		cpu_set_zero(state, (res == 0));
-		cpu_set_subtract(state, 0);
-		cpu_store8_indirect(state, i0, res);
+		reg_t res = cpu_load8_indirect(state, i0);
+        res = cpu_inc8(state, res);
+        cpu_store8_indirect(state, i0, res);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
