@@ -241,6 +241,7 @@ static void draw_debug(display_t *display)
     text_area_printf(ta, line++, "| TIMA    = 0x%02x          |", *(uint8_t*)&memory->tima);
     text_area_printf(ta, line++, "| TMA     = 0x%02x          |", *(uint8_t*)&memory->tma);
     text_area_printf(ta, line++, "| TAC     = 0x%02x          |", *(uint8_t*)&memory->tac);
+    text_area_printf(ta, line++, "| IME     = 0x%02x          |", *(uint8_t*)&memory->IME);
     text_area_printf(ta, line++, "| IE  = 0x%02x IF  = 0x%02x   |", *(uint8_t*)&memory->IE, *(uint8_t*)&memory->IF);
     text_area_printf(ta, line++, "| LY  = 0x%02x LYC = 0x%02x   |", *(uint8_t*)&memory->ly, *(uint8_t*)&memory->lyc);
     text_area_printf(ta, line++, "| DPD = 0x%02x BTN = 0x%02x   |", *(uint8_t*)&memory->dpad, *(uint8_t*)&memory->buttons);

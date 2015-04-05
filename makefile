@@ -1,6 +1,7 @@
 BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= Release
 ROM_DIR      ?= ~/roms/
+ROM          ?= "cpu_instrs/individual/02-interrupts.gb"
 ROM          ?= "cpu_instrs/individual/01-special.gb"
 ROM          ?= "cpu_instrs/individual/09-op r,r.gb"
 ROM          ?= "cpu_instrs/individual/04-op r,imm.gb"
