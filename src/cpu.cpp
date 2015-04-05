@@ -181,6 +181,13 @@ static int check_for_interrupts(struct cpu_state *state)
 		state->pc = addr;
 		state->clock_counter += 5;
 	}
+	else if(state->halt && ((state->memory->IF & state->memory->IE & 0x1f)))
+    {
+        //If an interrupt occures when we are halting but IME == 0 then we
+        //continue execution.
+        state->halt = 0;
+        state->pc += 1;
+    }
 	return 0;
 }
 #undef X
@@ -374,7 +381,7 @@ void cpu_start(struct cpu_state *state)
 		}
 
 
-#if 0
+#if 1
         log_instruction(op, state->arg);
         static FILE *fp;
         if(!fp) fp = fopen("instr.txt", "w");

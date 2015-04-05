@@ -50,12 +50,13 @@ void LD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8_ADD_SP)
 		{
-			//TODO:Check that the signed addition is correct.
+            //TODO: Set the carry and half carry flags
 			reg_t d = state->arg;
-			reg16_t addr    = cpu_add8(state, state->sp, d);
+            int16_t temp = *(int8_t*)&d;
+            reg16_t addr = state->sp + temp;
 			cpu_set_zero(state, 0);
 			cpu_set_subtract(state, 0);
-			data = cpu_load16(state, addr);
+            data = addr;
 		}
 		else
 		{
