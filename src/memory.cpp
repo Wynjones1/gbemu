@@ -7,6 +7,8 @@
 #include "embedded.h"
 #include "cpu.h"
 
+#define WARN_INVALID_MEMORY 0
+
 static reg_t read_IO_registers(memory_t *mem, reg16_t addr);
 static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
@@ -190,6 +192,8 @@ static reg_t read_IO_registers(memory_t *mem, reg16_t addr)
 			return mem->wy;
 		case 0xff4b:
 			return mem->wx;
+        case 0xff4d: //Double speed mode (GBC Only)
+            return 0;
 		default:
 			log_error("IO register not finished 0x%04x\n", addr);
 	}
@@ -317,8 +321,10 @@ reg_t memory_load8(memory_t *mem, reg16_t addr)
 	{
         if(mem->external_ram && mem->ram_enabled)
             return mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000];
+#if WARN_INVALID_MEMORY
         else
             log_warning("Accessing invalid memory.\n");
+#endif
         return 0;
 	}
 	else if(X(0xc000,0xcfff))
@@ -423,8 +429,10 @@ void memory_store8(memory_t *mem, reg16_t addr, reg_t data)
 	{
         if(mem->external_ram && mem->ram_enabled)
             mem->external_ram[mem->ram_bank * 0x8000 + addr - 0xa000] = data;
+#if WARN_INVALID_MEMORY
         else
             log_warning("Writing to invalid memory.\n");
+#endif
 	}
 	else if(X(0xc000,0xcfff))
 	{

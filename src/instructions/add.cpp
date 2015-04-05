@@ -61,7 +61,6 @@ reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
 reg16_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
 {
 	uint32_t t0       = (uint32_t)d0 + (uint32_t)d1;
-	cpu_set_zero(state, (t0 & 0xffff) == 0);
 	cpu_set_subtract(state, 0);
 	cpu_set_carry(state, t0 > 0xffff);
 	cpu_set_half_carry(state, (d0 & 0xfff) + (d1 & 0xfff) > 0xfff);

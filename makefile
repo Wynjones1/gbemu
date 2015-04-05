@@ -1,22 +1,29 @@
 BUILD_CONFIG ?= Debug
-BUILD_CONFIG ?= Release
+BUILD_CONFIG ?= RelWithDebInfo
 ROM_DIR      ?= ~/roms/
-ROM          ?= "cpu_instrs/individual/02-interrupts.gb"
-ROM          ?= "cpu_instrs/individual/01-special.gb"
-ROM          ?= "cpu_instrs/individual/09-op r,r.gb"
-ROM          ?= "cpu_instrs/individual/04-op r,imm.gb"
-ROM          ?= "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
-ROM          ?= "cpu_instrs/individual/06-ld r,r.gb"
-ROM          ?= cpu_instrs/cpu_instrs.gb
 ROM          ?= mario.gb
+ROM          := "cpu_instrs/individual/01-special.gb"
+ROM          := "cpu_instrs/individual/02-interrupts.gb"
+ROM          := "cpu_instrs/individual/03-op sp,hl.gb"
+ROM          := "cpu_instrs/individual/04-op r,imm.gb"
+
+ROM          := "cpu_instrs/individual/11-op a,(hl).gb"
+ROM          := "cpu_instrs/individual/09-op r,r.gb"
+ROM          := "cpu_instrs/individual/08-misc instrs.gb"
+ROM          := "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
+
+ROM          := "cpu_instrs/individual/10-bit ops.gb"
+ROM          := "cpu_instrs/individual/06-ld r,r.gb"
+ROM          := "cpu_instrs/individual/05-op rp.gb"
 COVERAGE     ?= No
 SPINLOCK     ?= No
 MINGW        ?= No
 EXE          := gbemu
 CHECK        ?= No
-CC           := gcc
+CC           := clang
 TESTING      ?= No
 AUDIO        ?= Yes
+DEBUG_WINDOW ?= Yes
 
 
 all: build
@@ -26,7 +33,8 @@ build/Makefile:
 	mkdir -p build
 	cd build; CC=$(CC) cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
 		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) \
-		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING) ..
+		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING)    \
+		-DDEBUG_WINDOW=$(DEBUG_WINDOW) ..
 
 build: build/Makefile
 	cd build; make -j5
@@ -46,3 +54,10 @@ android:
 
 windows:
 	make -f mingw.mk
+
+coverage: COVERAGE := Yes
+coverage: clean run
+	lcov --directory ./build/ --capture --output-file ./build/coverage.info
+	lcov --remove ./build/coverage.info "/usr/*" --output-file ./build/coverage.temp
+	mv ./build/coverage.temp ./build/coverage.info
+	genhtml -o ./build/coverage ./build/coverage.info
