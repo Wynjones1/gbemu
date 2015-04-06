@@ -289,6 +289,8 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
         case 0xff55:
             hdma(mem, data);
             break;
+        case 0xff70:
+            break;//TODO: SVBK (CGB Only)
 		case 0xff7f:
 			//This seems to be accessed by accident when cleaning memory.
 			break;
