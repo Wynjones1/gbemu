@@ -16,8 +16,6 @@
 #define SUBTRACT_BIT   6
 #define ZERO_BIT       7
 
-#define PROPER_FLAGS 1
-
 typedef struct cpu_state
 {
 	union

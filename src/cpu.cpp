@@ -380,7 +380,6 @@ void cpu_start(struct cpu_state *state)
 			op = &op_table[0]; //NOP
 		}
 
-
 #if 1
         log_instruction(op, state->arg);
         static FILE *fp;

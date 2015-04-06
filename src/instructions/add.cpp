@@ -11,17 +11,18 @@ void ADD(struct cpu_state *state,
 		if(arg1 == ARG_TYPE_REG16)
 		{
 			d1 = cpu_load_reg16(state, i1);
+            reg16_t out = cpu_add16(state, d0, d1);
+            cpu_store_reg16(state, i0, out);
 		}
-		else if(arg1 == ARG_TYPE_REL8)//TODO: Check all REL8
+		else if(arg1 == ARG_TYPE_REL8)//Always SP
 		{
-			d1 = state->arg;
+            uint8_t d8 = state->arg;
+            cpu_set_zero(state, 0);
+            cpu_set_subtract(state, 0);
+            cpu_set_half_carry(state, (state->sp & 0x0f) + (d8 & 0x0f) > 0x0f);
+            cpu_set_carry(state, (state->sp & 0xff) + (d8 & 0xff) > 0xff);
+            state->sp = state->sp + *(int8_t*)&d8;
 		}
-		else
-		{
-			Error("Invalid argument type.\n");
-		}
-		reg16_t out = cpu_add16(state, d0, d1);
-		cpu_store_reg16(state, i0, out);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{

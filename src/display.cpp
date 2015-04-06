@@ -261,7 +261,6 @@ static void draw_debug(display_t *display)
     for(uint32_t i = line; i < ta->height; i++)
     {
         reg_t  inst = memory_load8(state->memory, addr);
-        addr += op_table[inst].size;
         const char *inst_string = instruction_strings[inst];
         if(addr > 0x3fff)
             bank = 0;
@@ -272,6 +271,7 @@ static void draw_debug(display_t *display)
             inst_string = instruction_strings_cb[inst];
         }
         text_area_printf(ta, i, "%02x:0x%04x: %02x %s", bank, addr, inst, inst_string);
+        addr += op_table[inst].size;
     }
 #endif
 }
