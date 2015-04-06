@@ -1,21 +1,22 @@
+BUILD_CONFIG ?= Release
 BUILD_CONFIG ?= RelWithDebInfo
 BUILD_CONFIG ?= Debug
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
 
 #Succeeding
+ROM          := "cpu_instrs/individual/01-special.gb"
+ROM          := "cpu_instrs/individual/02-interrupts.gb"
+ROM          := "cpu_instrs/individual/04-op r,imm.gb"
+ROM          := "cpu_instrs/individual/05-op rp.gb"
 ROM          := "cpu_instrs/individual/06-ld r,r.gb"
 ROM          := "cpu_instrs/individual/09-op r,r.gb"
-ROM          := "cpu_instrs/individual/05-op rp.gb"
 ROM          := "cpu_instrs/individual/10-bit ops.gb"
-ROM          := "cpu_instrs/individual/04-op r,imm.gb"
-ROM          := "cpu_instrs/individual/02-interrupts.gb"
-ROM          := "cpu_instrs/individual/01-special.gb"
 ROM          := "cpu_instrs/individual/11-op a,(hl).gb"
 
 #Failing
-ROM          := "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
 ROM          := "cpu_instrs/individual/08-misc instrs.gb"
+ROM          := "cpu_instrs/individual/07-jr,jp,call,ret,rst.gb"
 ROM          := "cpu_instrs/individual/03-op sp,hl.gb"
 
 
@@ -49,6 +50,9 @@ mingw: all
 
 run: all
 	./build/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file ./break.txt
+
+gdb: all
+	cgdb --args ./build/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file ./break.txt
 
 clean:
 	rm -Rf build bin *.svg *.out *.ppm *.log coverage

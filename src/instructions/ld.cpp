@@ -10,7 +10,7 @@ void LD(struct cpu_state *state,
 	{
 		if(arg1 == ARG_TYPE_REG16) //Always SP
 		{
-			cpu_store16_indirect(state, i0, state->sp);
+            cpu_store16(state, state->arg, state->sp);
 		}
 		else if(arg1 == ARG_TYPE_REG8)
 		{
@@ -50,13 +50,12 @@ void LD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8_ADD_SP)
 		{
-            //TODO: Set the carry and half carry flags
-			reg_t d = state->arg;
-            int16_t temp = *(int8_t*)&d;
-            reg16_t addr = state->sp + temp;
-			cpu_set_zero(state, 0);
-			cpu_set_subtract(state, 0);
-            data = addr;
+            uint8_t d8 = state->arg;
+            cpu_set_zero(state, 0);
+            cpu_set_subtract(state, 0);
+            cpu_set_half_carry(state, (state->sp & 0x0f) + (d8 & 0x0f) > 0x0f);
+            cpu_set_carry(state, (state->sp & 0xff) + (d8 & 0xff) > 0xff);
+            data = state->sp + *(int8_t*)&d8;
 		}
 		else
 		{
