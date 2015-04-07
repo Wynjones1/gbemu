@@ -1,6 +1,6 @@
-file(GLOB SRC	              "${ROOT}/src/*.cpp")
-file(GLOB SRC_INSTRUCTIONS    "${ROOT}/src/instructions/*.cpp")
-file(GLOB SRC_PREFIX_CB       "${ROOT}/src/instructions/prefix_cb/*.cpp")
+file(GLOB SRC	              "${ROOT}/src/*.c")
+file(GLOB SRC_INSTRUCTIONS    "${ROOT}/src/instructions/*.c")
+file(GLOB SRC_PREFIX_CB       "${ROOT}/src/instructions/prefix_cb/*.c")
 
 file(GLOB HEADER	          "${ROOT}/src/*.h")
 file(GLOB HEADER_INSTRUCTIONS "${ROOT}/src/instructions/*.h")
@@ -15,7 +15,7 @@ source_group(src\\instructions            FILES ${SRC_INSTRUCTIONS})
 source_group(src\\instructions\\prefix_cb FILES ${SRC_PREFIX_CB})
 
 if(TESTING)
-    file(GLOB SRC_TESTING         "${ROOT}/src/testing/*.cpp")
+    file(GLOB SRC_TESTING         "${ROOT}/src/testing/*.c")
     file(GLOB HEADER_TESTING      "${ROOT}/src/testing/*.h")
     source_group(headers\\testing  FILES ${HEADER_TESTING})
     source_group(src\\testing      FILES ${SRC_TESTING})

@@ -17,6 +17,7 @@ else()
     include(cmake/add_source.cmake)
 
     set(CMAKE_C_FLAGS_RELEASE -Os)
+    add_definitions(--std=c11)
     add_executable(gbemu ${ALL_SRC} ${ALL_HEADER})
 
     if(COVERAGE)

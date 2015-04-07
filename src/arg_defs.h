@@ -71,14 +71,6 @@ typedef union REG_INPUT
 {
 	enum REG   r8;
 	enum REG16 r16;
-
-    REG_INPUT(REG r8)
-    : r8(r8)
-    {}
-
-    REG_INPUT(REG16 r16)
-    : r16(r16)
-    {}
 }REG_INPUT;
 
-static const REG_INPUT A_REG  = REG_A;
+static const REG_INPUT A_REG  = {.r8 = REG_A};

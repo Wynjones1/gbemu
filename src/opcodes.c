@@ -1,7 +1,9 @@
 #include "opcodes.h"
 
-#define X(n, a0, d0, a1, d1, s, suc, f) opcode(#n, n, a0, d0, a1, d1, s, suc, f)
-
+#define X(n, a0, d0, a1, d1, s, suc, f) {.name = #n, .op = n,                  \
+                                         .arg0 = a0, .i0 = {d0},             \
+                                         .arg1 = a1, .i1 = {d1},             \
+                                         .size = s,  .success=suc, .fail = f}
 struct opcode op_table[] = {
 X(NOP,ARG_TYPE_NONE,REG_A,ARG_TYPE_NONE,REG_A,1,4,0) /*opcode 0x0*/,
 X(LD,ARG_TYPE_REG16,REG16_BC,ARG_TYPE_DATA16,REG_A,3,12,0) /*opcode 0x1*/,

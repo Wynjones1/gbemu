@@ -1,6 +1,6 @@
+BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= Release
 BUILD_CONFIG ?= RelWithDebInfo
-BUILD_CONFIG ?= Debug
 ROM_DIR      ?= ~/roms/
 ROM          ?= "dmg_sound/rom_singles/01-registers.gb"
 ROM          ?= mario.gb

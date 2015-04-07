@@ -21,6 +21,7 @@ struct opcode
 	char  size;    //Size of instruction in bytes
 	char  success; //Cycles on success
 	char  fail;    //Cycles on failure
+#if 0
     opcode(const char *name, cpu_opcode op, ARG_TYPE arg0, REG_INPUT d0, ARG_TYPE arg1, REG_INPUT d1,
            char size, char success, char fail)
     : name(name)
@@ -33,6 +34,7 @@ struct opcode
     , success(success)
     , fail(fail)
     {}
+#endif
 };
 
 extern struct opcode op_table[];
