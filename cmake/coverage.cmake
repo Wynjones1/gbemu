@@ -1,2 +1,4 @@
-add_definitions("--coverage")
-target_link_libraries(gbemu gcov)
+if(COVERAGE)
+    add_definitions("--coverage")
+    link_libraries(gcov)
+endif()

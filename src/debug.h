@@ -11,7 +11,6 @@ void debug_print_arg(char *buf, struct cpu_state *state,
                      struct opcode *op, enum ARG_TYPE arg, REG_INPUT r, bool print_values);
 void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op);
 
-void debug_on_exit(void);
 void debug_init(void);
 
 void BREAK(void);

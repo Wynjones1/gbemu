@@ -9,11 +9,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#if ANDROID || __MINGW32__
-#include <SDL.h>
+#include "SDL.h"
+#if HAVE_TTF
+    #include "SDL_ttf.h"
 #else
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+    typedef void *TTF_Font;
 #endif
 
 #ifndef OUTPUT_ERRORS

@@ -14,18 +14,16 @@
 	#define DEBUG_INSTRUCTION_WIDTH  0
 #endif
 
-#define LCD_WIDTH  160
-#define LCD_HEIGHT 144
+#define LCD_WIDTH      160
+#define LCD_HEIGHT     144
+#define DISPLAY_WIDTH  LCD_WIDTH
+#define DISPLAY_HEIGHT LCD_HEIGHT
 
-#if DISPLAY_SHOW_FULL_FRAMEBUFFER
-	#define DISPLAY_WIDTH  256
-	#define DISPLAY_HEIGHT 256
-#else
-	#define DISPLAY_WIDTH  LCD_WIDTH
-	#define DISPLAY_HEIGHT LCD_HEIGHT
-#endif
-
+#if CONTROLS
 #define CONTROLS_HEIGHT 100
+#else
+#define CONTROLS_HEIGHT 0
+#endif
 
 typedef struct display   display_t;
 typedef struct cpu_state cpu_state_t;

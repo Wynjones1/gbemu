@@ -1,20 +1,25 @@
-BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= Release
+BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= RelWithDebInfo
 ROM_DIR      ?= ~/roms/
-ROM          ?= "dmg_sound/rom_singles/01-registers.gb"
+ROM          ?= tetris.gb
 ROM          ?= mario.gb
+ROM          ?= "dmg_sound/rom_singles/01-registers.gb"
 ROM          ?= "cpu_instrs/cpu_instrs.gb"
+CC           ?= gcc
+CXX          ?= g++
 
-COVERAGE     ?= No
-SPINLOCK     ?= No
-MINGW        ?= No
-EXE          := gbemu
-CHECK        ?= No
-CC           := clang
-TESTING      ?= No
-AUDIO        ?= Yes
-DEBUG_WINDOW ?= Yes
+COVERAGE         ?= No
+SPINLOCK         ?= No
+MINGW            ?= No
+EXE              := gbemu
+CHECK            ?= No
+TESTING          ?= No
+AUDIO            ?= Yes
+DEBUG_WINDOW     ?= Yes
+CONTROLS         ?= Yes
+LOG_INSTRUCTIONS ?= No
+BUILD_SDL        ?= Yes
 
 
 all: build
@@ -24,8 +29,8 @@ build/Makefile:
 	mkdir -p build
 	cd build; CC=$(CC) cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
 		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) \
-		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING)    \
-		-DDEBUG_WINDOW=$(DEBUG_WINDOW) ..
+		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING) -DBUILD_SDL=$(BUILD_SDL)\
+		-DDEBUG_WINDOW=$(DEBUG_WINDOW) -DCONTROLS=$(CONTROLS) -DLOG_INSTRUCTIONS=$(LOG_INSTRUCTIONS) ..
 
 build: build/Makefile
 	cd build; make -j5
@@ -34,7 +39,7 @@ mingw: MINGW := Yes EXE
 mingw: all
 
 run: all
-	./build/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file break.txt
+	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file break.txt
 
 gdb: all
 	cgdb --args ./build/$(EXE) -i $(ROM_DIR)/$(ROM)

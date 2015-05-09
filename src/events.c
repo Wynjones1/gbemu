@@ -93,15 +93,18 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 		case SDLK_r:
 			state->slow = !down;
 			break;
-		case SDLK_k:
-			state->store_state = 1;
-			break;
         case SDLK_x:
             if(down == 1)
             {
                 state->cont   = 1;
                 state->paused = 0;
             }
+            break;
+		case SDLK_F5:
+			state->store_state = 1;
+			break;
+        case SDLK_F6:
+            state->load_state = 1;
             break;
         case SDLK_F11:
             if(down)
@@ -110,7 +113,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
             }
             break;
 		case SDLK_ESCAPE:
-			exit(0);
+            state->exit = 1;
 			break;
 		default:
 			break;
@@ -145,7 +148,7 @@ int handle_events(cpu_state_t *state)
                 log_message("FingerUp   %f %f", event.tfinger.x, event.tfinger.y);
                 break;
 			case SDL_QUIT:
-				exit(0);
+                state->exit = 1;
 				break;
 			default:
 				break;

@@ -153,9 +153,9 @@ cpu_state_t *cpu_load_state(const char *filename)
 #undef X
 
 #define X(n, addr, addr_in)\
-		if(BIT_N(state->memory->IF, n ## _BIT) && BIT_N(state->memory->IE,n ## _BIT)){                  \
-			RESET_N(state->memory->IF, n ## _BIT);                                          \
-			addr = addr_in;                                                          \
+		if(BIT_N(state->memory->IF, n ## _BIT) && BIT_N(state->memory->IE,n ## _BIT)){\
+			RESET_N(state->memory->IF, n ## _BIT);                                    \
+			addr = addr_in;                                                           \
 		}
 static int check_for_interrupts(struct cpu_state *state)
 {
@@ -305,17 +305,26 @@ static void replay(struct cpu_state *state)
     fread(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
 }
 
-static void log_instruction(struct opcode *op, reg16_t arg)
+static void log_instruction(cpu_state_t *state)
 {
+#if LOG_INSTRUCTIONS
+    static FILE *fp;
+    if(!fp) fp = fopen("instr.txt", "w");
+    if(!state->halt && state->memory->boot_locked)//state->paused)
+    {
+        char buf[100];
+        debug_print_op(buf, state, state->op);
+        fprintf(fp,"%s\n", buf);
+    }
+#endif
 }
 
 void cpu_start(struct cpu_state *state)
 {
 	g_state = state;
-	atexit(debug_on_exit);
 	reg_t instruction = 0;
 	struct opcode *op = NULL;
-	while(1)
+	while(!state->exit)
 	{
 		if(state->store_state)
 		{
@@ -379,17 +388,10 @@ void cpu_start(struct cpu_state *state)
 		{
 			op = &op_table[0]; //NOP
 		}
+        state->op   = op;
 
 #if 1
-        log_instruction(op, state->arg);
-        static FILE *fp;
-        if(!fp) fp = fopen("instr.txt", "w");
-        if(!state->halt && state->memory->boot_locked)//state->paused)
-        {
-            char buf[100];
-            debug_print_op(buf, state, op);
-            fprintf(fp,"%s\n", buf);
-        }
+        log_instruction(state);
 #endif
         
         if(cmdline_args.record)

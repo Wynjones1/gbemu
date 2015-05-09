@@ -51,16 +51,19 @@ typedef struct cpu_state
 	int       EI_Pending;
 	reg16_t   arg;
 	uint32_t  clock_counter;
-	int       halt;
 
-	int paused;
-	int step;
-	int frame_limit;
-	int slow;
-	int store_state;
-    int cont;
+    bool  halt;
+	bool  paused;
+	bool  step;
+	bool  frame_limit;
+	bool  slow;
+	bool  store_state;
+    bool  load_state;
+    bool  exit;
+    bool  cont;
     float fps;
 
+    struct opcode *op;
 }cpu_state_t;
 
 cpu_state_t *cpu_init(void);
@@ -82,7 +85,6 @@ void    cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data);
 void    cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data);
 void    cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data);
 void    cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data);
-
 void    cpu_call(cpu_state_t *state, reg16_t addr);
 reg_t   cpu_dec8(struct cpu_state *state, reg_t d0);
 reg_t   cpu_inc8(struct cpu_state *state, reg_t d0);
@@ -121,12 +123,11 @@ reg_t   cpu_sra(struct cpu_state *state, reg_t d0);
 reg_t   cpu_sla(struct cpu_state *state, reg_t d0);
 reg_t   cpu_srl(struct cpu_state *state, reg_t d0);
 reg_t   cpu_swap(struct cpu_state *state, reg_t d0);
-
-void cpu_set_zero(struct cpu_state *state, reg_t d0);
-void cpu_set_carry(struct cpu_state *state, reg_t d0);
-void cpu_set_half_carry(struct cpu_state *state, reg_t d0);
-void cpu_set_subtract(struct cpu_state *state, reg_t d0);
-int  cpu_half_carry(struct cpu_state *state);
-int  cpu_subtract(struct cpu_state *state);
-int  cpu_carry(struct cpu_state *state);
-int  cpu_zero(struct cpu_state *state);
+void    cpu_set_zero(struct cpu_state *state, reg_t d0);
+void    cpu_set_carry(struct cpu_state *state, reg_t d0);
+void    cpu_set_half_carry(struct cpu_state *state, reg_t d0);
+void    cpu_set_subtract(struct cpu_state *state, reg_t d0);
+int     cpu_half_carry(struct cpu_state *state);
+int     cpu_subtract(struct cpu_state *state);
+int     cpu_carry(struct cpu_state *state);
+int     cpu_zero(struct cpu_state *state);
