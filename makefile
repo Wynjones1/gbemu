@@ -19,7 +19,7 @@ AUDIO            ?= Yes
 DEBUG_WINDOW     ?= Yes
 CONTROLS         ?= Yes
 LOG_INSTRUCTIONS ?= No
-BUILD_SDL        ?= Yes
+BUILD_SDL        ?= No
 
 
 all: build
