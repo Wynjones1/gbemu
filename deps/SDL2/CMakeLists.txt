@@ -135,6 +135,7 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "Clang")
 elseif(MSVC_VERSION GREATER 1400) # VisualStudio 8.0+
   set(OPT_DEF_ASM TRUE)
   #set(CMAKE_C_FLAGS "/ZI /WX- /
+  add_definitions(/wd4244 /wd4267 /wd4996 /wd4018 /wd4018 /wd4312)
 else()
   set(OPT_DEF_ASM FALSE)
 endif()
@@ -911,7 +912,10 @@ elseif(WINDOWS)
     if(HAVE_DINPUT_H)
       set(SDL_JOYSTICK_DINPUT 1)
       set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/joystick/windows/SDL_dxjoystick.c)
-      list(APPEND EXTRA_LIBS dinput8 dxguid dxerr)
+      list(APPEND EXTRA_LIBS dinput8 dxguid)
+	  if(NOT ${CMAKE_SYSTEM_VERSION} GREATER 6.1) #Less than windows 8
+		list(APPEND EXTRA_LIBS dxerr)
+	  endif()
     else()
       set(SDL_JOYSTICK_WINMM 1)
       set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/joystick/windows/SDL_mmjoystick.c)
@@ -1304,6 +1308,6 @@ if(NOT WINDOWS OR CYGWIN)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "share/aclocal")
 else()
-  install(TARGETS SDL2 RUNTIME DESTINATION bin)
+  #install(TARGETS SDL2 RUNTIME DESTINATION bin)
 endif()
 

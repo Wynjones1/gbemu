@@ -17,14 +17,19 @@ set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
 include(macros)
 include(coverage)
 
-set(ROOT ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_C_FLAGS_RELEASE -Os)
-set(CMAKE_C_FLAGS --std=c99)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+	set(CMAKE_C_FLAGS_RELEASE -Os)
+	set(CMAKE_C_FLAGS --std=c99)
+endif()
+
+set(SDL_SHARED No)
 
 #################################################################
 #                          Definitions 
 #################################################################
-
+if(MSVC)
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
 
 #################################################################
 #                            Options 
@@ -57,6 +62,10 @@ if(MINGW)
     add_definitions(-mwindows)
 endif()
 
+if(MSVC)
+	set(DIRECTX No)
+endif()
+
 if(BUILD_SDL OR MINGW)
     add_subdirectory(${DEPS_DIR}/SDL2)
 endif()
@@ -66,3 +75,19 @@ if(BUILD_TTF OR MINGW)
     add_subdirectory(${DEPS_DIR}/SDL2_ttf)
 endif()
 
+function(add_target_folder TARGET_NAME DIR)
+	if(TARGET ${TARGET_NAME})
+		set_target_properties(${TARGET_NAME} PROPERTIES FOLDER ${DIR})
+	endif()
+endfunction()
+
+if(MSVC)
+	set(DIRECTX No)
+	set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+	add_target_folder(SDL2        Dependencies//SDL2)
+	add_target_folder(SDL_ttf     Dependencies//SDL2)
+	add_target_folder(SDL2-static Dependencies//SDL2)
+	add_target_folder(SDL2main    Dependencies//SDL2)
+	add_target_folder(freetype    Dependencies//freetype)
+	add_target_folder(dist        Dependencies//freetype)
+endif()

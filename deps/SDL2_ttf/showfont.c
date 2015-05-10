@@ -22,7 +22,9 @@
 /* A simple program to test the text rendering feature of the TTF library */
 
 /* quiet windows compiler warnings */
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include <stdlib.h>
 #include <stdio.h>
