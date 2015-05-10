@@ -220,11 +220,11 @@ void debug_print_arg(char *buf, struct cpu_state *state,
 			sprintf(buf, "(0x%04x)", state->arg);
 			break;
 		case ARG_TYPE_REL8:
-            rel = state->arg;
+            rel = (reg_t)state->arg;
             sprintf(buf, "0x%04x", state->pc + *(int8_t*)&rel + 2);
             break;
 		case ARG_TYPE_REL8_ADD_SP:
-			rel = state->arg;
+			rel = (reg_t)state->arg;
 			sprintf(buf, "0x%02x", state->sp + *(int8_t*)&rel);
 			break;
 		case ARG_TYPE_HL_INDIRECT_DEC:

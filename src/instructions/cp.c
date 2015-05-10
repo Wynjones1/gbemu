@@ -7,15 +7,15 @@ void CP(struct cpu_state *state,
 	reg_t d0;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		d0 = state->arg;
+		d0 = (reg_t)state->arg;
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		d0 = cpu_load8_indirect(state, i0);
+		d0 = (reg_t)cpu_load8_indirect(state, i0);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{
-		d0 = cpu_load_reg8(state, i0);
+		d0 = (reg_t)cpu_load_reg8(state, i0);
 	}
 	else
 	{

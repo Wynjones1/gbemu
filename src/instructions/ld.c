@@ -50,7 +50,7 @@ void LD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8_ADD_SP)
 		{
-            uint8_t d8 = state->arg;
+            uint8_t d8 = (uint8_t)state->arg;
             cpu_set_zero(state, 0);
             cpu_set_subtract(state, 0);
             cpu_set_half_carry(state, (state->sp & 0x0f) + (d8 & 0x0f) > 0x0f);
@@ -68,7 +68,7 @@ void LD(struct cpu_state *state,
 		reg_t data;
 		if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->arg;
+			data = (reg_t)state->arg;
 		}
 		else if(arg1 == ARG_TYPE_REG8)
 		{
@@ -90,7 +90,7 @@ void LD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_DATA8)
 		{
-			data = state->arg;
+			data = (reg_t)state->arg;
 		}
 		else if(arg1 == ARG_TYPE_HL_INDIRECT_DEC)
 		{
@@ -134,7 +134,7 @@ void LD(struct cpu_state *state,
 	}
 }
 
-static reg_t dummy_data[CPU_DUMMY_IO ? 0x10000 : 0x0];
+static reg_t dummy_data[CPU_DUMMY_IO ? 0x10000 : 0x1];
 
 /* Basic memory access functions */
 reg_t cpu_load8(struct cpu_state *state, reg16_t addr)

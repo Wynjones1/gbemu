@@ -8,11 +8,11 @@ void AND(struct cpu_state *state,
 	reg_t data1;
 	if(arg0 == ARG_TYPE_DATA8)
 	{
-		data1 = state->arg;
+		data1 = (reg_t)state->arg;
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		data1 = cpu_load16_indirect(state, i0);
+		data1 = (reg_t)cpu_load16_indirect(state, i0);
 	}
 	else if(arg0 == ARG_TYPE_REG8)
 	{

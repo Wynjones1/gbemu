@@ -5,26 +5,29 @@ project(gbemu)
 #                          Definitions 
 #################################################################
 
-add_definitions(
-    -Werror
-    -Wall
-    -Wextra
-    -Wno-enum-conversion
-    -Wno-unused-function
-    -Wno-unused-parameter
-    -Wno-unused-result
-    -Wno-unused-variable
-)
+if(MSVC)
+else()
+	add_definitions(
+		-Werror
+		-Wall
+		-Wextra
+		-Wno-enum-conversion
+		-Wno-unused-function
+		-Wno-unused-parameter
+		-Wno-unused-result
+		-Wno-unused-variable
+	)
 
-if(CHECK)
-    add_definitions(
-        -Weverything
-        -Wno-missing-prototypes
-        -Wno-padded
-        -Wno-gnu-zero-variadic-macro-arguments
-        -Wno-covered-switch-default
-    )
-    set(CMAKE_C_COMPILER clang)
+	if(CHECK)
+		add_definitions(
+			-Weverything
+			-Wno-missing-prototypes
+			-Wno-padded
+			-Wno-gnu-zero-variadic-macro-arguments
+			-Wno-covered-switch-default
+		)
+		set(CMAKE_C_COMPILER clang)
+	endif()
 endif()
 
 #################################################################
@@ -70,6 +73,8 @@ add_executable(gbemu ${ALL_SRC} ${ALL_HEADER})
 
 if(MINGW)
     target_link_libraries(gbemu mingw32 SDL2main SDL2-static)
+elseif(MSVC)
+	target_link_libraries(gbemu SDL_ttf SDL2main SDL2-static freetype)
 else()
-    target_link_libraries(gbemu SDL2 SDL2_ttf)
+    target_link_libraries(gbemu SDL2 SDL_ttf)
 endif()

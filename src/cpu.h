@@ -8,7 +8,7 @@
 #include "cmdline.h"
 
 #define CPU_CLOCK_SPEED     (1 << 22) //4194304
-#define CPU_CLOCKS_PER_MS   (CPU_CLOCK_SPEED / 1000.0)
+#define CPU_CLOCKS_PER_MS   (CPU_CLOCK_SPEED / 1000.0f)
 #define CPU_CLOCKS_PER_LINE (DISPLAY_MS_PER_LINE * CPU_CLOCKS_PER_MS)
 
 #define CARRY_BIT      4

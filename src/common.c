@@ -2,6 +2,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#if __WIN32__
+	#include <Windows.h> //For CreateDirectory
+#endif
 
 uint32_t g_cycles = 0;
 FILE *output_fp;
@@ -106,7 +109,9 @@ FILE *common_fopen(const char *filename, const char *mode)
 
 int common_mkdir(const char *dirname, int mode)
 {
-#if __MINGW32__
+#if __WIN32__
+	return CreateDirectory(dirname, NULL);
+#elif __MINGW32__
     return mkdir(dirname);
 #else
     return mkdir(dirname, mode);

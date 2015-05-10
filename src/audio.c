@@ -30,7 +30,7 @@ static uint8_t duty_table[4][8] =
 };
 static int16_t square(float t, float freq, int volume, int duty)
 {
-    int idx = t * freq * 8;
+	int idx = (int)(t * freq * 8);
     int16_t val = duty_table[duty][idx % 8] ? INT16_MAX : INT16_MIN;
     val = volume * val / (15 * 40);
     return val;
@@ -52,7 +52,7 @@ static int16_t square2(float t)
 static int16_t wave(float t)
 {
     float freq = 440;
-    int idx = t * freq * 64;
+	int idx = (int)(t * freq * 64);
     uint8_t sample = g_audio->wave_table[idx >> 1];
     if(idx & 0x1) return sample & MASK(4);
     return INT16_MAX * (sample >> 4) / 15;

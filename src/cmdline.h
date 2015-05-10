@@ -17,7 +17,14 @@ typedef const char * string;
 #define X(type, short, long, variable, default, description) type variable;
 typedef struct cmdline
 {
-    OPTION_LIST
+	bool   verbose;
+	bool   audio;
+	bool   record;
+	bool   replay;
+	string in;
+	int    scale;
+	string boot_rom;
+	string break_file;
 }cmdline_t;
 #undef X
 

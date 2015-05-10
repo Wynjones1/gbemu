@@ -531,7 +531,7 @@ void display_simulate(struct cpu_state *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE)
 	{
-		state->clock_counter -= CPU_CLOCKS_PER_LINE;
+		state->clock_counter -= (uint32_t)CPU_CLOCKS_PER_LINE;
 		state->memory->ly = (state->memory->ly + 1) % 154;
 		if(state->memory->ly == state->memory->lyc)
 		{

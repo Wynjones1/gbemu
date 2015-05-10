@@ -16,7 +16,7 @@ void ADD(struct cpu_state *state,
 		}
 		else if(arg1 == ARG_TYPE_REL8)//Always SP
 		{
-            uint8_t d8 = state->arg;
+            uint8_t d8 = (uint8_t)state->arg;
             cpu_set_zero(state, 0);
             cpu_set_subtract(state, 0);
             cpu_set_half_carry(state, (state->sp & 0x0f) + (d8 & 0x0f) > 0x0f);

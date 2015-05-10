@@ -117,14 +117,15 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 }
 #undef X
 
-#define X(elem) temp = fread(&state->elem, sizeof(state->elem), 1, fp)
+#define X(elem) temp1 = fread(&state->elem, sizeof(state->elem), 1, fp)
 cpu_state_t *cpu_load_state(const char *filename)
 {
 	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
 	FILE *fp = FOPEN(filename, "rb");
-	int temp, version;
-	temp = fscanf(fp, "GBEMU%d", &version);
-	if(temp != 1)
+	int temp0, version;
+	size_t temp1;
+	temp0 = fscanf(fp, "GBEMU%d", &version);
+	if(temp0 != 1)
 	{
         log_error("%s is not a savestate.\n");
 	}
@@ -132,8 +133,8 @@ cpu_state_t *cpu_load_state(const char *filename)
 	{
         log_warning("Timestamp of emulator does not match that of the save state.\n");
 	}
-	temp = getc(fp);
-	temp = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
+	temp0 = getc(fp);
+	temp1 = fread(state->registers, sizeof(reg_t), NUM_REGISTERS, fp);
 	X(pc);
 	X(success);
 	X(DI_Pending);
@@ -196,7 +197,7 @@ static void frame_limit(int clk)
 {
     uint32_t        target_percent= 100;
 	uint32_t        sample_time   = 17; //Sample time in milliseconds
-	uint32_t        sample_clocks = target_percent * sample_time * CPU_CLOCKS_PER_MS / 100;
+	uint32_t        sample_clocks = (uint32_t)(target_percent * sample_time * CPU_CLOCKS_PER_MS / 100);
     uint32_t        min_wait      = 2;
     static uint32_t clk_count     = 0;
     static uint32_t last_time     = 0;
@@ -232,7 +233,7 @@ static void record_clock_speed(int clk)
     total += clk;
     if(total > wait_time)
     {
-        g_state->fps = 100 * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time)));
+        g_state->fps = 100.0f * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time)));
 #if LOG_CLKSPEED
         log_message("CLKSPEED %07.02f%%", g_state->fps);
 #endif
