@@ -10,7 +10,7 @@ void DEC(struct cpu_state *state,
 	}
 	else if(arg0 == ARG_TYPE_REG16_INDIRECT)
 	{
-		reg_t res                = cpu_load8_indirect(state, i0);
+		reg_t res = cpu_load8_indirect(state, i0);
         res = cpu_dec8(state, res);
 		cpu_store8_indirect(state, i0, res);
 	}
@@ -23,7 +23,7 @@ void DEC(struct cpu_state *state,
 
 reg_t cpu_dec8(struct cpu_state *state, reg_t d0)
 {
-	reg_t res                = d0 - 1;
+	reg_t res = d0 - 1;
 	cpu_set_zero(state, (res == 0));
 	cpu_set_subtract(state, 1);
 	cpu_set_half_carry(state, (d0 & 0xf) == 0);

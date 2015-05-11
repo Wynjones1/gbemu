@@ -49,13 +49,17 @@ DEFADD(INTRO_ONLY          No   "Only run the nintendo intro.")
 DEFADD(EMBEDDED_FILES      Yes  "Embbed all files in binary")
 DEFADD(CONTROLS            No   "Display GameBoy controls")
 DEFADD(LOG_INSTRUCTIONS    No   "Log each instruction executed")
-DEFADD(BUILD_SDL           No   "Build SDL2 from source.")
-DEFADD(BUILD_TTF           No   "Build TTF  from source.")
+DEFADD(BUILD_SDL           Yes  "Build SDL2 from source.")
+DEFADD(BUILD_TTF           Yes  "Build TTF  from source.")
 DEFADD(HAVE_TTF            Yes  "Have TTF Support")
 
 set(DEPS_DIR               ${CMAKE_SOURCE_DIR}/deps CACHE INTERNAL "")
 
 add_subdirectory(src)
+
+if(TESTING)
+	add_subdirectory(tests)
+endif()
 
 if(MINGW)
     set(DIRECTX No)

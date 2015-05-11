@@ -49,7 +49,7 @@ static void inc16_test(void)
 	for(uint32_t i = 0; i < sizeof(tests) / sizeof(*tests); i++)
 	{
 		test = tests[i];
-		REG_INPUT reg = REG16_BC;
+		REG_INPUT reg = { .r16 = REG16_BC };
 		state.bc = test[0];
 		cpu_inc16(&state, reg);
 		if(state.bc == test[1])

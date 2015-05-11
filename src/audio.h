@@ -2,6 +2,8 @@
 #include "types.h"
 typedef struct cpu_state cpu_state_t;
 
+/* These macros define each of the sound registers, the form of X is field_name, msb, lsb
+   this allows us to repeat the registers in different contexts.                       */
 #define NR10               \
     X(shift,        2, 0)  \
     X(negate,       3, 3)  \
@@ -73,6 +75,7 @@ typedef struct cpu_state cpu_state_t;
 typedef struct audio
 {
 	cpu_state_t *state;
+/* Refer to the macros at the top of this file for the definitions of these registers */
 #define X(name, msb, lsb) uint8_t name;
     struct
     {

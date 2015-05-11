@@ -1,6 +1,6 @@
 #include "opcodes.h"
 
-#define X(n, a0, d0, a1, d1, s, suc, f) {.name = #n, .op = n,                  \
+#define X(n, a0, d0, a1, d1, s, suc, f) {.name = #n, .op = n,                \
                                          .arg0 = a0, .i0 = {d0},             \
                                          .arg1 = a1, .i1 = {d1},             \
                                          .size = s,  .success=suc, .fail = f}
