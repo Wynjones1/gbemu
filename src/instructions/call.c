@@ -5,7 +5,7 @@
 * and jump to the address in the instruction.
 */
 
-void CALL(struct cpu_state *state,
+void CALL(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {

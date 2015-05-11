@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void CPL(struct cpu_state *state,
+void CPL(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {

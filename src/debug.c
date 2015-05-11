@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <string.h>
 
-struct cpu_state *g_state;
+cpu_state_t *g_state;
 
 void output_tiles(void)
 {
@@ -50,12 +50,12 @@ void output_tiles(void)
 	}
 }
 
-void debug_output_framebuffer(struct cpu_state *state)
+void debug_output_framebuffer(cpu_state_t *state)
 {
     display_output_framebuffer(state->display, "framebuffer.ppm");
 }
 
-void debug_output_tile_maps(struct cpu_state *state)
+void debug_output_tile_maps(cpu_state_t *state)
 {
 	FILE *fp = common_fopen("tile_map.txt", "w");
 	for(int i = 0; i < 32; i++)
@@ -95,7 +95,7 @@ uint8_t shade_table_0[4][3] =
 	{0,0,0},
 };
 
-void debug_output_registers(struct cpu_state *state)
+void debug_output_registers(cpu_state_t *state)
 {
 	static FILE *fp;
 	if(!fp) fp = common_fopen("reg.txt", "w");
@@ -171,7 +171,7 @@ const char *reg16_strings[] =
 };
 
 #define X(n) case ARG_TYPE_ ## n:sprintf(buf, #n);break
-void debug_print_arg(char *buf, struct cpu_state *state,
+void debug_print_arg(char *buf, cpu_state_t *state,
                      struct opcode *op,enum ARG_TYPE arg, REG_INPUT r, bool print_values)
 {
 	uint8_t rel;
@@ -266,7 +266,7 @@ void debug_print_arg(char *buf, struct cpu_state *state,
 }
 #undef X
 
-void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op)
+void debug_print_op(char *buffer, cpu_state_t *state, struct opcode *op)
 {
 	char arg0[1024];
 	char arg1[1024];

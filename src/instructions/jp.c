@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void JP(struct cpu_state *state,
+void JP(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -23,7 +23,7 @@ void JP(struct cpu_state *state,
 	}
 }
 
-void  cpu_jump(struct cpu_state *state, reg16_t addr)
+void  cpu_jump(cpu_state_t *state, reg16_t addr)
 {
 	state->pc = addr;
 }

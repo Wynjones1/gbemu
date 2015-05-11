@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "common.h"
 
-void ADC(struct cpu_state *state,
+void ADC(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -29,7 +29,7 @@ void ADC(struct cpu_state *state,
 	}
 }
 
-reg_t cpu_adc(struct cpu_state *state, reg_t d0, reg_t d1)
+reg_t cpu_adc(cpu_state_t *state, reg_t d0, reg_t d1)
 {
 	uint16_t res      = ((uint16_t)d0 + d1) + cpu_carry(state);
 	cpu_set_zero(state, (res & 0xff) == 0);

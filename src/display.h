@@ -26,7 +26,7 @@
 #endif
 
 typedef struct display   display_t;
-typedef struct cpu_state cpu_state_t;
+typedef cpu_state_t cpu_state_t;
 
 display_t *display_init(cpu_state_t *state);
 void       display_delete(display_t *disp);

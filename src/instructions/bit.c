@@ -1,7 +1,7 @@
 #include "cpu.h"
 
 #define X(n) case ARG_TYPE_ ## n: cpu_bit(state, n, d0); break;
-void BIT(struct cpu_state *state,
+void BIT(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -45,7 +45,7 @@ void BIT(struct cpu_state *state,
 }
 #undef X
 
-void cpu_bit(struct cpu_state *state, reg_t pos, reg_t d0)
+void cpu_bit(cpu_state_t *state, reg_t pos, reg_t d0)
 {
 	cpu_set_zero(state, !((d0 >> pos) & 0x1));
 	cpu_set_subtract(state, 0);

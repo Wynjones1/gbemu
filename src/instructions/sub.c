@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include <stdio.h>
 
-void SUB(struct cpu_state *state,
+void SUB(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -25,7 +25,7 @@ void SUB(struct cpu_state *state,
 	cpu_sub(state, data);
 }
 
-void cpu_sub(struct cpu_state *state, reg_t d0)
+void cpu_sub(cpu_state_t *state, reg_t d0)
 {
 	int16_t res = state->a - d0;
 	cpu_set_carry(state, 0);

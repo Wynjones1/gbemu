@@ -3,13 +3,13 @@
 #include "cpu.h"
 #include "opcodes.h"
 
-extern struct cpu_state *g_state;
-void debug_output_framebuffer(struct cpu_state *state);
-void debug_output_tile_maps(struct cpu_state *state);
-void debug_output_registers(struct cpu_state *state);
-void debug_print_arg(char *buf, struct cpu_state *state,
+extern cpu_state_t *g_state;
+void debug_output_framebuffer(cpu_state_t *state);
+void debug_output_tile_maps(cpu_state_t *state);
+void debug_output_registers(cpu_state_t *state);
+void debug_print_arg(char *buf, cpu_state_t *state,
                      struct opcode *op, enum ARG_TYPE arg, REG_INPUT r, bool print_values);
-void debug_print_op(char *buffer, struct cpu_state *state, struct opcode *op);
+void debug_print_op(char *buffer, cpu_state_t *state, struct opcode *op);
 
 void debug_init(void);
 

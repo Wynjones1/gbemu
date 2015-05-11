@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void XOR(struct cpu_state *state,
+void XOR(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -24,7 +24,7 @@ void XOR(struct cpu_state *state,
 	cpu_xor(state, data);
 }
 
-void cpu_xor(struct cpu_state *state, reg_t d0)
+void cpu_xor(cpu_state_t *state, reg_t d0)
 {
 	state->a ^= d0;
 	cpu_set_zero(state, (state->a == 0));

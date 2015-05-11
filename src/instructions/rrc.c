@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void RRC(struct cpu_state *state,
+void RRC(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -18,7 +18,7 @@ void RRC(struct cpu_state *state,
 	}
 }
 
-reg_t   cpu_rrc(struct cpu_state *state, reg_t d0)
+reg_t   cpu_rrc(cpu_state_t *state, reg_t d0)
 {
 	cpu_set_carry(state, d0 & 0x1);
 	d0 = (d0 >> 1) | (d0 << 7);

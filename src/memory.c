@@ -16,7 +16,7 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
 	memory_t *out = (memory_t*)calloc(1, sizeof(memory_t));
 
-#if EMBEDDED
+#if EMBEDDED_FILES
     out->bank_0 = malloc(rom_size);
     memcpy(out->bank_0, rom_array, rom_size);
     memcpy(out->boot, boot_array, 0x100);

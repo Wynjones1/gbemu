@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void CP(struct cpu_state *state,
+void CP(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -24,7 +24,7 @@ void CP(struct cpu_state *state,
 	cpu_cmp(state, d0);
 }
 
-void cpu_cmp(struct cpu_state *state, reg_t d0)
+void cpu_cmp(cpu_state_t *state, reg_t d0)
 {
 	cpu_set_carry(state, state->a < d0);
 	cpu_set_zero(state, state->a == d0);

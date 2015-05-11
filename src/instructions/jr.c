@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void JR(struct cpu_state *state,
+void JR(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -18,7 +18,7 @@ void JR(struct cpu_state *state,
 	}
 }
 
-void  cpu_jump_rel(struct cpu_state *state, reg_t addr)
+void  cpu_jump_rel(cpu_state_t *state, reg_t addr)
 {
 	// We need to perform addition on a unsigned 16 bit
 	// value and a signed 8 bir value, we perform this

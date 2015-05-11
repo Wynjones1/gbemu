@@ -1,7 +1,7 @@
 #include "cpu.h"
 
 #define X(n) case ARG_TYPE_ ## n: d0 = cpu_set(state, n, d0); break;
-void SET(struct cpu_state *state,
+void SET(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -46,7 +46,7 @@ void SET(struct cpu_state *state,
 }
 #undef X
 
-reg_t cpu_set(struct cpu_state *state, reg_t pos, reg_t d0)
+reg_t cpu_set(cpu_state_t *state, reg_t pos, reg_t d0)
 {
 	return d0 | 1 << pos;
 }

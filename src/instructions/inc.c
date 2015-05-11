@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void INC(struct cpu_state *state,
+void INC(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -21,7 +21,7 @@ void INC(struct cpu_state *state,
 	}
 }
 
-reg_t cpu_inc8(struct cpu_state *state, reg_t d0)
+reg_t cpu_inc8(cpu_state_t *state, reg_t d0)
 {
 	int old_carry = cpu_carry(state);
 	reg_t res     = cpu_add8(state, d0, 1);
@@ -29,7 +29,7 @@ reg_t cpu_inc8(struct cpu_state *state, reg_t d0)
 	return res;
 }
 
-void cpu_inc16(struct cpu_state *state, REG_INPUT reg)
+void cpu_inc16(cpu_state_t *state, REG_INPUT reg)
 {
 	//No flags are affected with the 16bit increment.
 	state->registers16[reg.r16] += 1;

@@ -2,7 +2,7 @@
 
 static REG_INPUT HL_REG = {REG16_HL};
 
-void LD(struct cpu_state *state,
+void LD(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -137,7 +137,7 @@ void LD(struct cpu_state *state,
 static reg_t dummy_data[CPU_DUMMY_IO ? 0x10000 : 0x1];
 
 /* Basic memory access functions */
-reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
+reg_t cpu_load8(cpu_state_t *state, reg16_t addr)
 {
 	if(CPU_DUMMY_IO)
 	{
@@ -148,7 +148,7 @@ reg_t cpu_load8(struct cpu_state *state, reg16_t addr)
 		return memory_load8(state->memory, addr);
 	}
 }
-reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
+reg16_t cpu_load16(cpu_state_t *state, reg16_t addr)
 {
 	if(CPU_DUMMY_IO)
 	{
@@ -162,7 +162,7 @@ reg16_t cpu_load16(struct cpu_state *state, reg16_t addr)
 	}
 }
 
-reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
+reg_t cpu_load8_indirect(cpu_state_t *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
@@ -175,7 +175,7 @@ reg_t cpu_load8_indirect(struct cpu_state *state, REG_INPUT reg)
 	}
 }
 
-reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
+reg16_t cpu_load16_indirect(cpu_state_t *state, REG_INPUT reg)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
@@ -190,7 +190,7 @@ reg16_t cpu_load16_indirect(struct cpu_state *state, REG_INPUT reg)
 	}
 }
 
-void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
+void cpu_store8(cpu_state_t *state, reg16_t addr, reg_t data)
 {
 	if(CPU_DUMMY_IO)
 	{
@@ -202,7 +202,7 @@ void cpu_store8(struct cpu_state *state, reg16_t addr, reg_t data)
 	}
 }
 
-void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
+void cpu_store16(cpu_state_t *state, reg16_t addr, reg16_t data)
 {
 	if(CPU_DUMMY_IO)
 	{
@@ -215,7 +215,7 @@ void cpu_store16(struct cpu_state *state, reg16_t addr, reg16_t data)
 	}
 }
 
-void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
+void cpu_store8_indirect(cpu_state_t *state, REG_INPUT reg, reg_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)
@@ -228,7 +228,7 @@ void cpu_store8_indirect(struct cpu_state *state, REG_INPUT reg, reg_t data)
 	}
 }
 
-void cpu_store16_indirect(struct cpu_state *state, REG_INPUT reg, reg16_t data)
+void cpu_store16_indirect(cpu_state_t *state, REG_INPUT reg, reg16_t data)
 {
 	reg16_t addr = state->registers16[reg.r16];
 	if(CPU_DUMMY_IO)

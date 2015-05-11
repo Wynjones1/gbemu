@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void SBC(struct cpu_state *state,
+void SBC(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -24,7 +24,7 @@ void SBC(struct cpu_state *state,
 	cpu_sbc(state, data);
 }
 
-void cpu_sbc(struct cpu_state *state, reg_t d0)
+void cpu_sbc(cpu_state_t *state, reg_t d0)
 {
 	reg16_t t0        = d0 + cpu_carry(state);
 	if((state->a & 0xf) < (t0 & 0xf))

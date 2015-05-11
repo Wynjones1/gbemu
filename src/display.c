@@ -355,7 +355,7 @@ void display_delete(display_t *disp)
 	free(disp);
 }
 
-static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, int x, int y)
+static int get_sprite_shade(cpu_state_t *state, struct OAM_data *sprite, int x, int y)
 {
 	int ox = x - (sprite->x_pos - 8);
 	int oy = y - (sprite->y_pos - 16);
@@ -379,7 +379,7 @@ static int get_sprite_shade(struct cpu_state *state, struct OAM_data *sprite, in
 }
 
 int g_shade;
-static struct OAM_data *get_sprite(struct cpu_state *state, int x, int y)
+static struct OAM_data *get_sprite(cpu_state_t *state, int x, int y)
 {
 	struct OAM_data *sprite, *out = NULL;
     memory_t *memory = state->memory;
@@ -421,7 +421,7 @@ static void signal_draw_thread(display_t *display)
     display->draw_buffer  = display->buffers[!display->cur_buffer];
 }
 
-static void set_mode(struct cpu_state *state)
+static void set_mode(cpu_state_t *state)
 {
     if(state->memory->ly >= 144)
     {
@@ -470,7 +470,7 @@ void display_output_framebuffer(display_t *display, const char *filename)
 #define GET_SHADE(n, x) MAKE_PIXEL(shade_table[GET_INDEX(n, x)])
 
 static uint8_t last_background;
-static void write_sprites(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
+static void write_sprites(cpu_state_t *state, display_t *display, uint8_t x, uint8_t y)
 {
 	uint32_t *data = display->pixel_buffer[y];
 	struct OAM_data *sprite = get_sprite(state, x, y);
@@ -483,7 +483,7 @@ static void write_sprites(struct cpu_state *state, display_t *display, uint8_t x
 }
 
 /* Write the current line that is drawing into the framebuffer */
-static void write_background(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
+static void write_background(cpu_state_t *state, display_t *display, uint8_t x, uint8_t y)
 {
 	int ty        = (y + state->memory->scy) / 8;
 	int offset    = (y + state->memory->scy) % 8;
@@ -497,7 +497,7 @@ static void write_background(struct cpu_state *state, display_t *display, uint8_
     last_background = GET_INDEX(get_shade(tile_data, ox), state->memory->bgp);
 }
 
-static void write_window(struct cpu_state *state, display_t *display, uint8_t x, uint8_t y)
+static void write_window(cpu_state_t *state, display_t *display, uint8_t x, uint8_t y)
 {
 	int wx = state->memory->wx - 7;
 	int wy = state->memory->wy;
@@ -513,7 +513,7 @@ static void write_window(struct cpu_state *state, display_t *display, uint8_t x,
 	}
 }
 
-static void write_display(struct cpu_state *state, display_t *display)
+static void write_display(cpu_state_t *state, display_t *display)
 {
 	if(state->memory->ly < DISPLAY_HEIGHT)
 	{
@@ -527,7 +527,7 @@ static void write_display(struct cpu_state *state, display_t *display)
 	}
 }
 
-void display_simulate(struct cpu_state *state)
+void display_simulate(cpu_state_t *state)
 {
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE)
 	{

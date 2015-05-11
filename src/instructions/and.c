@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void AND(struct cpu_state *state,
+void AND(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -26,7 +26,7 @@ void AND(struct cpu_state *state,
 	cpu_store_reg8(state, A_REG, data0);
 }
 
-reg_t cpu_and(struct cpu_state *state, reg_t d0, reg_t d1)
+reg_t cpu_and(cpu_state_t *state, reg_t d0, reg_t d1)
 {
 	reg_t res         = d0 & d1;
 	cpu_set_zero(state, res == 0);

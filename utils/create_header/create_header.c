@@ -10,6 +10,14 @@ int main(int argc, char **argv)
     }
     FILE *ifp = fopen(argv[1], "rb");
     FILE *ofp = fopen(argv[2], "w");
+	if (!ifp)
+	{
+		fprintf(stderr, "Could not open file %s for reading\n", argv[1]);
+	}
+	if (!ofp)
+	{
+		fprintf(stderr, "Could not open file %s for writing\n", argv[2]);
+	}
     uint8_t data;
     fprintf(ofp, "#include <stdint.h>\n");
     fprintf(ofp, "uint8_t %s_array[] = {\n", argv[3]);

@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void RST(struct cpu_state *state,
+void RST(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -38,7 +38,7 @@ void RST(struct cpu_state *state,
 	}
 }
 
-void cpu_rst(struct cpu_state *state, reg_t d0)
+void cpu_rst(cpu_state_t *state, reg_t d0)
 {
 	cpu_push(state, state->pc);
 	state->pc = d0;

@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void ADD(struct cpu_state *state,
+void ADD(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -49,7 +49,7 @@ void ADD(struct cpu_state *state,
 	}
 }
 
-reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
+reg_t cpu_add8(cpu_state_t *state, reg_t d0, reg_t d1)
 {
 	uint16_t t0       = (uint16_t)d0 + (uint16_t)d1;
 	cpu_set_zero(state, (t0 & 0xff) == 0);
@@ -59,7 +59,7 @@ reg_t cpu_add8(struct cpu_state *state, reg_t d0, reg_t d1)
 	return t0 & 0xff;
 }
 
-reg16_t cpu_add16(struct cpu_state *state, reg16_t d0, reg16_t d1)
+reg16_t cpu_add16(cpu_state_t *state, reg16_t d0, reg16_t d1)
 {
 	uint32_t t0       = (uint32_t)d0 + (uint32_t)d1;
 	cpu_set_subtract(state, 0);

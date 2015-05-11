@@ -32,63 +32,63 @@ void cpu_delete(cpu_state_t *state)
 }
 
 /* CPU Helper functions */
-reg_t   cpu_load_reg8(struct cpu_state *state, REG_INPUT reg)
+reg_t   cpu_load_reg8(cpu_state_t *state, REG_INPUT reg)
 {
 	return state->registers[reg.r8];
 }
 
-reg16_t cpu_load_reg16(struct cpu_state *state, REG_INPUT reg)
+reg16_t cpu_load_reg16(cpu_state_t *state, REG_INPUT reg)
 {
 	return state->registers16[reg.r16];
 }
 
-void cpu_store_reg8(struct cpu_state *state, REG_INPUT reg, reg_t data)
+void cpu_store_reg8(cpu_state_t *state, REG_INPUT reg, reg_t data)
 {
 	state->registers[reg.r8] = data;
 }
 
-void cpu_store_reg16(struct cpu_state *state, REG_INPUT reg, reg16_t data)
+void cpu_store_reg16(cpu_state_t *state, REG_INPUT reg, reg16_t data)
 {
 	state->registers16[reg.r16] = data;
 }
 
-int cpu_carry(struct cpu_state *state)
+int cpu_carry(cpu_state_t *state)
 {
     return BIT_N(state->f, CARRY_BIT);
 }
 
-int cpu_zero(struct cpu_state *state)
+int cpu_zero(cpu_state_t *state)
 {
     return BIT_N(state->f, ZERO_BIT);
 }
 
-int cpu_half_carry(struct cpu_state *state)
+int cpu_half_carry(cpu_state_t *state)
 {
     return BIT_N(state->f, HALF_CARRY_BIT);
 }
 
-int cpu_subtract(struct cpu_state *state)
+int cpu_subtract(cpu_state_t *state)
 {
     return BIT_N(state->f, SUBTRACT_BIT);
 }
 
 #define X(field, value) (value) ? SET_N(state->f, field) : RESET_N(state->f, field)
-void cpu_set_zero(struct cpu_state *state, reg_t d0)
+void cpu_set_zero(cpu_state_t *state, reg_t d0)
 {
     X(ZERO_BIT, d0);
 }
 
-void cpu_set_carry(struct cpu_state *state, reg_t d0)
+void cpu_set_carry(cpu_state_t *state, reg_t d0)
 {
     X(CARRY_BIT, d0);
 }
 
-void cpu_set_half_carry(struct cpu_state *state, reg_t d0)
+void cpu_set_half_carry(cpu_state_t *state, reg_t d0)
 {
     X(HALF_CARRY_BIT, d0);
 }
 
-void cpu_set_subtract(struct cpu_state *state, reg_t d0)
+void cpu_set_subtract(cpu_state_t *state, reg_t d0)
 {
     X(SUBTRACT_BIT, d0);
 }
@@ -158,7 +158,7 @@ cpu_state_t *cpu_load_state(const char *filename)
 			RESET_N(state->memory->IF, n ## _BIT);                                    \
 			addr = addr_in;                                                           \
 		}
-static int check_for_interrupts(struct cpu_state *state)
+static int check_for_interrupts(cpu_state_t *state)
 {
 	//Check if interrupts are enabled
 	reg16_t addr = 0;
@@ -289,7 +289,7 @@ static void increment_tima(cpu_state_t *state, int clk)
 }
 #undef X
 
-static void record(struct cpu_state *state)
+static void record(cpu_state_t *state)
 {
     static FILE *fp;
     if(!fp) fp = FOPEN("record.txt", "wb");
@@ -297,7 +297,7 @@ static void record(struct cpu_state *state)
     fwrite(&state->memory->dpad,    1, sizeof(state->memory->dpad), fp);
 }
 
-static void replay(struct cpu_state *state)
+static void replay(cpu_state_t *state)
 {
     static FILE *fp;
     if(!fp) fp = FOPEN("record.txt", "rb");
@@ -320,7 +320,7 @@ static void log_instruction(cpu_state_t *state)
 #endif
 }
 
-void cpu_start(struct cpu_state *state)
+void cpu_start(cpu_state_t *state)
 {
 	g_state = state;
 	reg_t instruction = 0;

@@ -1,7 +1,7 @@
 #include "cpu.h"
 #include "opcodes.h"
 
-void PREFIX_CB( struct cpu_state *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1)
+void PREFIX_CB( cpu_state_t *state, const enum ARG_TYPE arg0, const union REG_INPUT i0, const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
 	reg_t instruction = (reg_t)state->arg;
 	struct opcode *op = &cb_op_table[instruction];

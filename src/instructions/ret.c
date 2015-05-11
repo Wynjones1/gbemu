@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void RET(struct cpu_state *state,
+void RET(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -18,7 +18,7 @@ void RET(struct cpu_state *state,
 	}
 }
 
-void cpu_ret(struct cpu_state *state)
+void cpu_ret(cpu_state_t *state)
 {
     if(state->cont)
     {

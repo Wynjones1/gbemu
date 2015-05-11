@@ -51,14 +51,15 @@ file(GLOB HEADER	          "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 file(GLOB HEADER_INSTRUCTIONS "${CMAKE_CURRENT_SOURCE_DIR}/instructions/*.h")
 file(GLOB HEADER_PREFIX_CB    "${CMAKE_CURRENT_SOURCE_DIR}/instructions/prefix_cb/*.h")
 
-source_group("Headers"                          FILES ${HEADER})
-source_group("Headers\\Instructions"            FILES ${HEADER_INSTRUCTIONS})
-source_group("Headers\\Instructions\\Prefix CB" FILES ${HEADER_PREFIX_CB})
+source_group("Headers"                           FILES ${HEADER})
+source_group("Headers\\Instructions"             FILES ${HEADER_INSTRUCTIONS})
+source_group("Headers\\Instructions\\Prefix CB"  FILES ${HEADER_PREFIX_CB})
 source_group("Sources"                           FILES ${SRC})
 source_group("Sources\\Instructions"             FILES ${SRC_INSTRUCTIONS})
 source_group("Sources\\Instructions\\Prefix CB"  FILES ${SRC_PREFIX_CB})
+source_group("Sources\\Generated"  FILES ${EMBEDDED_GENERATED_FILES})
 
-set(ALL_SRC    ${SRC}    ${SRC_INSTRUCTIONS}    ${SRC_PREFIX_CB})
+set(ALL_SRC    ${SRC}    ${SRC_INSTRUCTIONS}    ${SRC_PREFIX_CB}    ${EMBEDDED_GENERATED_FILES})
 set(ALL_HEADER ${HEADER} ${HEADER_INSTRUCTIONS} ${HEADER_PREFIX_CB})
 
 #Remove the entry point from the library. it will be built in the executable

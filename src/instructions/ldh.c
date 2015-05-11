@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void LDH(struct cpu_state *state,
+void LDH(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {

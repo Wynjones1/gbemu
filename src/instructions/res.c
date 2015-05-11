@@ -1,7 +1,7 @@
 #include "cpu.h"
 
 #define X(n) case ARG_TYPE_ ## n: d0 = cpu_res(state, n, d0); break;
-void RES(struct cpu_state *state,
+void RES(cpu_state_t *state,
 		enum ARG_TYPE arg0, union REG_INPUT i0,
 		enum ARG_TYPE arg1, union REG_INPUT i1)
 {
@@ -46,7 +46,7 @@ void RES(struct cpu_state *state,
 }
 #undef X
 
-reg_t cpu_res(struct cpu_state *state, reg_t pos, reg_t d0)
+reg_t cpu_res(cpu_state_t *state, reg_t pos, reg_t d0)
 {
 	reg_t mask = ~((reg_t)1 << pos);
 	return d0 & mask;

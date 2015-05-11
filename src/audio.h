@@ -1,5 +1,6 @@
 #pragma once
 #include "types.h"
+/* Forward declare cpu struct*/
 typedef struct cpu_state cpu_state_t;
 
 /* These macros define each of the sound registers, the form of X is field_name, msb, lsb

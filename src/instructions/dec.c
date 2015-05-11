@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-void DEC(struct cpu_state *state,
+void DEC(cpu_state_t *state,
 		const enum ARG_TYPE arg0, const union REG_INPUT i0,
 		const enum ARG_TYPE arg1, const union REG_INPUT i1)
 {
@@ -21,7 +21,7 @@ void DEC(struct cpu_state *state,
 	}
 }
 
-reg_t cpu_dec8(struct cpu_state *state, reg_t d0)
+reg_t cpu_dec8(cpu_state_t *state, reg_t d0)
 {
 	reg_t res = d0 - 1;
 	cpu_set_zero(state, (res == 0));
@@ -30,7 +30,7 @@ reg_t cpu_dec8(struct cpu_state *state, reg_t d0)
 	return res;
 }
 
-void cpu_dec16(struct cpu_state *state, REG_INPUT reg)
+void cpu_dec16(cpu_state_t *state, REG_INPUT reg)
 {
 	//No flags are affected with the 16bit decrement.
 	state->registers16[reg.r16] -= 1;
