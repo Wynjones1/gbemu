@@ -31,7 +31,6 @@ build/
 bin/
 
 #Log files
-*.txt
 *.ppm
 *.svg
 
