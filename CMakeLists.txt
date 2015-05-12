@@ -66,6 +66,8 @@ set(UTILS_DIR ${CMAKE_SOURCE_DIR}/utils CACHE INTERNAL "")
 #TODO: For now this needs to be before the src dir because we define stuff it needs. Add a FindPackage at some point.
 if(EMBEDDED_FILES)
 	add_subdirectory(${UTILS_DIR}/create_header)
+else()
+	set(EMBEDDED_GENERATED_FILES)
 endif()
 
 add_subdirectory(src)

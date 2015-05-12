@@ -74,9 +74,8 @@ cpu_state_t *cpu_load_state(const char *filename);
 
 reg_t   cpu_load_reg8(cpu_state_t *state, REG_INPUT reg);
 reg16_t cpu_load_reg16(cpu_state_t *state, REG_INPUT reg);
-void cpu_store_reg8(cpu_state_t *state, REG_INPUT reg, reg_t data);
-void cpu_store_reg16(cpu_state_t *state, REG_INPUT reg, reg16_t data);
-
+void    cpu_store_reg8(cpu_state_t *state, REG_INPUT reg, reg_t data);
+void    cpu_store_reg16(cpu_state_t *state, REG_INPUT reg, reg16_t data);
 reg_t   cpu_load8(cpu_state_t *state, reg16_t addr);
 reg16_t cpu_load16(cpu_state_t *state, reg16_t addr);
 reg_t   cpu_load8_indirect(cpu_state_t *state, REG_INPUT reg);
