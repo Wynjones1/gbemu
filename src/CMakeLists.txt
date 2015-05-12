@@ -16,6 +16,7 @@ else()
 		-Wno-unused-parameter
 		-Wno-unused-result
 		-Wno-unused-variable
+        -Wno-unused-but-set-variable
 	)
 
 	if(CHECK)
@@ -61,6 +62,8 @@ source_group("Sources\\Generated"  FILES ${EMBEDDED_GENERATED_FILES})
 
 set(ALL_SRC    ${SRC}    ${SRC_INSTRUCTIONS}    ${SRC_PREFIX_CB}    ${EMBEDDED_GENERATED_FILES})
 set(ALL_HEADER ${HEADER} ${HEADER_INSTRUCTIONS} ${HEADER_PREFIX_CB})
+
+set_source_files_properties(${EMBEDDED_GENERATED_FILES} PROPERTIES GENERATED TRUE)
 
 #Remove the entry point from the library. it will be built in the executable
 set(LIB_SRC ${ALL_SRC})
