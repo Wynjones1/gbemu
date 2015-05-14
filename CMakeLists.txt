@@ -48,8 +48,8 @@ DEFADD(SPINLOCK            No   "Use busy wait to framelimit.")
 DEFADD(INTRO_ONLY          No   "Only run the nintendo intro.")
 DEFADD(CONTROLS            No   "Display GameBoy controls")
 DEFADD(LOG_INSTRUCTIONS    No   "Log each instruction executed")
-DEFADD(BUILD_SDL           Yes  "Build SDL2 from source.")
-DEFADD(BUILD_TTF           Yes  "Build TTF  from source.")
+DEFADD(BUILD_SDL           No   "Build SDL2 from source.")
+DEFADD(BUILD_TTF           No   "Build TTF  from source.")
 DEFADD(HAVE_TTF            Yes  "Have TTF Support")
 
 #Use these options to include the boot_rom + rom in the executable
