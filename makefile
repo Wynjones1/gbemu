@@ -19,7 +19,6 @@ AUDIO            ?= Yes
 DEBUG_WINDOW     ?= Yes
 CONTROLS         ?= Yes
 LOG_INSTRUCTIONS ?= No
-BUILD_SDL        ?= No
 
 
 all: build
@@ -29,7 +28,7 @@ build/Makefile:
 	mkdir -p build
 	cd build; CC=$(CC) cmake -DCOVERAGE=$(COVERAGE) -DMINGW=$(MINGW) \
 		-DSPINLOCK=$(SPINLOCK) -DCMAKE_BUILD_TYPE=$(BUILD_CONFIG) \
-		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING) -DBUILD_SDL=$(BUILD_SDL)\
+		-DAUDIO=$(AUDIO) -DCHECK=$(CHECK) -DTESTING=$(TESTING)  \
 		-DDEBUG_WINDOW=$(DEBUG_WINDOW) -DCONTROLS=$(CONTROLS) -DLOG_INSTRUCTIONS=$(LOG_INSTRUCTIONS) ..
 
 build: build/Makefile

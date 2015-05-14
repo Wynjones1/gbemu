@@ -60,24 +60,39 @@ source_group("Sources\\Instructions"             FILES ${SRC_INSTRUCTIONS})
 source_group("Sources\\Instructions\\Prefix CB"  FILES ${SRC_PREFIX_CB})
 source_group("Sources\\Generated"  FILES ${EMBEDDED_GENERATED_FILES})
 
-set(ALL_SRC    ${SRC}    ${SRC_INSTRUCTIONS}    ${SRC_PREFIX_CB}    ${EMBEDDED_GENERATED_FILES})
+set(ALL_SRC    ${SRC}    ${SRC_INSTRUCTIONS}    ${SRC_PREFIX_CB})
 set(ALL_HEADER ${HEADER} ${HEADER_INSTRUCTIONS} ${HEADER_PREFIX_CB})
-
-set_source_files_properties(${EMBEDDED_GENERATED_FILES} PROPERTIES GENERATED TRUE)
 
 #Remove the entry point from the library. it will be built in the executable
 set(LIB_SRC ${ALL_SRC})
 list(REMOVE_ITEM LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/main.c)
 
 add_library(gbemu_lib ${LIB_SRC} ${ALL_HEADER})
-add_executable(gbemu main.c)
 
-if(MINGW)
-    target_link_libraries(gbemu mingw32 SDL2main SDL2-static)
-elseif(MSVC)
-	target_link_libraries(gbemu_lib SDL_ttf SDL2main SDL2-static freetype)
-else()
-    target_link_libraries(gbemu_lib SDL2 SDL_ttf)
+if(EMBEDDED_FILES)
+    target_link_libraries(gbemu_lib embedded_files)
 endif()
 
+if(BUILD_SDL)
+    target_link_libraries(gbemu_lib SDL2-static)
+else()
+    target_link_libraries(gbemu_lib SDL2)
+endif()
+
+if(BUILD_TTF)
+    target_link_libraries(gbemu_lib SDL2_ttf freetype m)
+else()
+    target_link_libraries(gbemu_lib SDL2_ttf)
+endif()
+
+#
+#if(MINGW)
+#    target_link_libraries(gbemu mingw32 SDL2main SDL2-static)
+#elseif(MSVC)
+#	target_link_libraries(gbemu_lib SDL2_ttf SDL2main SDL2-static freetype)
+#else()
+#    target_link_libraries(gbemu_lib SDL2 SDL2_ttf)
+#endif()
+
+add_executable(gbemu main.c)
 target_link_libraries(gbemu gbemu_lib)

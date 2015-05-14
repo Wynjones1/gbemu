@@ -34,8 +34,6 @@ endif()
 #################################################################
 #                            Options 
 #################################################################
-set(COVERAGE               No    CACHE BOOL   "Generate coverage data")
-set(CHECK                  No    CACHE BOOL   "add everything option")
 DEFADD(AUDIO               Yes  "Build with audio")
 DEFADD(OUTPUT_WARNINGS     Yes  "Enable warning output.")
 DEFADD(OUTPUT_ERRORS       Yes  "Enable error output.")
@@ -48,9 +46,12 @@ DEFADD(SPINLOCK            No   "Use busy wait to framelimit.")
 DEFADD(INTRO_ONLY          No   "Only run the nintendo intro.")
 DEFADD(CONTROLS            No   "Display GameBoy controls")
 DEFADD(LOG_INSTRUCTIONS    No   "Log each instruction executed")
-DEFADD(BUILD_SDL           No   "Build SDL2 from source.")
-DEFADD(BUILD_TTF           No   "Build TTF  from source.")
 DEFADD(HAVE_TTF            Yes  "Have TTF Support")
+
+set(COVERAGE    No                        CACHE BOOL    "Generate coverage data")
+set(CHECK       No                        CACHE BOOL    "add -weverything option")
+set(DEPS_DIR    ${CMAKE_SOURCE_DIR}/deps  CACHE INTERNAL "")
+set(UTILS_DIR   ${CMAKE_SOURCE_DIR}/utils CACHE INTERNAL "")
 
 #Use these options to include the boot_rom + rom in the executable
 DEFADD(EMBEDDED_FILES      Yes  "Embbed all files in binary")
@@ -59,9 +60,20 @@ if(EMBEDDED_FILES)
 	set(EMBEDDED_ROM_FILE ${CMAKE_SOURCE_DIR}/data/roms/mario.gb          CACHE FILEPATH "Game to be embedded in the executable")
 endif()
 
+find_library(SDL2_LIB     SDL2)
+find_library(SDL2_TTF_LIB SDL2_ttf)
 
-set(DEPS_DIR  ${CMAKE_SOURCE_DIR}/deps CACHE INTERNAL "")
-set(UTILS_DIR ${CMAKE_SOURCE_DIR}/utils CACHE INTERNAL "")
+if(SDL2_LIB)
+    set(BUILD_SDL No)
+else()
+    set(BUILD_SDL Yes)
+endif()
+
+if(SDL2_TTF_LIB)
+    set(BUILD_TTF No)
+else()
+    set(BUILD_TTF Yes)
+endif()
 
 #TODO: For now this needs to be before the src dir because we define stuff it needs. Add a FindPackage at some point.
 if(EMBEDDED_FILES)
@@ -86,11 +98,11 @@ if(MSVC)
 	set(DIRECTX No)
 endif()
 
-if(BUILD_SDL OR MINGW)
+if(BUILD_SDL)
     add_subdirectory(${DEPS_DIR}/SDL2)
 endif()
 
-if(BUILD_TTF OR MINGW)
+if(BUILD_TTF)
     add_subdirectory(${DEPS_DIR}/freetype-2.5.5)
     add_subdirectory(${DEPS_DIR}/SDL2_ttf)
 endif()

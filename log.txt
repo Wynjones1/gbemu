@@ -1,0 +1,208 @@
+mkdir -p build
+cd build; CC=cc cmake -DCOVERAGE=No -DMINGW=No \
+		-DSPINLOCK=No -DCMAKE_BUILD_TYPE=Release \
+		-DAUDIO=Yes -DCHECK=No -DTESTING=No -DBUILD_SDL=No\
+		-DDEBUG_WINDOW=Yes -DCONTROLS=Yes -DLOG_INSTRUCTIONS=No ..
+-- The C compiler identification is GNU 4.8.2
+-- The CXX compiler identification is GNU 4.8.2
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Creating directory, /home/stuart/Documents/gbemu/build/deps/freetype-2.5.5/include/freetype2.
+-- Creating /home/stuart/Documents/gbemu/build/deps/freetype-2.5.5/include/freetype2/ftconfig.h.
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/stuart/Documents/gbemu/build
+cd build; make -j5
+make[1]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[2]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Scanning dependencies of target create_header
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Scanning dependencies of target SDL_ttf
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[  1%] make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+[  1%] Building C object utils/create_header/CMakeFiles/create_header.dir/create_header.c.o
+Building C object deps/SDL2_ttf/CMakeFiles/SDL_ttf.dir/SDL_ttf.c.o
+Scanning dependencies of target freetype
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Linking C executable create_header
+[  1%] [  2%] [  3%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftadvanc.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/autofit/autofit.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftbbox.c.o
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[  3%] Built target create_header
+[  4%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftbdf.c.o
+[  5%] [  5%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftbitmap.c.o
+[  6%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftcid.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftcalc.c.o
+[  7%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftdbgmem.c.o
+[  8%] [  9%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftfstype.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftdebug.c.o
+[ 10%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftgasp.c.o
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+[ 11%] [ 12%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftgloadr.c.o
+Generating ../../generated_source/embedded_boot_rom.c, ../../generated_source/embedded_rom.c
+[ 12%] Scanning dependencies of target embedded_files
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftglyph.c.o
+[ 13%] Building C object utils/create_header/CMakeFiles/embedded_files.dir/__/__/generated_source/embedded_boot_rom.c.o
+[ 14%] Building C object utils/create_header/CMakeFiles/embedded_files.dir/__/__/generated_source/embedded_rom.c.o
+[ 15%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftgxval.c.o
+[ 16%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftinit.c.o
+[ 17%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftlcdfil.c.o
+Linking C static library libembedded_files.a
+[ 18%] [ 19%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftmm.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftobjs.c.o
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 19%] Built target embedded_files
+[ 20%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftotval.c.o
+[ 20%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftoutln.c.o
+Linking C static library libSDL_ttf.a
+[ 21%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftpatent.c.o
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 21%] Built target SDL_ttf
+[ 22%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftpfr.c.o
+[ 23%] [ 24%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftrfork.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftsnames.c.o
+[ 25%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftstream.c.o
+[ 25%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftstroke.c.o
+[ 26%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftsynth.c.o
+[ 27%] [ 28%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/fttrigon.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftsystem.c.o
+[ 29%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/fttype1.c.o
+[ 30%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftutil.c.o
+[ 30%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftwinfnt.c.o
+[ 31%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/base/ftxf86.c.o
+[ 32%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/bdf/bdf.c.o
+[ 33%] [ 34%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/bzip2/ftbzip2.c.o
+[ 35%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/cache/ftcache.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/cff/cff.c.o
+[ 35%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/cid/type1cid.c.o
+[ 36%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/gzip/ftgzip.c.o
+[ 37%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/lzw/ftlzw.c.o
+[ 38%] [ 39%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/pcf/pcf.c.o
+Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/pfr/pfr.c.o
+[ 40%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/psaux/psaux.c.o
+[ 41%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/pshinter/pshinter.c.o
+[ 41%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/psnames/psmodule.c.o
+[ 42%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/raster/raster.c.o
+[ 43%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/sfnt/sfnt.c.o
+[ 44%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/smooth/smooth.c.o
+[ 45%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/truetype/truetype.c.o
+[ 46%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/type1/type1.c.o
+[ 46%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/type42/type42.c.o
+[ 47%] Building C object deps/freetype-2.5.5/CMakeFiles/freetype.dir/src/winfonts/winfnt.c.o
+Linking C static library libfreetype.a
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 47%] Built target freetype
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Scanning dependencies of target gbemu_lib
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+[ 49%] [ 49%] [ 49%] [ 50%] [ 51%] Building C object src/CMakeFiles/gbemu_lib.dir/memory.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/debug.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/prefix_cb_opcodes.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/events.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/logging.c.o
+[ 52%] Building C object src/CMakeFiles/gbemu_lib.dir/audio.c.o
+[ 53%] Building C object src/CMakeFiles/gbemu_lib.dir/instruction_strings.c.o
+[ 54%] Building C object src/CMakeFiles/gbemu_lib.dir/arg_defs.c.o
+[ 55%] Building C object src/CMakeFiles/gbemu_lib.dir/cpu.c.o
+[ 55%] Building C object src/CMakeFiles/gbemu_lib.dir/opcodes.c.o
+[ 56%] Building C object src/CMakeFiles/gbemu_lib.dir/cmdline.c.o
+[ 57%] Building C object src/CMakeFiles/gbemu_lib.dir/display.c.o
+[ 58%] Building C object src/CMakeFiles/gbemu_lib.dir/common.c.o
+[ 59%] Building C object src/CMakeFiles/gbemu_lib.dir/ppm.c.o
+[ 60%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/swap.c.o
+[ 61%] [ 61%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rrc.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/ldh.c.o
+[ 62%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rlc.c.o
+[ 63%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/add.c.o
+[ 64%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/sra.c.o
+[ 65%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/inc.c.o
+[ 66%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/xor.c.o
+[ 66%] [ 67%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/and.c.o
+[ 68%] [ 69%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/scf.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/ld.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/bit.c.o
+[ 70%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rr.c.o
+[ 71%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/call.c.o
+[ 71%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/pop.c.o
+[ 72%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/adc.c.o
+[ 73%] [ 74%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/sla.c.o
+[ 75%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/cp.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/invalid.c.o
+[ 76%] [ 76%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rrca.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/ret.c.o
+[ 78%] [ 78%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rst.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/sbc.c.o
+[ 80%] [ 80%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/ei.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/dec.c.o
+[ 81%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/jr.c.o
+[ 82%] [ 82%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/daa.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/set.c.o
+[ 83%] [ 84%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rlca.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/stop.c.o
+[ 85%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/sub.c.o
+[ 86%] [ 87%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/push.c.o
+[ 87%] [ 88%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/prefix.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/ccf.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rra.c.o
+[ 89%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rla.c.o
+[ 90%] [ 91%] [ 92%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/rl.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/cpl.c.o
+Building C object src/CMakeFiles/gbemu_lib.dir/instructions/srl.c.o
+[ 92%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/jp.c.o
+[ 93%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/reti.c.o
+[ 94%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/halt.c.o
+[ 95%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/res.c.o
+[ 96%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/nop.c.o
+[ 97%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/or.c.o
+[ 98%] Building C object src/CMakeFiles/gbemu_lib.dir/instructions/di.c.o
+Linking C static library libgbemu_lib.a
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 98%] Built target gbemu_lib
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+Scanning dependencies of target gbemu
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+[100%] Building C object src/CMakeFiles/gbemu.dir/main.c.o
+Linking C executable gbemu
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[100%] Built target gbemu
+make[2]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[1]: Leaving directory `/home/stuart/Documents/gbemu/build'
+cd build && make
+make[1]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[2]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[  1%] Built target create_header
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[  4%] Built target embedded_files
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 47%] Built target freetype
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[ 98%] Built target gbemu_lib
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[100%] Built target gbemu
+make[3]: Entering directory `/home/stuart/Documents/gbemu/build'
+make[3]: Leaving directory `/home/stuart/Documents/gbemu/build'
+[100%] Built target SDL_ttf
+make[2]: Leaving directory `/home/stuart/Documents/gbemu/build'
+make[1]: Leaving directory `/home/stuart/Documents/gbemu/build'

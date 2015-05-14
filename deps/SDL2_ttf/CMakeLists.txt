@@ -10,4 +10,4 @@ if(MSVC)
 	add_definitions(/wd4018)
 endif()
 
-add_library(SDL_ttf ${SOURCE})
+add_library(SDL2_ttf ${SOURCE})
