@@ -18,7 +18,7 @@
 
 cpu_state_t *cpu_init()
 {
-	cpu_state_t *out = (cpu_state_t*) calloc(1, sizeof(cpu_state_t));
+	cpu_state_t *out = CALLOC(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
     out->frame_limit = 0;
@@ -120,7 +120,7 @@ void cpu_save_state(cpu_state_t *state, const char *filename)
 #define X(elem) temp1 = fread(&state->elem, sizeof(state->elem), 1, fp)
 cpu_state_t *cpu_load_state(const char *filename)
 {
-	cpu_state_t *state = (cpu_state_t*) malloc(sizeof(cpu_state_t));
+	cpu_state_t *state = MALLOC(sizeof(cpu_state_t));
 	FILE *fp = FOPEN(filename, "rb");
 	int temp0, version;
 	size_t temp1;

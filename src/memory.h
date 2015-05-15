@@ -25,6 +25,13 @@ audio_t       *memory_get_audio(memory_t *memory);
 #define X_FLIP_BIT      5
 #define Y_FLIP_BIT      6
 #define PRIORITY_BIT    7
+
+#define VBLANK_BIT     0
+#define LCD_STATUS_BIT 1
+#define TIMER_BIT      2
+#define SERIAL_BIT     3
+#define JOYPAD_BIT     4
+
 struct OAM_data
 {
 	uint8_t y_pos;
@@ -140,9 +147,3 @@ typedef struct memory
 
 	size_t to_read;
 }memory_t;
-
-#define VBLANK_BIT     0
-#define LCD_STATUS_BIT 1
-#define TIMER_BIT      2
-#define SERIAL_BIT     3
-#define JOYPAD_BIT     4

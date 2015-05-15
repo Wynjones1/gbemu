@@ -123,4 +123,12 @@ void common_print_binary(FILE *fp, uint64_t x, unsigned int width);
 #define ENCODE(x, msb, lsb) (((x) & MASK(msb + 1 - lsb)) << lsb)
 #define DECODE(x, msb, lsb) (((x) & MASK(msb + 1))       >> lsb)
 
+void *common_malloc(size_t num);
+void *common_calloc(size_t count, size_t size);
+void *common_realloc(void *block, size_t size);
+
+#define MALLOC(num_bytes)    common_malloc(num_bytes)
+#define CALLOC(num, size)    common_calloc(num, size)
+#define REALLOC(block, size) common_realloc(block, size)
+
 extern uint32_t g_cycles;

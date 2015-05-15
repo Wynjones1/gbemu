@@ -74,7 +74,7 @@ text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font,
                             uint32_t width, uint32_t height, uint32_t x, uint32_t y)
 {
 #if HAVE_TTF
-    text_area_t *out = (text_area_t*) calloc(1, sizeof(text_area_t) + (width + 1) * height);
+    text_area_t *out = CALLOC(1, sizeof(text_area_t) + (width + 1) * height);
     out->width       = width;
     out->height      = height;
     out->renderer    = render;
@@ -177,6 +177,7 @@ static void write_framebuffer(display_t *display)
 
     // Write the framebuffer onto the the texture.
     SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
+	// If the display is LCD is disabled display a white background.
 	if(display->mem->lcdc.enabled)
 	{
         SDL_UpdateTexture(display->texture, &screen  , display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
@@ -327,7 +328,7 @@ static int display_thread(void *display_)
 
 display_t *display_init(cpu_state_t *state)
 {
-	display_t *display = (display_t*)calloc(1, sizeof(display_t));
+	display_t *display = CALLOC(1, sizeof(display_t));
 	display->state     = state;
 	display->mem       = state->memory;
     PIXEL_SCALE        = cmdline_args.scale;
@@ -534,7 +535,7 @@ void display_simulate(cpu_state_t *state)
 	if(state->clock_counter >= CPU_CLOCKS_PER_LINE)
 	{
 		state->clock_counter -= (uint32_t)CPU_CLOCKS_PER_LINE;
-		state->memory->ly = (state->memory->ly + 1) % 154;
+		state->memory->ly = (state->memory->ly + 1) % (LCD_HEIGHT + 10);
 		if(state->memory->ly == state->memory->lyc)
 		{
 			state->memory->stat.coincidence = 1;

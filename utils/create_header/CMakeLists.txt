@@ -16,12 +16,23 @@ if(NOT EXISTS ${EMBEDDED_ROM_FILE})
     message(FATAL_ERROR "ROM file ${EMBEDDED_ROM_FILE} does not exists.")
 endif()
 
-add_custom_command(OUTPUT ${BOOT_ROM_OUTPUT_FILE} ${ROM_OUTPUT_FILE}
-					COMMAND ${CMAKE_COMMAND} -E make_directory ${GENERATED_SOURCE_DIR} 
-					COMMAND create_header ${EMBEDDED_BOOT_ROM_FILE} ${BOOT_ROM_OUTPUT_FILE} "boot"
-					COMMAND create_header ${EMBEDDED_ROM_FILE}      ${ROM_OUTPUT_FILE}      "rom"
-					DEPENDS create_header)
+function(run_create_header INPUT_FILE OUTPUT_FILE VARNAME)
+	get_filename_component(OUTPUT_DIR ${OUTPUT_FILE} DIRECTORY)
+	add_custom_command(
+		OUTPUT  ${OUTPUT_FILE}
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_DIR}
+		COMMAND create_header ${INPUT_FILE} ${OUTPUT_FILE} ${VARNAME}
+		DEPENDS create_header
+	)
+endfunction()
+
+run_create_header(${EMBEDDED_BOOT_ROM_FILE} ${BOOT_ROM_OUTPUT_FILE} "boot")
+run_create_header(${EMBEDDED_ROM_FILE}      ${ROM_OUTPUT_FILE}      "rom")
+
 add_custom_target(create_headers DEPENDS ${BOOT_ROM_OUTPUT_FILE} ${ROM_OUTPUT_FILE})
 
+set_source_files_properties(${EMBEDDED_BOOT_ROM_FILE} ${EMBEDDED_ROM_FILE} PROPERTIES HEADER_ONLY TRUE)
+source_group("Input Files" FILES ${EMBEDDED_BOOT_ROM_FILE} ${EMBEDDED_ROM_FILE})
+
 set_source_files_properties(${EMBEDDED_GENERATED_FILES} PROPERTIES GENERATED TRUE)
-add_library(embedded_files ${EMBEDDED_GENERATED_FILES})
+add_library(embedded_files ${EMBEDDED_GENERATED_FILES} ${EMBEDDED_BOOT_ROM_FILE} ${EMBEDDED_ROM_FILE})

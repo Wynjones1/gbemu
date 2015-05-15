@@ -12,14 +12,14 @@
 
 static audio_t *g_audio;
 
+
 typedef struct
 {
     int16_t left;
     int16_t right;
 }sample_t;
 
-#define FREQ(msb, lsb)\
-    (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (msb << 8 | lsb)))))
+#define FREQ(msb, lsb) (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (msb << 8 | lsb)))))
 
 static uint8_t duty_table[4][8] =
 {
@@ -88,7 +88,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 
 audio_t *audio_init(cpu_state_t *state)
 {
-	audio_t *out = (audio_t*) calloc(1, sizeof(audio_t));
+	audio_t *out = CALLOC(1, sizeof(audio_t));
 	out->state   = state;
     g_audio = out;
 

@@ -14,10 +14,10 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data);
 
 memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
 {
-	memory_t *out = (memory_t*)calloc(1, sizeof(memory_t));
+	memory_t *out = CALLOC(1, sizeof(memory_t));
 
 #if EMBEDDED_FILES
-    out->bank_0 = malloc(rom_size);
+    out->bank_0 = MALLOC(rom_size);
     memcpy(out->bank_0, rom_array, rom_size);
     memcpy(out->boot, boot_array, 0x100);
 #else
@@ -568,7 +568,7 @@ void  memory_save_state(memory_t *memory, FILE *fp)
 #define Y(elem) fread(memory->elem, 1, sizeof(memory->elem), fp)
 memory_t *memory_load_state(FILE *fp)
 {
-	memory_t *memory = (memory_t*) malloc(sizeof(memory_t));
+	memory_t *memory = MALLOC(sizeof(memory_t));
 	Y(video_ram);
 	Y(working_ram_0);
 	Y(working_ram_1);
@@ -607,7 +607,7 @@ memory_t *memory_load_state(FILE *fp)
 	X(tma);
 	X(tac);
 	X(to_read);
-	memory->bank_0 = (uint8_t*) malloc(memory->to_read);
+	memory->bank_0 = MALLOC(memory->to_read);
 	fread(memory->bank_0, memory->to_read, 1, fp);
 	memory->bank_n       = memory->bank_0 + memory->current_bank * 0x4000;
 	memory->external_ram = (uint8_t*) malloc(10 * 1024);

@@ -117,3 +117,33 @@ int common_mkdir(const char *dirname, int mode)
     return mkdir(dirname, mode);
 #endif
 }
+
+void *common_malloc(size_t num)
+{
+	void *out = malloc(num);
+	if(out == NULL)
+	{
+		Error("Allocation Failed");
+	}
+	return out;
+}
+
+void *common_calloc(size_t count, size_t size)
+{
+	void *out = calloc(count, size);
+	if(out == NULL)
+	{
+		Error("Allocation Failed");
+	}
+	return out;
+}
+
+void *common_realloc(void *block, size_t size)
+{
+	void *out = realloc(block, size);
+	if(out == NULL)
+	{
+		Error("Allocation Failed");
+	}
+	return out;
+}

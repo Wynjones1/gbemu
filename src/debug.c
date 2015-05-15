@@ -314,7 +314,7 @@ void debug_init(void)
         fgets(buf, 49, fp);
         while(!feof(fp))
         {
-            out = (int*) realloc(out, sizeof(int) * 2 * (count + 1));
+            out = REALLOC(out, sizeof(int) * 2 * (count + 1));
             if(sscanf(buf, "%X:%X", &bank, &pc) == 2)
             {
                 out[2 * count]     = bank;
