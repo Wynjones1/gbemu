@@ -92,14 +92,5 @@ else()
     target_link_libraries(gbemu_lib SDL2_ttf)
 endif()
 
-#
-#if(MINGW)
-#    target_link_libraries(gbemu mingw32 SDL2main SDL2-static)
-#elseif(MSVC)
-#	target_link_libraries(gbemu_lib SDL2_ttf SDL2main SDL2-static freetype)
-#else()
-#    target_link_libraries(gbemu_lib SDL2 SDL2_ttf)
-#endif()
-
 add_executable(gbemu main.c)
 target_link_libraries(gbemu gbemu_lib)

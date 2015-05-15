@@ -230,6 +230,7 @@ static void draw_debug(display_t *display)
     text_area_printf(ta, line++, "| LY  = 0x%02x LYC = 0x%02x   |", *(uint8_t*)&memory->ly, *(uint8_t*)&memory->lyc);
     text_area_printf(ta, line++, "| DPD = 0x%02x BTN = 0x%02x   |", *(uint8_t*)&memory->dpad, *(uint8_t*)&memory->buttons);
     text_area_printf(ta, line++, "| SCX = 0x%02x SCY = 0x%02x   |", memory->scx, memory->scy);
+	text_area_printf(ta, line++, "|  WX = 0x%02x  WY = 0x%02x   |", memory->wx, memory->wy);
     text_area_printf(ta, line++, "+-------------------------+");
     text_area_printf(ta, line++, "|  %6s   | %11s |", state->paused ? "paused" : "", state->frame_limit ? "frame limit" : "");
     text_area_printf(ta, line++, "+-------------------------+");
@@ -282,7 +283,7 @@ static void display_init_(display_t *display)
 
 	uint32_t width  = DISPLAY_WIDTH ;
 	uint32_t height = DISPLAY_HEIGHT + CONTROLS_HEIGHT;
-	display->window = SDL_CreateWindow("GBemu", 0, 0,
+	display->window = SDL_CreateWindow("GBemu", 30, 30,
                                        PIXEL_SCALE * width + (text_width * fwidth),
                                        max(PIXEL_SCALE * height, text_height * fheight),
                                        SDL_WINDOW_RESIZABLE);
@@ -306,7 +307,7 @@ static void display_init_(display_t *display)
 #if DEBUG_WINDOW
     display->text_area  = text_area_init(display->render, font, text_width, text_height, PIXEL_SCALE * DISPLAY_WIDTH, 0);
 #endif
-    display->fullscreen = true;
+    display->fullscreen = false;
 }
 
 static int display_thread(void *display_)
@@ -412,8 +413,6 @@ static uint8_t shade_table[4] =
 	0
 };
 
-
-
 static void signal_draw_thread(display_t *display)
 {
     display->cur_buffer   = !display->cur_buffer;
@@ -433,14 +432,12 @@ static void set_mode(cpu_state_t *state)
     }
 }
 
-
 void display_toggle_fullscreen(display_t *display)
 {
     display->fullscreen = !display->fullscreen;
     uint32_t flags = display->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
     SDL_SetWindowFullscreen(display->window, flags);
 }
-
 
 void display_output_framebuffer(display_t *display, const char *filename)
 {
@@ -485,14 +482,18 @@ static void write_sprites(cpu_state_t *state, display_t *display, uint8_t x, uin
 /* Write the current line that is drawing into the framebuffer */
 static void write_background(cpu_state_t *state, display_t *display, uint8_t x, uint8_t y)
 {
-	int ty        = (y + state->memory->scy) / 8;
-	int offset    = (y + state->memory->scy) % 8;
-	uint8_t scx = state->memory->scx;
-	uint32_t *data = display->pixel_buffer[y];
 	const uint8_t *tile_data;
+	uint8_t scx = state->memory->scx;
+	uint8_t scy = state->memory->scy;
+	uint32_t *data = display->pixel_buffer[y];
+
+	//Calculate the tile x, y and offset in the tile.
 	int tx = ((x + scx) / 8) % 0x20;
+	int ty = ((y + scy) / 8) % 0x20;
 	int ox = (x + scx) % 8;
-	tile_data = memory_get_tile_data(state->memory, tx, ty, offset, state->memory->lcdc.map_select);
+	int oy = (y + scy) % 8;
+
+	tile_data = memory_get_tile_data(state->memory, tx, ty, oy, state->memory->lcdc.map_select);
 	data[x] = GET_SHADE(get_shade(tile_data, ox), state->memory->bgp);
     last_background = GET_INDEX(get_shade(tile_data, ox), state->memory->bgp);
 }
@@ -501,6 +502,7 @@ static void write_window(cpu_state_t *state, display_t *display, uint8_t x, uint
 {
 	int wx = state->memory->wx - 7;
 	int wy = state->memory->wy;
+
 	if(state->memory->lcdc.window_display && y > wy && wx <= x)
 	{
 		uint32_t *data = display->pixel_buffer[y];
