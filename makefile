@@ -1,13 +1,13 @@
-BUILD_CONFIG ?= Release
 BUILD_CONFIG ?= Debug
 BUILD_CONFIG ?= RelWithDebInfo
+BUILD_CONFIG ?= Release
 ROM_DIR      ?= ~/roms/
 ROM          ?= tetris.gb
 ROM          ?= mario.gb
 ROM          ?= "dmg_sound/rom_singles/01-registers.gb"
 ROM          ?= "cpu_instrs/cpu_instrs.gb"
-CC           ?= gcc
-CXX          ?= g++
+CC           := clang
+CXX          := clang++
 
 COVERAGE         ?= No
 SPINLOCK         ?= No

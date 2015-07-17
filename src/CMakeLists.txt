@@ -11,13 +11,22 @@ else()
 		-Werror
 		-Wall
 		-Wextra
-		-Wno-enum-conversion
-		-Wno-unused-function
-		-Wno-unused-parameter
-		-Wno-unused-result
 		-Wno-unused-variable
-        -Wno-unused-but-set-variable
+		-Wno-enum-conversion
+		-Wno-unused-parameter
+		-Wno-unused-function
 	)
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        add_definitions(
+            -Wno-typedef-redefinition
+            -Wno-unused-const-variable
+        )
+    else()
+        add_definitions(
+        	-Wno-unused-result
+            -Wno-unused-but-set-variable
+        )
+    endif()
 
 	if(CHECK)
 		add_definitions(
