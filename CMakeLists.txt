@@ -52,6 +52,9 @@ set(COVERAGE    No                        CACHE BOOL    "Generate coverage data"
 set(CHECK       No                        CACHE BOOL    "add -weverything option")
 set(DEPS_DIR    ${CMAKE_SOURCE_DIR}/deps  CACHE INTERNAL "")
 set(UTILS_DIR   ${CMAKE_SOURCE_DIR}/utils CACHE INTERNAL "")
+if(MSVC)
+	set(SDL_DEBUG_LIBS No CACHE BOOL "Set if the debug builds of SDL2 should be used.")
+endif()
 
 #Use these options to include the boot_rom + rom in the executable
 DEFADD(EMBEDDED_FILES      Yes  "Embbed all files in binary")
@@ -62,18 +65,6 @@ endif()
 
 find_library(SDL2_LIB     SDL2)
 find_library(SDL2_TTF_LIB SDL2_ttf)
-
-if(SDL2_LIB)
-    set(BUILD_SDL No)
-else()
-    set(BUILD_SDL Yes)
-endif()
-
-if(SDL2_TTF_LIB)
-    set(BUILD_TTF No)
-else()
-    set(BUILD_TTF Yes)
-endif()
 
 #TODO: For now this needs to be before the src dir because we define stuff it needs. Add a FindPackage at some point.
 if(EMBEDDED_FILES)
@@ -88,23 +79,9 @@ if(TESTING)
 	add_subdirectory(tests)
 endif()
 
-
 if(MINGW)
     set(DIRECTX No)
     add_definitions(-mwindows)
-endif()
-
-if(MSVC)
-	set(DIRECTX No)
-endif()
-
-if(BUILD_SDL)
-    add_subdirectory(${DEPS_DIR}/SDL2)
-endif()
-
-if(BUILD_TTF)
-    add_subdirectory(${DEPS_DIR}/freetype-2.5.5)
-    add_subdirectory(${DEPS_DIR}/SDL2_ttf)
 endif()
 
 function(add_target_folder TARGET_NAME DIR)

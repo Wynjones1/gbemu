@@ -82,24 +82,19 @@ if(EMBEDDED_FILES)
     target_link_libraries(gbemu_lib embedded_files)
 endif()
 
-if(BUILD_SDL)
-	if(MSVC)
-		target_link_libraries(gbemu_lib SDL2main SDL2-static)
-	else()
-		target_link_libraries(gbemu_lib SDL2-static)
-	endif()
-else()
-    target_link_libraries(gbemu_lib SDL2)
-endif()
-
-if(BUILD_TTF)
-	if(NOT MSVC)
-		target_link_libraries(gbemu_lib m)
-	endif()
-    target_link_libraries(gbemu_lib SDL2_ttf freetype)
-else()
-    target_link_libraries(gbemu_lib SDL2_ttf)
-endif()
+target_link_libraries(gbemu_lib ${SDL2_LIBRARIES})
+target_link_libraries(gbemu_lib ${SDL2_TTF_LIBRARIES})
 
 add_executable(gbemu main.c)
 target_link_libraries(gbemu gbemu_lib)
+
+if(MSVC)
+	add_custom_command(
+		TARGET gbemu
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_LIBRARY_PATH}/SDL2.dll              $<TARGET_FILE_DIR:gbemu>/SDL2.dll
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_TTF_LIBRARY_PATH}/SDL2_ttf.dll      $<TARGET_FILE_DIR:gbemu>/SDL2_ttf.dll
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_TTF_LIBRARY_PATH}/libfreetype-6.dll $<TARGET_FILE_DIR:gbemu>/libfreetype-6.dll
+		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_TTF_LIBRARY_PATH}/zlib1.dll         $<TARGET_FILE_DIR:gbemu>/zlib1.dll
+	)
+endif()

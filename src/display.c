@@ -282,9 +282,12 @@ static void display_init_(display_t *display)
     uint32_t text_height = 0;
 #endif
 
+	SDL_Rect bounds;
+	SDL_GetDisplayBounds(0, &bounds);
+
 	uint32_t width  = DISPLAY_WIDTH ;
 	uint32_t height = DISPLAY_HEIGHT + CONTROLS_HEIGHT;
-	display->window = SDL_CreateWindow("GBemu", 30, 30,
+	display->window = SDL_CreateWindow("GBemu", bounds.x + 30, bounds.y + 30,
                                        PIXEL_SCALE * width + (text_width * fwidth),
                                        max(PIXEL_SCALE * height, text_height * fheight),
                                        SDL_WINDOW_RESIZABLE);
