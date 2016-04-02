@@ -157,29 +157,30 @@ void audio_delete(audio_t *audio)
 
 void length_counter(audio_t *audio)
 {
-    if(audio->sq1.load_len && audio->sq1.len_en)
-    {
-        audio->sq1.load_len -= 1;
-        if(audio->sq1.load_len == 0) audio->sq1.en = 0;
-    }
-    if(audio->sq2.load_len && audio->sq2.len_en)
-    {
-        audio->sq2.load_len -= 1;
-        if(audio->sq2.load_len == 0) audio->sq2.en = 0;
-    }
+#define X(FIELD)                                    \
+    if(audio->FIELD.load_len && audio->FIELD.len_en)\
+	{                                               \
+		audio->FIELD.load_len -= 1;                 \
+		if (audio->FIELD.load_len == 0)             \
+			audio->FIELD.en = 0;                    \
+	}
+
+	X(sq1);
+	X(sq2);
+	X(wave);
+#undef X
 }
 
 void sweep(audio_t *audio)
 {
     uint16_t shadow   = audio->sq1.freq_msb << 8 | audio->sq1.freq_lsb;
     uint16_t new_freq = 0;
-    static uint16_t count = 0;
     if(audio->sq1.sweep_period)
     {
-        count++;
-        if(count >= audio->sq1.sweep_period)
+        audio->sweep_count++;
+        if(audio->sweep_count >= audio->sq1.sweep_period)
         {
-            count = 0;
+			audio->sweep_count = 0;
             if(audio->sq1.shift > 0 || audio->sq1.sweep_period > 0)
             {
                 new_freq = (shadow >> audio->sq1.shift);
@@ -227,23 +228,23 @@ void envelope(audio_t *audio)
 
 void frame_sequencer(audio_t *audio, int clk)
 {
-    static int step  = 0;
-    static int count = 0;
-    const int period = CPU_CLOCK_SPEED / 512;
-    count = count + clk;
-    if(count > period)
+    const uint32_t period = CPU_CLOCK_SPEED / 512;
+    audio->frame_sequencer_count += clk;
+    if(audio->frame_sequencer_count >= period)
     {
-        count -= period;
-        step = (step + 1) % 8;
-        if(step % 2 == 0)
+		audio->frame_sequencer_count -= period;
+		audio->frame_sequencer_step += 1;
+		audio->frame_sequencer_step &= 0x7;
+        if(audio->frame_sequencer_step % 2 == 0)
         {
             length_counter(audio);
-            if(step == 2 || step == 6)
+            if(audio->frame_sequencer_step == 2 ||
+			   audio->frame_sequencer_step == 6)
             {
                 sweep(audio);
             }
         }
-        if(step == 7)
+        if(audio->frame_sequencer_step == 7)
         {
             envelope(audio);
         }

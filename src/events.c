@@ -67,6 +67,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 			{
 				paused = 0;
 			}
+			SDL_PauseAudio(state->paused);
 			break;
 		case SDLK_e:
 			if(step == 0 && down == 0)

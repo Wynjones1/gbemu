@@ -127,8 +127,11 @@ typedef struct audio
         NR52
     }control;
 
-    uint8_t wave_table[16];
 #undef X
+	uint8_t  wave_table[16];
+	uint32_t frame_sequencer_step;
+	uint32_t frame_sequencer_count;
+	uint16_t sweep_count;
 }audio_t;
 
 void     audio_start_thread(void);

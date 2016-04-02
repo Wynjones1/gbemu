@@ -248,46 +248,42 @@ static void record_clock_speed(int clk)
 */
 static void increment_div(cpu_state_t *state, int clk)
 {
-	static int count;
-	count += clk;
-	if(count >= 256)
+	state->div_counter += clk;
+	if(state->div_counter >= 256)
 	{
 		state->memory->div++;
-		count -= 256;
+		state->div_counter -= 256;
 	}
 }
 
-#define X(n) if(count >= n){\
-			count -= n;\
-			state->memory->tima++;\
-			if(state->memory->tima == 0){\
-				state->memory->tima = state->memory->tma;\
-				SET_N(state->memory->IF, TIMER_BIT);\
-			}}
 static void increment_tima(cpu_state_t *state, int clk)
 {
-	static int count;
+	uint16_t tac_values[] =
+	{
+		1024, //4.096Khz
+		16,   //262.144Khz
+		64,   //65.536Khz
+		256,  //16.384Khz
+	};
+
+
 	if(state->memory->tac.enable)
 	{
-		count += clk;
-		switch(state->memory->tac.clock_select)
+		state->tima_counter += clk;
+		uint16_t n = tac_values[state->memory->tac.clock_select];
+
+		if(state->tima_counter >= n)
 		{
-			case 0x0: //4.096Khz
-				X(1024);
-				break;
-			case 0x1: //262.144Khz
-				X(16);
-				break;
-			case 0x2: //65.536Khz
-				X(64);
-				break;
-			case 0x3: //16.384Khz
-				X(256);
-				break;
+			state->tima_counter -= n;
+			state->memory->tima++;
+			if (state->memory->tima == 0)
+			{
+				state->memory->tima = state->memory->tma;
+				SET_N(state->memory->IF, TIMER_BIT);
+			}
 		}
 	}
 }
-#undef X
 
 static void record(cpu_state_t *state)
 {
@@ -391,9 +387,7 @@ void cpu_start(cpu_state_t *state)
 		}
         state->op   = op;
 
-#if 1
         log_instruction(state);
-#endif
         
         if(cmdline_args.record)
             record(state);

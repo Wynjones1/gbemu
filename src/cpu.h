@@ -51,6 +51,8 @@ typedef struct cpu_state
 	int       EI_Pending;
 	reg16_t   arg;
 	uint32_t  clock_counter;
+	uint32_t  tima_counter;
+	uint32_t  div_counter;
 
     bool  halt;
 	bool  paused;
