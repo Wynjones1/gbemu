@@ -266,7 +266,6 @@ static void increment_tima(cpu_state_t *state, int clk)
 		256,  //16.384Khz
 	};
 
-
 	if(state->memory->tac.enable)
 	{
 		state->tima_counter += clk;

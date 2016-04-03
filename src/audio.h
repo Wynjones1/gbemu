@@ -4,7 +4,9 @@
 typedef struct cpu_state cpu_state_t;
 
 /* These macros define each of the sound registers, the form of X is field_name, msb, lsb
-   this allows us to repeat the registers in different contexts.                       */
+   this allows us to repeat the registers in different contexts. 
+*/
+// Square 1
 #define NR10               \
     X(shift,        2, 0)  \
     X(negate,       3, 3)  \
@@ -22,6 +24,7 @@ typedef struct cpu_state cpu_state_t;
     X(freq_msb,     2, 0)  \
     X(len_en,       6, 6)  \
     X(trigger,      7, 7)
+// Square 2
 #define NR21               \
     X(load_len,     5, 0)  \
     X(duty,         7, 6)  
@@ -35,6 +38,7 @@ typedef struct cpu_state cpu_state_t;
     X(freq_msb,     2, 0)  \
     X(len_en,       6, 6)  \
     X(trigger,      7, 7)
+// Wave
 #define NR30               \
     X(power,        7, 7)  
 #define NR31               \
@@ -47,6 +51,7 @@ typedef struct cpu_state cpu_state_t;
     X(freq_msb,     2, 0)  \
     X(len_en,       6, 6)  \
     X(trigger,      7, 7)  
+// Noise
 #define NR41               \
     X(load_len,     5, 0)  
 #define NR42               \
@@ -60,6 +65,7 @@ typedef struct cpu_state cpu_state_t;
 #define NR44               \
     X(len_en,       6, 6)  \
     X(trigger,      7, 7)  
+// Control / Status
 #define NR50               \
     X(r_vol,        2, 0)  \
     X(vin_r_en,     3, 3)  \
@@ -72,6 +78,7 @@ typedef struct cpu_state cpu_state_t;
     X(channel_stat, 3, 0)  \
     X(power,        7, 7)
 
+#define NOISE_BUFFER_SIZE (44100)
 
 typedef struct audio
 {
@@ -133,10 +140,8 @@ typedef struct audio
 	uint32_t frame_sequencer_count;
 	uint16_t sweep_count;
 	uint32_t buffer_pos;
-	uint16_t noise_feedback_register;
 }audio_t;
 
-void     audio_start_thread(void);
 audio_t *audio_init(cpu_state_t *state);
 reg_t    audio_load(audio_t *audio, reg16_t addr);
 void     audio_simulate(audio_t *audio, int clk);

@@ -2,6 +2,7 @@
 #include "audio.h"
 #include "logging.h"
 #include "memory.h"
+#include "noise_table.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,6 +19,7 @@ typedef struct
     int16_t right;
 }sample_t;
 
+
 static inline float calc_freq(uint32_t freq_msb, uint32_t freq_lsb)
 {
 	uint32_t freq = freq_msb << 8 | freq_lsb;
@@ -26,80 +28,105 @@ static inline float calc_freq(uint32_t freq_msb, uint32_t freq_lsb)
 	return CPU_CLOCK_SPEED / (float)freq;
 }
 
-static uint8_t duty_table[4][8] =
+static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, int duty)
 {
-    {0,0,0,0,0,0,0,1},
-    {1,0,0,0,0,0,0,1},
-    {1,0,0,0,0,1,1,1},
-    {0,1,1,1,1,1,1,0},
-};
+	const uint8_t duty_table[4][8] =
+	{
+		{ 0,0,0,0,0,0,0,1 },
+		{ 1,0,0,0,0,0,0,1 },
+		{ 1,0,0,0,0,1,1,1 },
+		{ 0,1,1,1,1,1,1,0 },
+	};
 
-static uint8_t wave_shift_table[] =
-{
-	4, 0, 1, 2
-};
-
-static uint8_t wave_default_table[32] =
-{
-	0x4, 0x8,
-	0x0, 0x4,
-	0x3, 0x4,
-	0xA, 0xA,
-	0xD, 0x2,
-	0x8, 0x7,
-	0x2, 0x9,
-	0xC, 0x3,
-	0x0, 0x6,
-	0x9, 0x5,
-	0x9, 0x5,
-	0x0, 0xB,
-	0x4, 0x3,
-	0x8, 0xB,
-	0xE, 0x2,
-	0xA, 0xD,
-};
-
-static uint8_t noise_divisor_table[8] =
-{
-	8, 16, 32, 48, 64, 80, 96, 112
-};
-
-static int16_t square(float t, float freq, int volume, int duty)
-{
+	float freq = calc_freq(freq_msb, freq_lsb);
 	int idx = (int)(t * freq * 8);
     int16_t val = duty_table[duty][idx % 8] ? INT16_MAX : INT16_MIN;
-    val = volume * val / (15 * 40);
+    val = volume * val / (16 * 40);
     return val;
 }
 static int16_t square1(float t, audio_t *audio)
 {
-    float freq = calc_freq(audio->sq1.freq_msb, audio->sq1.freq_lsb);
-    int16_t out = square(t, freq, audio->sq1.volume, audio->sq1.duty);
-    return out;
+    return square(t, audio->sq1.freq_msb, audio->sq1.freq_lsb, audio->sq1.volume, audio->sq1.duty);
 }
 
 static int16_t square2(float t, audio_t *audio)
 {
-    float freq = calc_freq(audio->sq2.freq_msb,  audio->sq2.freq_lsb);
-    int16_t out = square(t, freq, audio->sq2.volume, audio->sq2.duty);
-    return out;
+    return square(t, audio->sq2.freq_msb, audio->sq2.freq_lsb, audio->sq2.volume, audio->sq2.duty);
 }
 
 static int16_t wave(float t, audio_t *audio)
 {
-    float freq      = calc_freq(audio->wave.freq_msb, audio->wave.freq_lsb);
+	const uint8_t shift_table[] =
+	{
+		4, 0, 1, 2
+	};
+
+	// The wave frequency is half that of the other channels.
+	float freq = calc_freq(audio->wave.freq_msb, audio->wave.freq_lsb) / 2.0f;
 	uint32_t idx    = (uint32_t)(t * freq * 32);
     uint8_t  sample = audio->wave_table[idx % 32];
-	uint8_t  shift  = wave_shift_table[audio->wave.volume_code];
-	int16_t value = INT16_MAX * (sample >> shift);
-	value = 10 * value / (15 * 20);
+	uint8_t  shift  = shift_table[audio->wave.volume_code];
+	int16_t  value = INT16_MAX / 16 * (sample >> shift);
+	value /= 40;
 	return value;
 }
 
+static uint32_t noise_freq(audio_t *audio)
+{
+	/* Information found here:
+	http://belogic.com/gba/channel4.shtml
+	*/
+	const uint8_t noise_divisor_table[8] =
+	{
+		8 / 2,
+		8 * 1,
+		8 * 2,
+		8 * 3,
+		8 * 4,
+		8 * 5,
+		8 * 6,
+		8 * 7
+	};
+
+	uint32_t div_freq = CPU_CLOCK_SPEED / noise_divisor_table[audio->noise.divisor];
+	uint32_t pre_scaler_freq = div_freq >> (audio->noise.clock_shift + 1);
+	return pre_scaler_freq;
+}
+
+
 static int16_t noise(float t, audio_t *audio)
 {
-	return audio->noise.volume * rand() / (15 * 20);
+	 uint8_t sample;
+	if (audio->noise.width_mode)
+	{
+		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_7));
+		sample = noise_table_7[idx % sizeof(noise_table_7)];
+	}
+	{
+		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_15));
+		sample = noise_table_15[idx % sizeof(noise_table_15)];
+	}
+
+	if (sample)
+	{
+		return INT16_MAX / 40;
+	}
+	else
+	{
+		return 0;
+	}
 }
+
+#if 0
+static void increment_feedback_register(audio_t *audio)
+{
+	uint16_t reg = audio->noise_feedback_register;
+	uint8_t out = BIT_N(reg, 0);
+	uint16_t top_bit = BIT_N(reg, 0) ^ BIT_N(reg, 1);
+	uint16_t shift = audio->noise.width_mode ? 6 : 14;
+	audio->noise_feedback_register = (reg >> 1) | top_bit << shift;
+}
+#endif
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
@@ -120,26 +147,41 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
             val += square2(t, audio);
         }
 #endif
-#if 0
+#if 1
         if(audio->wave.en && audio->wave.power)
         {
             val += wave(t, audio);
         }
 #endif
+#if 1
 		if (audio->noise.en)
 		{
 			val += noise(t, audio);
 		}
+#endif
         samples[i]= (sample_t){.left = val, .right = val};
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
+}
+
+static void init_wave_table(audio_t *audio)
+{
+	const uint8_t wave_default_table[32] =
+	{
+		0x4, 0x8, 0x0, 0x4, 0x3, 0x4,0xA, 0xA,
+		0xD, 0x2, 0x8, 0x7, 0x2, 0x9,0xC, 0x3,
+		0x0, 0x6, 0x9, 0x5, 0x9, 0x5,0x0, 0xB,
+		0x4, 0x3, 0x8, 0xB, 0xE, 0x2,0xA, 0xD,
+	};
+	memcpy(audio->wave_table, wave_default_table, sizeof(audio->wave_table));
 }
 
 audio_t *audio_init(cpu_state_t *state)
 {
 	audio_t *out = CALLOC(1, sizeof(audio_t));
 	out->state   = state;
-	memcpy(out->wave_table, wave_default_table, sizeof(out->wave_table));
+
+	init_wave_table(out);
 
 #if AUDIO
 	SDL_AudioSpec wanted;
@@ -363,7 +405,10 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
     #undef X
     #define X(field, msb, lsb) audio->wave.field = DECODE(data, msb, lsb);
         case 0xff1a: NR30; break;
-        case 0xff1b: NR31; break;
+        case 0xff1b:
+			NR31;
+			audio->wave.load_len = 256 - audio->wave.load_len;
+			break;
         case 0xff1c: NR32; break;
         case 0xff1d: NR33; break;
         case 0xff1e:
@@ -375,7 +420,10 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
             break;
     #undef X
     #define X(field, msb, lsb) audio->noise.field = DECODE(data, msb, lsb);
-        case 0xff20: NR41; break;
+        case 0xff20:
+			NR41;
+			audio->noise.load_len = 64 - audio->noise.load_len;
+			break;
         case 0xff21: NR42; break;
         case 0xff22: NR43; break;
         case 0xff23:
@@ -384,6 +432,7 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 			{
 				audio->noise.en = 1;
 			}
+			break;
     #undef X
     #define X(field, msb, lsb) audio->control.field = DECODE(data, msb, lsb);
         case 0xff24: NR50; break;
