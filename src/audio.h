@@ -133,6 +133,7 @@ typedef struct audio
 	uint32_t frame_sequencer_count;
 	uint16_t sweep_count;
 	uint32_t buffer_pos;
+	uint16_t noise_feedback_register;
 }audio_t;
 
 void     audio_start_thread(void);

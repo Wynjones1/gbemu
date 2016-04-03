@@ -59,6 +59,11 @@ static uint8_t wave_default_table[32] =
 	0xA, 0xD,
 };
 
+static uint8_t noise_divisor_table[8] =
+{
+	8, 16, 32, 48, 64, 80, 96, 112
+};
+
 static int16_t square(float t, float freq, int volume, int duty)
 {
 	int idx = (int)(t * freq * 8);
@@ -87,8 +92,17 @@ static int16_t wave(float t, audio_t *audio)
     uint8_t  sample = audio->wave_table[idx % 32];
 	uint8_t  shift  = wave_shift_table[audio->wave.volume_code];
 	int16_t value = INT16_MAX * (sample >> shift);
-	value = audio->wave.volume * value / (15 * 20);
+	value = 10 * value / (15 * 20);
 	return value;
+}
+
+static int16_t noise(float t, audio_t *audio)
+{
+	uint8_t shift_freq = audio->noise.clock_shift;
+	uint8_t shift_reg_size = audio->noise.width_mode ? 7 : 15;
+	uint8_t div_ratio = audio->noise.divisor + 1;
+	float freq = 524288 / (div_ratio / (1 << (shift_freq + 1)));
+	return audio->noise.volume * rand() / (15 * 20);
 }
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
@@ -110,12 +124,16 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
             val += square2(t, audio);
         }
 #endif
-#if 1
+#if 0
         if(audio->wave.en && audio->wave.power)
         {
             val += wave(t, audio);
         }
 #endif
+		if (audio->noise.en)
+		{
+			val += noise(t, audio);
+		}
         samples[i]= (sample_t){.left = val, .right = val};
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
@@ -210,6 +228,7 @@ void length_counter(audio_t *audio)
 	X(sq1);
 	X(sq2);
 	X(wave);
+	X(noise);
 #undef X
 }
 
@@ -266,6 +285,7 @@ void envelope(audio_t *audio)
     static uint8_t counter[4];
     envelope_channel(audio->sq1.en, audio->sq1.period, audio->sq1.add_mode, &audio->sq1.volume, counter + 0);
     envelope_channel(audio->sq2.en, audio->sq2.period, audio->sq2.add_mode, &audio->sq2.volume, counter + 1);
+	envelope_channel(audio->noise.en, audio->noise.period, audio->noise.add_mode, &audio->noise.volume, counter + 2);
 }
 
 void frame_sequencer(audio_t *audio, int clk)
@@ -362,7 +382,12 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
         case 0xff20: NR41; break;
         case 0xff21: NR42; break;
         case 0xff22: NR43; break;
-        case 0xff23: NR44; break;
+        case 0xff23:
+			NR44;
+			if (DECODE(data, 7, 7))
+			{
+				audio->noise.en = 1;
+			}
     #undef X
     #define X(field, msb, lsb) audio->control.field = DECODE(data, msb, lsb);
         case 0xff24: NR50; break;

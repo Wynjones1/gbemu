@@ -108,6 +108,7 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
             state->load_state = 1;
             break;
         case SDLK_F11:
+
             if(down)
             {
                 display_toggle_fullscreen(state->display);
