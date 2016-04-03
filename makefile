@@ -15,9 +15,9 @@ MINGW            ?= No
 EXE              := gbemu
 CHECK            ?= No
 TESTING          ?= No
-AUDIO            ?= Yes
-DEBUG_WINDOW     ?= Yes
-CONTROLS         ?= Yes
+AUDIO            ?= No
+DEBUG_WINDOW     ?= No
+CONTROLS         ?= No
 LOG_INSTRUCTIONS ?= No
 
 
@@ -41,7 +41,7 @@ run: all
 	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file break.txt
 
 gdb: all
-	cgdb --args ./build/$(EXE) -i $(ROM_DIR)/$(ROM)
+	cgdb --args ./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
 
 clean:
 	rm -Rf build bin *.svg *.out *.ppm *.log coverage

@@ -98,10 +98,6 @@ static int16_t wave(float t, audio_t *audio)
 
 static int16_t noise(float t, audio_t *audio)
 {
-	uint8_t shift_freq = audio->noise.clock_shift;
-	uint8_t shift_reg_size = audio->noise.width_mode ? 7 : 15;
-	uint8_t div_ratio = audio->noise.divisor + 1;
-	float freq = 524288 / (div_ratio / (1 << (shift_freq + 1)));
 	return audio->noise.volume * rand() / (15 * 20);
 }
 
