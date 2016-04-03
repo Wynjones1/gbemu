@@ -48,7 +48,7 @@ typedef struct cpu_state cpu_state_t;
     X(len_en,       6, 6)  \
     X(trigger,      7, 7)  
 #define NR41               \
-    X(len_load,     5, 0)  
+    X(load_len,     5, 0)  
 #define NR42               \
     X(period,       2, 0)  \
     X(add_mode,     3, 3)  \
@@ -128,10 +128,11 @@ typedef struct audio
     }control;
 
 #undef X
-	uint8_t  wave_table[16];
+	uint8_t  wave_table[32];
 	uint32_t frame_sequencer_step;
 	uint32_t frame_sequencer_count;
 	uint16_t sweep_count;
+	uint32_t buffer_pos;
 }audio_t;
 
 void     audio_start_thread(void);
@@ -139,5 +140,6 @@ audio_t *audio_init(cpu_state_t *state);
 reg_t    audio_load(audio_t *audio, reg16_t addr);
 void     audio_simulate(audio_t *audio, int clk);
 void     audio_store(audio_t *audio, reg16_t addr, reg_t data);
+void     audio_store_wave_sample(audio_t *audio, uint8_t idx, reg_t samples);
 void     audio_delete(audio_t *audio);
 

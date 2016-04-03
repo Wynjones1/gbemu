@@ -4,14 +4,13 @@
 #include "memory.h"
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
+// Parameters for the SDL audio device.
 #define NUM_CHANNELS 2
 #define NUM_SAMPLES  1024
 #define FREQUENCY    44100
 #define VOLUME       0.005
-
-static audio_t *g_audio;
-
 
 typedef struct
 {
@@ -19,7 +18,13 @@ typedef struct
     int16_t right;
 }sample_t;
 
-#define FREQ(msb, lsb) (CPU_CLOCK_SPEED / (32 * ((float)(2048 - (msb << 8 | lsb)))))
+static inline float calc_freq(uint32_t freq_msb, uint32_t freq_lsb)
+{
+	uint32_t freq = freq_msb << 8 | freq_lsb;
+	freq = 2048 - freq;
+	freq <<= 5;
+	return CPU_CLOCK_SPEED / (float)freq;
+}
 
 static uint8_t duty_table[4][8] =
 {
@@ -28,6 +33,32 @@ static uint8_t duty_table[4][8] =
     {1,0,0,0,0,1,1,1},
     {0,1,1,1,1,1,1,0},
 };
+
+static uint8_t wave_shift_table[] =
+{
+	4, 0, 1, 2
+};
+
+static uint8_t wave_default_table[32] =
+{
+	0x4, 0x8,
+	0x0, 0x4,
+	0x3, 0x4,
+	0xA, 0xA,
+	0xD, 0x2,
+	0x8, 0x7,
+	0x2, 0x9,
+	0xC, 0x3,
+	0x0, 0x6,
+	0x9, 0x5,
+	0x9, 0x5,
+	0x0, 0xB,
+	0x4, 0x3,
+	0x8, 0xB,
+	0xE, 0x2,
+	0xA, 0xD,
+};
+
 static int16_t square(float t, float freq, int volume, int duty)
 {
 	int idx = (int)(t * freq * 8);
@@ -35,54 +66,58 @@ static int16_t square(float t, float freq, int volume, int duty)
     val = volume * val / (15 * 40);
     return val;
 }
-static int16_t square1(float t)
+static int16_t square1(float t, audio_t *audio)
 {
-    float freq = FREQ(g_audio->sq1.freq_msb, g_audio->sq1.freq_lsb);
-    int16_t out = square(t, freq, g_audio->sq1.volume, g_audio->sq1.duty);
+    float freq = calc_freq(audio->sq1.freq_msb, audio->sq1.freq_lsb);
+    int16_t out = square(t, freq, audio->sq1.volume, audio->sq1.duty);
     return out;
 }
 
-static int16_t square2(float t)
+static int16_t square2(float t, audio_t *audio)
 {
-    float freq = FREQ(g_audio->sq2.freq_msb,  g_audio->sq2.freq_lsb);
-    int16_t out = square(t, freq, g_audio->sq2.volume, g_audio->sq2.duty);
+    float freq = calc_freq(audio->sq2.freq_msb,  audio->sq2.freq_lsb);
+    int16_t out = square(t, freq, audio->sq2.volume, audio->sq2.duty);
     return out;
 }
 
-static int16_t wave(float t)
+static int16_t wave(float t, audio_t *audio)
 {
-    float freq = 440;
-	int idx = (int)(t * freq * 64);
-    uint8_t sample = g_audio->wave_table[idx >> 1];
-    if(idx & 0x1) return sample & MASK(4);
-    return INT16_MAX * (sample >> 4) / 15;
+    float freq      = calc_freq(audio->wave.freq_msb, audio->wave.freq_lsb);
+	uint32_t idx    = (uint32_t)(t * freq * 32);
+    uint8_t  sample = audio->wave_table[idx % 32];
+	uint8_t  shift  = wave_shift_table[audio->wave.volume_code];
+	int16_t value = INT16_MAX * (sample >> shift);
+	value = audio->wave.volume * value / (15 * 20);
+	return value;
 }
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
-    static int pos = 0;
     sample_t *samples = (sample_t*)stream;
+	audio_t *audio = (audio_t*)udata;
     int num_samples = len / (sizeof(sample_t));
     for(int i = 0; i < num_samples; i++)
     {
-        float t = pos / (float)FREQUENCY;
+        float t = audio->buffer_pos / (float)FREQUENCY;
         int16_t val = 0;
-        if(g_audio->sq1.en)
+#if 1
+        if(audio->sq1.en)
         {
-            val += square1(t);
+            val += square1(t, audio);
         }
-        if(g_audio->sq2.en)
+        if(audio->sq2.en)
         {
-            val += square2(t);
+            val += square2(t, audio);
         }
-#if 0
-        if(g_audio->wave.en)
+#endif
+#if 1
+        if(audio->wave.en && audio->wave.power)
         {
-            val += wave(t);
+            val += wave(t, audio);
         }
 #endif
         samples[i]= (sample_t){.left = val, .right = val};
-        pos = (pos + 1) % FREQUENCY;
+		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
 }
 
@@ -90,7 +125,7 @@ audio_t *audio_init(cpu_state_t *state)
 {
 	audio_t *out = CALLOC(1, sizeof(audio_t));
 	out->state   = state;
-    g_audio = out;
+	memcpy(out->wave_table, wave_default_table, sizeof(out->wave_table));
 
 #if AUDIO
 	SDL_AudioSpec wanted;
@@ -100,7 +135,7 @@ audio_t *audio_init(cpu_state_t *state)
 	wanted.channels = NUM_CHANNELS;
 	wanted.samples  = NUM_SAMPLES;
 	wanted.callback = fill_audio;
-	wanted.userdata = NULL;
+	wanted.userdata = out;
 
 	/* Open the audio device, forcing the desired format */
 	if ( SDL_OpenAudio(&wanted, NULL) < 0 )
@@ -153,6 +188,13 @@ reg_t audio_load(audio_t *audio, reg16_t addr)
 void audio_delete(audio_t *audio)
 {
 	free(audio);
+}
+
+void audio_store_wave_sample(audio_t *audio, uint8_t idx, reg_t samples)
+{
+	// Two samples are packed into a single byte, extract them.
+	audio->wave_table[idx * 2]     = samples >> 4; // The first sample is in the MSB
+	audio->wave_table[idx * 2 + 1] = samples & 0xf;
 }
 
 void length_counter(audio_t *audio)
@@ -332,7 +374,7 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
         case 0xff34: case 0xff35: case 0xff36: case 0xff37:
         case 0xff38: case 0xff39: case 0xff3a: case 0xff3b:
         case 0xff3c: case 0xff3d: case 0xff3e: case 0xff3f:
-            audio->wave_table[addr - 0xff30] = data;
+			audio_store_wave_sample(audio, addr - 0xff30, data);
             break;
         default:
             log_warning("Write to invalid sound register 0x%04X 0x%04X.\n", addr, data);

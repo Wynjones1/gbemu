@@ -282,7 +282,7 @@ static void write_IO_registers(memory_t *mem, reg16_t addr, reg_t data)
             {
 				mem->boot_locked = 1;
 #if INTRO_ONLY
-    exit(0);
+				exit(0);
 #endif
             }
 			break;
