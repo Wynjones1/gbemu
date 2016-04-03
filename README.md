@@ -10,10 +10,7 @@ Controls
 |-----------|-----|
 | A         | i   |
 | B         | j   |
-| Left      | a   |
-| Right     | d   |
-| Up        | w   |
-| Down      | s   |
+| D-Pad      | WASD |
 | Start     | g   |
 | Select    | f   |
 | Pause     | p   |
