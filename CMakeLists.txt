@@ -57,7 +57,7 @@ if(MSVC)
 endif()
 
 #Use these options to include the boot_rom + rom in the executable
-DEFADD(EMBEDDED_FILES      Yes  "Embbed all files in binary")
+DEFADD(EMBEDDED_FILES      No "Embbed all files in binary")
 if(EMBEDDED_FILES)
 	set(EMBEDDED_BOOT_ROM_FILE ${CMAKE_SOURCE_DIR}/data/boot_roms/DMG.bin CACHE FILEPATH "Initial 256 byte program to be embedded in the executable")
 	set(EMBEDDED_ROM_FILE ${CMAKE_SOURCE_DIR}/data/roms/mario.gb          CACHE FILEPATH "Game to be embedded in the executable")

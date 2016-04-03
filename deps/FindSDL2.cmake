@@ -3,8 +3,10 @@ set(SDL2_FOUND        True)
 set(SDL2_INCLUDE_DIRS "")
 set(SDL2_LIBRARIES    "")
 set(SDL2_LIBRARY_PATH "")
+set(SDL2_FOUND        False)
 
 if(MSVC)
+    set(SDL2_FOUND True)
 	set(SDL2_INCLUDE_DIRS ${SDL2_PREFIX}/Win32/include)
 
 	# Check if we are building 64 bits.
@@ -23,4 +25,6 @@ if(MSVC)
 		${SDL2_LIBRARY_PATH}/SDL2main.lib
 	)
 else()
+    include(FindPkgConfig)
+    pkg_check_modules(SDL2 sdl2 REQUIRED)
 endif()

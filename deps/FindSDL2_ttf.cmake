@@ -18,4 +18,5 @@ if(MSVC)
 		${SDL2_TTF_LIBRARY_PATH}/SDL2_ttf.lib
 	)
 else()
+    set(SDL2_TTF_LIBRARIES SDL2_ttf)
 endif()
