@@ -10,7 +10,7 @@
 // Parameters for the SDL audio device.
 #define NUM_CHANNELS 2
 #define NUM_SAMPLES  1024
-#define FREQUENCY    44100
+#define FREQUENCY    (44100)
 #define VOLUME       0.005
 
 typedef struct
@@ -98,12 +98,13 @@ static uint32_t noise_freq(audio_t *audio)
 
 static int16_t noise(float t, audio_t *audio)
 {
-	 uint8_t sample;
+	uint8_t sample;
 	if (audio->noise.width_mode)
 	{
 		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_7));
 		sample = noise_table_7[idx % sizeof(noise_table_7)];
 	}
+	else
 	{
 		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_15));
 		sample = noise_table_15[idx % sizeof(noise_table_15)];
@@ -150,7 +151,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 			val += noise(t, audio);
 		}
 #endif
-		val /= 4;
+		val /= 4 * 10;
         samples[i]= (sample_t){.left = val, .right = val};
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }

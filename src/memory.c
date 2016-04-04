@@ -26,11 +26,11 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
     fclose(fp);
 
 	fp = FOPEN(rom, "rb");
-        fseek(fp, 0L, SEEK_END);
-        out->to_read = (size_t) ftell(fp);
-        fseek(fp, 0x0, SEEK_SET);
-        out->bank_0       = (reg_t*)malloc(out->to_read);
-        common_fread(out->bank_0, 1, out->to_read, fp);
+    fseek(fp, 0L, SEEK_END);
+    out->to_read = (size_t) ftell(fp);
+    fseek(fp, 0x0, SEEK_SET);
+    out->bank_0  = (reg_t*)MALLOC(out->to_read);
+    common_fread(out->bank_0, 1, out->to_read, fp);
 	fclose(fp);
 #endif
 
