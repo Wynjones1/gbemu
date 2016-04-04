@@ -8,7 +8,7 @@ compiler:
 
 addons:
     apt:
-        packages
+        packages:
         - libsdl2-dev
         - libsdl2-ttf-dev
 
