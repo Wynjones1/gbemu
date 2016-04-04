@@ -30,8 +30,8 @@ static inline float calc_freq(uint32_t freq_msb, uint32_t freq_lsb)
 
 static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, int duty)
 {
-	#define H INT16_MAX
-	#define L INT16_MIN
+	#define H 1
+	#define L -1
 	const int16_t duty_table[4][8] =
 	{
 		{ L,L,L,L,L,L,L,H },
@@ -43,8 +43,8 @@ static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, i
 	#undef L
 
 	float freq = calc_freq(freq_msb, freq_lsb);
-	int idx    = (int)(t * freq * 8);
-	return (volume * duty_table[duty][idx % 8]) / 16;
+	int   idx  = (int)(t * freq * 8);
+	return volume * duty_table[duty][idx % 8];
 }
 
 static int16_t square1(float t, audio_t *audio)
@@ -69,7 +69,7 @@ static int16_t wave(float t, audio_t *audio)
 	uint32_t idx    = (uint32_t)(t * freq * 32);
     uint8_t  sample = audio->wave_table[idx % 32];
 	uint8_t  shift  = shift_table[audio->wave.volume_code];
-	int16_t  value  = (INT16_MAX / 16) * (sample >> shift);
+	int16_t  value  = sample >> shift;
 	return value;
 }
 
@@ -110,14 +110,7 @@ static int16_t noise(float t, audio_t *audio)
 		sample = noise_table_15[idx % sizeof(noise_table_15)];
 	}
 
-	if (sample)
-	{
-		return (INT16_MAX * audio->noise.volume) / 16;
-	}
-	else
-	{
-		return (INT16_MIN * audio->noise.volume) / 16;
-	}
+	return sample ? audio->noise.volume: -audio->noise.volume;
 }
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
@@ -151,7 +144,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
 			val += noise(t, audio);
 		}
 #endif
-		val /= 4 * 10;
+		val *= INT16_MAX / (4 * 10 * 16);
         samples[i]= (sample_t){.left = val, .right = val};
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
