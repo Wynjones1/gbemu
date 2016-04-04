@@ -6,6 +6,12 @@ compiler:
     - gcc
     - clang
 
+addons:
+    apt:
+        packages
+        - libsdl2-dev
+        - libsdl2-ttf-dev
+
 before_script:
     - mkdir build
     - cd build
