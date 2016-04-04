@@ -31,8 +31,8 @@ def write_table(fp, width):
 			fp.write("\n")
 		count += 1
 	fp.write("\n};\n")
-def main():
 
+def main():
     with open("noise_table.h", "w") as fp:
         fp.write("#ifndef NOISE_TABLE_H\n")
         fp.write("#define NOISE_TABLE_H\n")

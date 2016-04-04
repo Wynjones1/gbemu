@@ -94,6 +94,7 @@ typedef struct audio
         NR14
         int8_t volume;
         uint8_t en;
+		uint8_t envelope_counter;
     }sq1;
 
     struct
@@ -104,6 +105,7 @@ typedef struct audio
         NR24
         int8_t volume;
         uint8_t en;
+		uint8_t envelope_counter;
     }sq2;
 
     struct
@@ -125,6 +127,7 @@ typedef struct audio
         NR44
         int8_t  volume;
         uint8_t en;
+		uint8_t envelope_counter;
     }noise;
 
     struct
