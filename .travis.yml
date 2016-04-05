@@ -8,6 +8,12 @@ compiler:
 
 addons:
     apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        - lucid
+
+addons:
+    apt:
         packages:
         - libsdl2-dev
         - libsdl2-ttf-dev
