@@ -1,22 +1,21 @@
 language: c
 
-sudo: false
+sudo: required
 
 compiler:
     - gcc
     - clang
+
+install:
+    - sudo add-apt-repository ppa:team-xbmc/ppa -y
+    - sudo apt-get update -q
+    - sudo apt-get install libsdl2-dev libsdl2-ttf-dev
 
 addons:
     apt:
         sources:
         - ubuntu-toolchain-r-test
         - ubuntu-precise
-
-addons:
-    apt:
-        packages:
-        - libsdl2-dev
-        - libsdl2-ttf-dev
 
 before_script:
     - mkdir build
