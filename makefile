@@ -59,3 +59,11 @@ coverage: clean run
 	lcov --remove ./build/coverage.info "/usr/*" --output-file ./build/coverage.temp
 	mv ./build/coverage.temp ./build/coverage.info
 	genhtml -o ./build/coverage ./build/coverage.info
+
+travis:
+	rm -Rf sdl_build
+	mkdir -p sdl_build/cmake
+	cd sdl_build && wget https://www.libsdl.org/release/SDL2-2.0.4.tar.gz
+	cd sdl_build && tar xvf SDL2-2.0.4.tar.gz
+	cd sdl_build/cmake && cmake ../SDL2-2.0.4
+	cd sdl_build/cmake && make -j5
