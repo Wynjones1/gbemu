@@ -60,10 +60,19 @@ coverage: clean run
 	mv ./build/coverage.temp ./build/coverage.info
 	genhtml -o ./build/coverage ./build/coverage.info
 
-travis:
-	rm -Rf sdl_build
+
+sdl_build:
 	mkdir -p sdl_build/cmake
+
+sdl_build/SDL2-2.0.4.tar.gz: sdl_build
 	cd sdl_build && wget https://www.libsdl.org/release/SDL2-2.0.4.tar.gz
+
+sdl_build/SDL2-2.0.4: sdl_build/SDL2-2.0.4.tar.gz
 	cd sdl_build && tar xvf SDL2-2.0.4.tar.gz
-	cd sdl_build/cmake && cmake ../SDL2-2.0.4
-	cd sdl_build/cmake && make -j5
+
+SDL: sdl_build/SDL2-2.0.4
+	cd sdl_build/cmake && cmake ../SDL2-2.0.4 -DCMAKE_INSTALL_PREFIX=`pwd`/sdl_build/install
+	cd sdl_build/cmake && make -j1
+	cd sdl_build/cmake && make install
+
+travis: SDL

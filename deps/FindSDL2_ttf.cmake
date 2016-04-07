@@ -18,5 +18,18 @@ if(MSVC)
 		${SDL2_TTF_LIBRARY_PATH}/SDL2_ttf.lib
 	)
 else()
-    set(SDL2_TTF_LIBRARIES SDL2_ttf)
+    #set(SDL2_TTF_LIBRARIES SDL2_ttf)
+    pkg_check_modules(SDL2_TTF SDL2_ttf)
+    if(NOT SDL2_TTF_FOUND)
+        message(STATUS "Building SDL2_ttf from source...")
+        include(ExternalProject)
+        set(INSTALL_DIR ${CMAKE_BINARY_DIR}/external)
+        ExternalProject_Add(
+            SDL2_TTF
+            URL https://www.libsdl.org/projects/SDL_ttf/release/SDL2_ttf-2.0.14.tar.gz
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=${INSTALL_DIR}
+        )
+        set(ENV{PKG_CONFIG_PATH} "$ENV{PKG_CONFIG_PATH}:${INSTALL_DIR}/lib/pkgconfig")
+        pkg_check_modules(SDL2_TTF SDL2_ttf REQUIRED)
+    endif()
 endif()

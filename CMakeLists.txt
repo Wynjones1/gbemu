@@ -9,7 +9,6 @@ endif()
 
 project(gbemu)
 find_package(SDL2)
-find_package(TTF)
 find_package(SDL2_ttf)
 
 set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type")
