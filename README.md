@@ -1,6 +1,8 @@
 gbemu
 =====
 
+[![Travis Build Status](https://travis-ci.org/Wynjones1/gbemu.svg?branch=master)](https://travis-ci.org/Wynjones1/gbemu)
+
 Game Boy Emulator
 
 Controls
