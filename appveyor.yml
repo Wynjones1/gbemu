@@ -1,0 +1,26 @@
+
+environment:
+  P: "c:/projects/gbemu"
+
+branches:
+    only:
+        - master
+
+os: Visual Studio 2015
+
+init:
+    - git config --global core.autocrlf input
+
+clone_folder: c:/projects/gbemu
+
+platform: x64
+configuration: Release
+
+build:
+
+build_script:
+    - echo Running CMake...
+    - mkdir build
+    - cd build
+    - cmake -G "Visual Studio 14 2015 Win64" c:/projects/gbemu
+    - cmake --build . --config Release
