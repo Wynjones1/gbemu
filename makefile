@@ -38,7 +38,7 @@ mingw: MINGW := Yes EXE
 mingw: all
 
 run: all
-	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file break.txt
+	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
 
 gdb: all
 	cgdb --args ./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
