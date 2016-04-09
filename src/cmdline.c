@@ -5,7 +5,7 @@
 #include "logging.h"
 #include "common.h"
 
-#define SET_DEFAULT (i == -1)
+#define SET_DEFAULT (-1 == i)
 #define HAVE_NEXT   (i + 1 < argc)
 #define NEXT        argv[i + 1]
 #define CMP(s, l, str)\
