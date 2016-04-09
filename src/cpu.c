@@ -21,7 +21,7 @@ cpu_state_t *cpu_init()
 	cpu_state_t *out = CALLOC(1, sizeof(cpu_state_t));
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
-    out->frame_limit = 0;
+    out->frame_limit = true;
     // If we don't pass in a boot file we use some default values.
     if(cmdline_args.boot_rom == NULL)
     {

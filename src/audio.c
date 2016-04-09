@@ -28,7 +28,7 @@ static inline float calc_freq(uint32_t freq_msb, uint32_t freq_lsb)
 	return CPU_CLOCK_SPEED / (float)freq;
 }
 
-static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, int duty)
+static int32_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, int duty)
 {
 	#define H 1
 	#define L -1
@@ -47,17 +47,17 @@ static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, i
 	return volume * duty_table[duty][idx % 8];
 }
 
-static int16_t square1(float t, audio_t *audio)
+static int32_t square1(float t, audio_t *audio)
 {
     return square(t, audio->sq1.freq_msb, audio->sq1.freq_lsb, audio->sq1.volume, audio->sq1.duty);
 }
 
-static int16_t square2(float t, audio_t *audio)
+static int32_t square2(float t, audio_t *audio)
 {
     return square(t, audio->sq2.freq_msb, audio->sq2.freq_lsb, audio->sq2.volume, audio->sq2.duty);
 }
 
-static int16_t wave(float t, audio_t *audio)
+static int32_t wave(float t, audio_t *audio)
 {
 	const uint8_t shift_table[] =
 	{
@@ -75,42 +75,76 @@ static int16_t wave(float t, audio_t *audio)
 
 static uint32_t noise_freq(audio_t *audio)
 {
+#if 0
 	/* Information found here:
 	   http://belogic.com/gba/channel4.shtml
 	*/
-	const uint32_t noise_divisor_table[8] =
+	const uint32_t noise_divisor_table[15][8] =
 	{
-		CPU_CLOCK_SPEED / (16 / 2),
-		CPU_CLOCK_SPEED / (16 * 1),
-		CPU_CLOCK_SPEED / (16 * 2),
-		CPU_CLOCK_SPEED / (16 * 3),
-		CPU_CLOCK_SPEED / (16 * 4),
-		CPU_CLOCK_SPEED / (16 * 5),
-		CPU_CLOCK_SPEED / (16 * 6),
-		CPU_CLOCK_SPEED / (16 * 7)
+#define X(SHIFT) {                                 \
+		(CPU_CLOCK_SPEED / (8 / 2)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 1)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 2)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 3)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 4)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 5)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 6)) >> (SHIFT + 1),\
+		(CPU_CLOCK_SPEED / (8 * 7)) >> (SHIFT + 1)},
+
+		X(0)  X(1)  X(2)
+		X(3)  X(4)  X(5)
+		X(6)  X(7)  X(8)
+		X(9)  X(10) X(11)
+		X(12) X(13) X(14)
+#undef X
 	};
 
-	uint32_t div_freq = noise_divisor_table[audio->noise.divisor];
-	uint32_t shift    = audio->noise.clock_shift;
-	return div_freq >> shift;
+	uint32_t freq = noise_divisor_table[audio->noise.clock_shift][audio->noise.divisor];
+	return freq;
+#else
+	uint32_t freq;
+	if(audio->noise.divisor == 0)
+		freq = (524288 * 2) >> (audio->noise.clock_shift + 1);
+	else
+		freq = (524288 / audio->noise.divisor) >> (audio->noise.clock_shift + 1);
+	return freq;
+#endif
 }
 
-
-static int16_t noise(float t, audio_t *audio)
+static inline int32_t sample_noise(float t, uint32_t freq, const uint8_t *data, size_t data_size)
 {
-	uint8_t sample;
+#if 0
+	uint32_t idx = (uint32_t)(t * freq * data_size);
+	uint32_t num_samples = freq / FREQUENCY;
+	int32_t out = 0;
+	if (num_samples == 0) num_samples = 1;
+	int32_t sum = 0;
+	for (int i = 0; i < num_samples; i++)
+	{
+		int j = idx - num_samples / 2 + i;
+		sum += (data[j % data_size] ? INT16_MAX : INT16_MIN);
+	}
+	out = sum / num_samples;
+	return out;
+#else
+	uint32_t idx = (uint32_t)(t * freq * data_size);
+	return data[idx % data_size] ? INT16_MAX : INT16_MIN;
+#endif
+}
+
+static int32_t noise(float t, audio_t *audio)
+{
+	uint32_t freq = noise_freq(audio);
+	int32_t out;
 	if (audio->noise.width_mode)
 	{
-		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_7));
-		sample = noise_table_7[idx % sizeof(noise_table_7)];
+		out = sample_noise(t, freq, noise_table_7, sizeof(noise_table_7));
 	}
 	else
 	{
-		uint32_t idx = (uint32_t)(t * noise_freq(audio) * sizeof(noise_table_15));
-		sample = noise_table_15[idx % sizeof(noise_table_15)];
+		out = sample_noise(t, freq, noise_table_15, sizeof(noise_table_15));
 	}
-
-	return sample ? audio->noise.volume: -audio->noise.volume;
+	return out * audio->noise.volume;
 }
 
 static void fill_audio(void *udata, Uint8 *stream, int len)
@@ -122,29 +156,32 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
     {
         float t = audio->buffer_pos / (float)FREQUENCY;
         int32_t val = 0;
-#if 1
+#if 0
         if(audio->sq1.en)
         {
             val += square1(t, audio);
         }
+
         if(audio->sq2.en)
         {
             val += square2(t, audio);
         }
-#endif
-#if 1
+
         if(audio->wave.en && audio->wave.power)
         {
             val += wave(t, audio);
         }
 #endif
+		val *= INT16_MAX;
+
 #if 1
 		if (audio->noise.en)
 		{
 			val += noise(t, audio);
 		}
 #endif
-		val *= INT16_MAX / (4 * 10 * 16);
+		val /= (4 * 10 * 16);
+
         samples[i]= (sample_t){.left = val, .right = val};
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
