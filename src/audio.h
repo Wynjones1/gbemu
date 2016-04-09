@@ -117,6 +117,7 @@ typedef struct audio
         NR34
         int8_t  volume;
         uint8_t en;
+		uint8_t envelope_counter;
     }wave;
 
     struct
