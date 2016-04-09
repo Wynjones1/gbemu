@@ -6,7 +6,7 @@
     X(bool   , "v", "verbose"   , verbose   , false                     ,"verbose output.")                   \
     X(bool   , "a", "audio"     , audio     , true                      ,"enable audio")                      \
     X(bool   , "r", "record"    , record    , false                     ,"record input for playback.")        \
-    X(bool   , "p", "replay"    , replay    , false                     ,"replay previously recorded input.");\
+    X(bool   , "p", "replay"    , replay    , false                     ,"replay previously recorded input.") \
     X(string , "i", "in"        , in        , "./data/roms/mario.gb"    ,"rom that will be run.")             \
     X(int    , "s", "scale"     , scale     , 3                         ,"scale window size.")                \
     X(string , "b", "boot-rom"  , boot_rom  , NULL                      ,"first 256 bytes to be run.")        \
