@@ -1,6 +1,6 @@
 BUILD_CONFIG ?= Debug
-BUILD_CONFIG ?= RelWithDebInfo
 BUILD_CONFIG ?= Release
+BUILD_CONFIG ?= RelWithDebInfo
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
 ROM          ?= tetris.gb

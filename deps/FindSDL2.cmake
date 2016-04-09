@@ -39,6 +39,7 @@ else()
             SDL2_BUILD
             URL https://www.libsdl.org/release/SDL2-2.0.4.tar.gz
             CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}
+                       -DCMAKE_BUILD_TYPE=RelWithDebInfo
         )
         # Import the generated libraries into the build system.
         add_library(SDL2     IMPORTED SHARED)
