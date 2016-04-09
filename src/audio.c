@@ -43,7 +43,7 @@ static int16_t square(float t, uint8_t freq_msb, uint8_t freq_lsb, int volume, i
 	#undef L
 
 	float freq = calc_freq(freq_msb, freq_lsb);
-	int   idx  = (int)(t * freq * 8);
+	uint32_t   idx  = (uint32_t)(t * freq * 8);
 	return volume * duty_table[duty][idx % 8];
 }
 
@@ -76,22 +76,22 @@ static int16_t wave(float t, audio_t *audio)
 static uint32_t noise_freq(audio_t *audio)
 {
 	/* Information found here:
-	http://belogic.com/gba/channel4.shtml
+	   http://belogic.com/gba/channel4.shtml
 	*/
 	const uint32_t noise_divisor_table[8] =
 	{
-		CPU_CLOCK_SPEED / (8 / 2),
-		CPU_CLOCK_SPEED / (8 * 1),
-		CPU_CLOCK_SPEED / (8 * 2),
-		CPU_CLOCK_SPEED / (8 * 3),
-		CPU_CLOCK_SPEED / (8 * 4),
-		CPU_CLOCK_SPEED / (8 * 5),
-		CPU_CLOCK_SPEED / (8 * 6),
-		CPU_CLOCK_SPEED / (8 * 7)
+		CPU_CLOCK_SPEED / (16 / 2),
+		CPU_CLOCK_SPEED / (16 * 1),
+		CPU_CLOCK_SPEED / (16 * 2),
+		CPU_CLOCK_SPEED / (16 * 3),
+		CPU_CLOCK_SPEED / (16 * 4),
+		CPU_CLOCK_SPEED / (16 * 5),
+		CPU_CLOCK_SPEED / (16 * 6),
+		CPU_CLOCK_SPEED / (16 * 7)
 	};
 
 	uint32_t div_freq = noise_divisor_table[audio->noise.divisor];
-	uint32_t shift    = audio->noise.clock_shift + 1;
+	uint32_t shift    = audio->noise.clock_shift;
 	return div_freq >> shift;
 }
 
@@ -336,8 +336,26 @@ void frame_sequencer(audio_t *audio, int clk)
     }
 }
 
+static void power_control(audio_t *audio)
+{
+	if (audio->control.power == 0)
+	{
+		/* Zero the memory of the sound registers. The subtraction
+		   in the memset's are to account for non-register state
+		   that needs to be maintained.
+		*/
+		memset(&audio->sq1,     0x00, sizeof(audio->sq1)     - 3);
+		memset(&audio->sq2,     0x00, sizeof(audio->sq2)     - 3);
+		memset(&audio->wave,    0x00, sizeof(audio->wave)    - 2);
+		memset(&audio->noise,   0x00, sizeof(audio->noise)   - 3);
+		memset(&audio->control, 0x00, sizeof(audio->control) - 2);
+		audio->frame_sequencer_count = 0;
+	}
+}
+
 void audio_simulate(audio_t *audio, int clk)
 {
+	power_control(audio);
     frame_sequencer(audio, clk);
 }
 
@@ -427,7 +445,9 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
 		#define X(field, msb, lsb) audio->control.field = DECODE(data, msb, lsb);
         case 0xff24: NR50; break;
         case 0xff25: NR51; break;
-        case 0xff26: NR52; break;
+        case 0xff26:
+			NR52;
+			break;
 		#undef X
         //Wave table.
         case 0xff30: case 0xff31: case 0xff32: case 0xff33:
@@ -436,6 +456,10 @@ void  audio_store(audio_t *audio, reg16_t addr, reg_t data)
         case 0xff3c: case 0xff3d: case 0xff3e: case 0xff3f:
 			audio_store_wave_sample(audio, addr - 0xff30, data);
             break;
+		case 0xff27: case 0xff28: case 0xff29:
+		case 0xff2a: case 0xff2b: case 0xff2c:
+		case 0xff2d: case 0xff2e: case 0xff2f:
+			break;
         default:
             log_warning("Write to invalid sound register 0x%04X 0x%04X.\n", addr, data);
             break;

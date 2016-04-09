@@ -335,7 +335,7 @@ void cpu_start(cpu_state_t *state)
         }
 
 		//Halt emulation.
-		while(state->paused && !state->step && !state->slow)
+		while(state->memory->boot_locked && state->paused && !state->step && !state->slow)
 		{
 			SDL_Delay(100);
 		}
