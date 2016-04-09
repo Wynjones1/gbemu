@@ -1,6 +1,6 @@
 BUILD_CONFIG ?= Debug
-BUILD_CONFIG ?= RelWithDebInfo
 BUILD_CONFIG ?= Release
+BUILD_CONFIG ?= RelWithDebInfo
 ROM_DIR      ?= ~/roms/
 ROM          ?= mario.gb
 ROM          ?= tetris.gb
@@ -15,7 +15,7 @@ MINGW            ?= No
 EXE              := gbemu
 CHECK            ?= No
 TESTING          ?= No
-AUDIO            ?= No
+AUDIO            ?= Yes
 DEBUG_WINDOW     ?= No
 CONTROLS         ?= No
 LOG_INSTRUCTIONS ?= No
@@ -38,7 +38,7 @@ mingw: MINGW := Yes EXE
 mingw: all
 
 run: all
-	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM) --break-file break.txt
+	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
 
 gdb: all
 	cgdb --args ./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)

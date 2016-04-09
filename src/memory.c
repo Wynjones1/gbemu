@@ -21,9 +21,13 @@ memory_t *memory_init(cpu_state_t *state, const char *boot, const char *rom)
     memcpy(out->bank_0, rom_array, rom_size);
     memcpy(out->boot, boot_array, 0x100);
 #else
-	FILE *fp = FOPEN(boot, "rb");
+    FILE *fp = NULL;
+    if(boot != NULL)
+    {
+        fp = FOPEN(boot, "rb");
         common_fread(out->boot, 1, 0x100, fp);
-    fclose(fp);
+        fclose(fp);
+    }
 
 	fp = FOPEN(rom, "rb");
     fseek(fp, 0L, SEEK_END);
