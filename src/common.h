@@ -9,12 +9,12 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "SDL.h"
-#if HAVE_TTF
-    #include "SDL_ttf.h"
-#else
-    typedef void *TTF_Font;
-#endif
+//#include "SDL.h"
+//#if HAVE_TTF
+//    #include "SDL_ttf.h"
+//#else
+//    typedef void *TTF_Font;
+//#endif
 
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1
@@ -71,18 +71,15 @@
 #endif
 
 #if DEBUG || 1
-#define SDL_Error(cond)                       \
-    do{if(cond) Error("%s\n", SDL_GetError());}while(0)
 #define TTF_Error(cond)                       \
     do{if(cond) Error("%s\n", TTF_GetError());}while(0)
 #else
-#define SDL_Error(cond)do{int i = (cond);}while(0)
 #define TTF_Error(cond)do{int i = (cond);}while(0)
 #endif
 
 #define VERSION 1
 
-#if __WIN32__
+#if _MSC_VER
 #define NORETURN(function) function
 #define CURRENT_FUNC "placeholder_function"
 #else

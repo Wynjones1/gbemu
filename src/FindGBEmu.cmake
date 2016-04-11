@@ -1,0 +1,2 @@
+set(GBEMU_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/src)
+set(GBEMU_LIBRARIES  gbemu_lib)

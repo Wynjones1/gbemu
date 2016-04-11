@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "SDL.h"
 
 // Parameters for the SDL audio device.
 #define NUM_CHANNELS 2
@@ -138,6 +139,7 @@ static inline int16_t DAC(uint8_t x)
 {
     return INT16_MAX * (((float)(2 * x) / 15.0f) - 1.0f);
 }
+
 static void fill_audio(void *udata, Uint8 *stream, int len)
 {
     sample_t *samples = (sample_t*)stream;
@@ -186,7 +188,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
             }
         }
 
-        samples[i]= (sample_t){.left = val_l, .right = val_r};
+		samples[i] = (sample_t) { .left = val_l / 4, .right = val_r / 4 };
 		audio->buffer_pos = (audio->buffer_pos + 1) % FREQUENCY;
     }
 }

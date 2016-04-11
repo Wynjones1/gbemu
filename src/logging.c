@@ -1,7 +1,7 @@
 #include "logging.h"
 #include "common.h"
 #include <stdarg.h>
-
+#include "SDL.h"
 void log_message(const char *format, ...)
 {
     va_list args;

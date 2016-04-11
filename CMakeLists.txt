@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 list(APPEND CMAKE_MODULE_PATH
             ${CMAKE_SOURCE_DIR}/cmake
-            ${CMAKE_SOURCE_DIR}/deps)
+            ${CMAKE_SOURCE_DIR}/deps
+			${CMAKE_SOURCE_DIR}/src
+)
 if(MINGW)
     include(mingw-toolchain)
 endif()
@@ -37,7 +39,6 @@ DEFADD(AUDIO               Yes  "Build with audio")
 DEFADD(OUTPUT_WARNINGS     Yes  "Enable warning output.")
 DEFADD(OUTPUT_ERRORS       Yes  "Enable error output.")
 DEFADD(OUTPUT_OUTPUT       No   "Enable stdout  output.")
-DEFADD(TESTING             No   "Run tests.")
 DEFADD(REGISTER_WINDOW     No   "Enable GB register window")
 DEFADD(OUTPUT_DEBUG_FILES  No   "Output debug output files")
 DEFADD(DEBUG_WINDOW        No   "Window with current instruction and register values")
@@ -54,6 +55,10 @@ set(UTILS_DIR   ${CMAKE_SOURCE_DIR}/utils CACHE INTERNAL "")
 if(MSVC)
 	set(SDL_DEBUG_LIBS No CACHE BOOL "Set if the debug builds of SDL2 should be used.")
 endif()
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 #Use these options to include the boot_rom + rom in the executable
 DEFADD(EMBEDDED_FILES      No "Embbed all files in binary")
@@ -73,10 +78,7 @@ else()
 endif()
 
 add_subdirectory(src)
-
-if(TESTING)
-	add_subdirectory(tests)
-endif()
+add_subdirectory(tests)
 
 if(MINGW)
     set(DIRECTX No)

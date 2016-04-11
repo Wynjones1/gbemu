@@ -11,6 +11,8 @@
 #include "controls_image.h"
 #include "embedded_font.h"
 #include "instruction_strings.h"
+#include "SDL.h"
+#include "SDL_ttf.h"
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;

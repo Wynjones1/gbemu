@@ -1,6 +1,6 @@
 #include "events.h"
 #include "logging.h"
-
+#include "SDL.h"
 #define X(new, old) do{\
 					mem->dpad.new = down;\
 					if(down == 0 && mem->dpad.old == 0)\

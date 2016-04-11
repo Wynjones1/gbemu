@@ -2,7 +2,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
-#if __WIN32__
+#if _MSC_VER
 	#include <Windows.h> //For CreateDirectory
 #endif
 
@@ -109,7 +109,7 @@ FILE *common_fopen(const char *filename, const char *mode)
 
 int common_mkdir(const char *dirname, int mode)
 {
-#if __WIN32__
+#if _MSC_VER
 	return CreateDirectory(dirname, NULL);
 #elif __MINGW32__
     return mkdir(dirname);

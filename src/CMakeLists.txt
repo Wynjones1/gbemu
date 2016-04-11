@@ -4,6 +4,7 @@ project(gbemu)
 #################################################################
 #                          Definitions 
 #################################################################
+find_package(GBEmu)
 
 if(MSVC)
 else()
@@ -44,9 +45,7 @@ endif()
 #                      Include Directories 
 #################################################################
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/back_end
-    ${CMAKE_SOURCE_DIR}/src/front_end
+	${GBEMU_INCLUDE_DIRS}
     ${SDL2_INCLUDE_DIRS}
     ${SDL2_TTF_INCLUDE_DIRS}
 )
@@ -86,7 +85,7 @@ target_link_libraries(gbemu_lib ${SDL2_LIBRARIES})
 target_link_libraries(gbemu_lib ${SDL2_TTF_LIBRARIES})
 
 add_executable(gbemu main.c)
-target_link_libraries(gbemu gbemu_lib)
+target_link_libraries(gbemu ${GBEMU_LIBRARIES})
 
 if(MSVC)
 	add_custom_command(
