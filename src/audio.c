@@ -137,7 +137,7 @@ static uint8_t noise(float t, audio_t *audio)
 
 static inline int16_t DAC(uint8_t x)
 {
-    return INT16_MAX * (((float)(2 * x) / 15.0f) - 1.0f);
+	return (int16_t)(INT16_MAX * (((float)(2 * x) / 15.0f) - 1.0f));
 }
 
 static void fill_audio(void *udata, Uint8 *stream, int len)

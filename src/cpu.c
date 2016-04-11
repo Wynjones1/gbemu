@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <signal.h>
 #include <assert.h>
-
 #include "audio.h"
 #include "cmdline.h"
 #include "common.h"
@@ -15,6 +14,7 @@
 #include "opcodes.h"
 #include "ppm.h"
 #include "instruction_strings.h"
+#include "SDL.h"
 
 cpu_state_t *cpu_init()
 {
