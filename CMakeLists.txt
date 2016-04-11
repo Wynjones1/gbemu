@@ -48,6 +48,7 @@ DEFADD(CONTROLS            No   "Display GameBoy controls")
 DEFADD(LOG_INSTRUCTIONS    No   "Log each instruction executed")
 DEFADD(HAVE_TTF            Yes  "Have TTF Support")
 
+set(TESTING     Yes                       CACHE BOOL    "Enable Testing")
 set(COVERAGE    No                        CACHE BOOL    "Generate coverage data")
 set(CHECK       No                        CACHE BOOL    "add -weverything option")
 set(DEPS_DIR    ${CMAKE_SOURCE_DIR}/deps  CACHE INTERNAL "")

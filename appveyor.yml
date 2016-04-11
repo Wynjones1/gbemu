@@ -22,5 +22,5 @@ build_script:
     - echo Running CMake...
     - mkdir build
     - cd build
-    - cmake -G "Visual Studio 14 2015 Win64" c:/projects/gbemu
+    - cmake -G "Visual Studio 14 2015 Win64" c:/projects/gbemu -DTESTING=No
     - cmake --build . --config Release
