@@ -79,7 +79,9 @@ else()
 endif()
 
 add_subdirectory(src)
-add_subdirectory(tests)
+if(TESTING)
+	add_subdirectory(tests)
+endif()
 
 if(MINGW)
     set(DIRECTX No)
