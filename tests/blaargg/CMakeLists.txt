@@ -25,10 +25,29 @@ foreach(NAME ${TEST_LIST})
 	endif()
 
 	set(OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/${NAME})
-	file(GLOB ROMS ${OUT_DIR}/*.gb)
+	# Add the toplevel rom
+	file(GLOB ROM ${OUT_DIR}/*.gb)
 
-	add_executable(${NAME} main.c ${ROMS})
+	add_executable(${NAME} main.c ${ROM})
 	target_link_libraries(${NAME} ${GBEMU_LIBRARIES})
 	target_compile_definitions(${NAME} PUBLIC -DROM_FILE="${ROMS}")
 	set_property(TARGET ${NAME} PROPERTY FOLDER "Tests//${NAME}")
+
+	foreach(SUB "rom_singles" "individual")
+		set(DIR ${OUT_DIR}/${SUB}/)
+		file(GLOB ROMS RELATIVE  ${DIR} ${DIR}/*.gb)
+
+		foreach(ROM ${ROMS})
+			set(TARGET_NAME ${NAME}_${ROM})
+			foreach(X " " "," "-" "(" ")")
+				string(REPLACE ${X} "_" TARGET_NAME ${TARGET_NAME})
+			endforeach()
+
+			add_executable(${TARGET_NAME} main.c ${DIR}/${ROM})
+			set_property(TARGET ${TARGET_NAME} PROPERTY PROJECT_LABEL ${ROM})
+			target_link_libraries(${TARGET_NAME} ${GBEMU_LIBRARIES})
+			target_compile_definitions(${TARGET_NAME} PUBLIC -DROM_FILE="${DIR}/${ROM}")
+			set_property(TARGET ${TARGET_NAME} PROPERTY FOLDER "Tests//${NAME}//Sub Tests")
+		endforeach()
+	endforeach()
 endforeach()
