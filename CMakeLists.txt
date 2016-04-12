@@ -80,6 +80,7 @@ endif()
 
 add_subdirectory(src)
 #add_subdirectory(deps)
+add_subdirectory(data/roms)
 if(TESTING)
 	add_subdirectory(tests)
 endif()

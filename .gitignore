@@ -45,5 +45,4 @@ callgrind*
 src/boot_image.c
 src/rom_image.c
 
-data/roms/
-data/roms
+data/roms/*.gb

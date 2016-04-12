@@ -80,12 +80,12 @@
 #define VERSION 1
 
 #if _MSC_VER
-#define NORETURN(function) function
-#define CURRENT_FUNC "placeholder_function"
+#define NORETURN(function) __declspec(noreturn) function
 #else
 #define NORETURN(function) function __attribute__((noreturn))
-#define CURRENT_FUNC __func__
 #endif
+
+#define CURRENT_FUNC __func__
 
 #define Error(M, ...) common_error("Error: %s:%d in %s:\n\t" M, __FILE__, __LINE__, CURRENT_FUNC, ##__VA_ARGS__)
 #define Warning(M, ...) common_warn("Warning: %s:%d in %s:\n\t" M, __FILE__, __LINE__, CURRENT_FUNC,##__VA_ARGS__)
