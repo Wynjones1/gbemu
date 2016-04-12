@@ -151,7 +151,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         int16_t val_l = 0;
         int16_t val_r = 0;
         uint8_t channels[4];
-#if 0
+#if 1
         if(audio->sq1.en)
         {
             channels[0] = square1(t, audio);
@@ -168,7 +168,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         }
 #endif
 
-#if 0
+#if 1
 		if (audio->noise.en)
 		{
 			channels[3] = noise(t, audio);
