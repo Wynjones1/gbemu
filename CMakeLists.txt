@@ -79,6 +79,7 @@ else()
 endif()
 
 add_subdirectory(src)
+#add_subdirectory(deps)
 if(TESTING)
 	add_subdirectory(tests)
 endif()

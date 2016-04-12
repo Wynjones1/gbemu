@@ -30,7 +30,7 @@ foreach(NAME ${TEST_LIST})
 
 	add_executable(${NAME} main.c ${ROM})
 	target_link_libraries(${NAME} ${GBEMU_LIBRARIES})
-	target_compile_definitions(${NAME} PUBLIC -DROM_FILE="${ROM}")
+		target_compile_definitions(${NAME} PUBLIC -DROM_FILE="${ROM}")
 	set_property(TARGET ${NAME} PROPERTY FOLDER "Tests//${NAME}")
 
 	foreach(SUB "rom_singles" "individual")
