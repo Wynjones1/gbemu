@@ -74,6 +74,10 @@ set(ALL_HEADER ${HEADER} ${HEADER_INSTRUCTIONS} ${HEADER_PREFIX_CB})
 #Remove the entry point from the library. it will be built in the executable
 set(LIB_SRC ${ALL_SRC})
 list(REMOVE_ITEM LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/main.c)
+list(REMOVE_ITEM LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/platform_sdl.c)
+
+
+add_library(platform_sdl ${CMAKE_CURRENT_SOURCE_DIR}/platform_sdl.c)
 
 add_library(gbemu_lib ${LIB_SRC} ${ALL_HEADER})
 
@@ -85,7 +89,9 @@ target_link_libraries(gbemu_lib ${SDL2_LIBRARIES})
 target_link_libraries(gbemu_lib ${SDL2_TTF_LIBRARIES})
 
 add_executable(gbemu main.c)
-target_link_libraries(gbemu ${GBEMU_LIBRARIES})
+target_link_libraries(gbemu platform_sdl ${GBEMU_LIBRARIES})
+
+add_subdirectory(gui)
 
 if(MSVC)
 	add_custom_command(

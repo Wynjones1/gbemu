@@ -14,7 +14,6 @@
 #include "opcodes.h"
 #include "ppm.h"
 #include "instruction_strings.h"
-#include "SDL.h"
 
 cpu_state_t *cpu_init()
 {
@@ -248,18 +247,21 @@ static void frame_limit(int clk)
 	clk_count += clk;
 	if(clk_count >= sample_clocks)
 	{
-        int delay;
+        int delay_time;
 #if SPINLOCK
         do
         {
-            delay = (sample_time - (SDL_GetTicks()- last_time));
+            delay = (sample_time - (get_ticks()- last_time));
         }
         while(delay > 0);
 #else
-        delay = sample_time - (SDL_GetTicks()- last_time);
-        if(delay > 0) SDL_Delay(delay);
+		delay_time = sample_time - (get_ticks()- last_time);
+		if (delay_time > 0)
+		{
+			delay(delay_time);
+		}
 #endif
-        last_time  = SDL_GetTicks();
+        last_time  = get_ticks();
         clk_count -= sample_clocks;
 	}
 }
@@ -276,12 +278,12 @@ static void record_clock_speed(int clk)
     total += clk;
     if(total > wait_time)
     {
-        g_state->fps = 100.0f * total  / (CPU_CLOCKS_PER_MS * ((SDL_GetTicks() - time)));
+        g_state->fps = 100.0f * total  / (CPU_CLOCKS_PER_MS * ((get_ticks() - time)));
 #if LOG_CLKSPEED
         log_message("CLKSPEED %07.02f%%", g_state->fps);
 #endif
         total -= wait_time;
-        time  = SDL_GetTicks();
+        time  = get_ticks();
     }
 }
 
@@ -356,6 +358,11 @@ static void log_instruction(cpu_state_t *state)
         fprintf(fp,"%s\n", buf);
     }
 #endif
+#if 0
+	char buf[100];
+	debug_print_op(buf, state, state->op);
+	fprintf(stderr, "%s\n", buf);
+#endif
 }
 
 void cpu_start(cpu_state_t *state)
@@ -380,11 +387,11 @@ void cpu_start(cpu_state_t *state)
 		//Halt emulation.
 		while(state->memory->boot_locked && state->paused && !state->step && !state->slow)
 		{
-			SDL_Delay(100);
+			delay(100);
 		}
 		if(state->slow)
 		{
-			SDL_Delay(2);
+			delay(2);
 		}
 
 		//Reset branch success flags.

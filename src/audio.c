@@ -3,16 +3,12 @@
 #include "logging.h"
 #include "memory.h"
 #include "noise_table.h"
+#include "platform.h"
+#include "SDL.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include "SDL.h"
 
-// Parameters for the SDL audio device.
-#define NUM_CHANNELS 2
-#define NUM_SAMPLES  1024
-#define FREQUENCY    (44100)
-#define VOLUME       0.005
 
 typedef struct
 {
@@ -151,7 +147,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         int16_t val_l = 0;
         int16_t val_r = 0;
         uint8_t channels[4];
-#if 1
+#if 0
         if(audio->sq1.en)
         {
             channels[0] = square1(t, audio);
@@ -168,7 +164,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         }
 #endif
 
-#if 1
+#if 0
 		if (audio->noise.en)
 		{
 			channels[3] = noise(t, audio);
@@ -205,6 +201,27 @@ static void init_wave_table(audio_t *audio)
 	memcpy(audio->wave_table, wave_default_table, sizeof(audio->wave_table));
 }
 
+
+static void setup_audio(audio_t *audio)
+{
+	SDL_Init(SDL_INIT_AUDIO);
+	SDL_AudioSpec wanted;
+	/* Set the audio format */
+	wanted.freq = FREQUENCY;
+	wanted.format = AUDIO_S16;
+	wanted.channels = NUM_CHANNELS;
+	wanted.samples = NUM_SAMPLES;
+	wanted.callback = fill_audio;
+	wanted.userdata = audio;
+
+	/* Open the audio device, forcing the desired format */
+	if (SDL_OpenAudio(&wanted, NULL) < 0)
+	{
+		log_error("Couldn't open audio: %s\n", SDL_GetError());
+	}
+	SDL_PauseAudio(0);
+}
+
 audio_t *audio_init(cpu_state_t *state)
 {
 	audio_t *out = CALLOC(1, sizeof(audio_t));
@@ -213,21 +230,7 @@ audio_t *audio_init(cpu_state_t *state)
 	init_wave_table(out);
 
 #if AUDIO
-	SDL_AudioSpec wanted;
-	/* Set the audio format */
-	wanted.freq     = FREQUENCY;
-	wanted.format   = AUDIO_S16;
-	wanted.channels = NUM_CHANNELS;
-	wanted.samples  = NUM_SAMPLES;
-	wanted.callback = fill_audio;
-	wanted.userdata = out;
-
-	/* Open the audio device, forcing the desired format */
-	if ( SDL_OpenAudio(&wanted, NULL) < 0 )
-	{
-        log_error("Couldn't open audio: %s\n", SDL_GetError());
-	}
-	SDL_PauseAudio(0);
+	setup_audio(out);
 #endif
 	return out;
 }
@@ -268,7 +271,6 @@ reg_t audio_load(audio_t *audio, reg16_t addr)
     }
     return 0;
 }
-
 
 void audio_delete(audio_t *audio)
 {

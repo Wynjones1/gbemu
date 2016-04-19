@@ -3,6 +3,13 @@
 /* Forward declare cpu struct*/
 typedef struct cpu_state cpu_state_t;
 
+
+// Parameters for the audio device.
+#define NUM_CHANNELS 2
+#define NUM_SAMPLES  1024
+#define FREQUENCY    (44100)
+#define VOLUME       0.005
+
 /* These macros define each of the sound registers, the form of X is field_name, msb, lsb
    this allows us to repeat the registers in different contexts. 
 */

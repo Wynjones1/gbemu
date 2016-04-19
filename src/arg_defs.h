@@ -1,5 +1,7 @@
 #pragma once
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 enum REG
 {
 	REG_F,REG_A, 
@@ -73,4 +75,10 @@ typedef union REG_INPUT
 	enum REG16 r16;
 }REG_INPUT;
 
+#ifndef __cplusplus
 static const REG_INPUT A_REG  = {.r8 = REG_A};
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif

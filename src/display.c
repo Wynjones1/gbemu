@@ -11,8 +11,7 @@
 #include "controls_image.h"
 #include "embedded_font.h"
 #include "instruction_strings.h"
-#include "SDL.h"
-#include "SDL_ttf.h"
+#include "platform.h"
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
@@ -25,6 +24,7 @@ static uint8_t get_shade(const uint8_t *tile_data, int i);
 #endif 
 uint32_t white_buffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
+#if PLATFORM_SDL
 typedef struct
 {
 #if HAVE_TTF
@@ -59,151 +59,182 @@ struct display
     uint32_t   (*draw_buffer)[DISPLAY_WIDTH];
     uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
 };
-
 char *text_area_get_line(text_area_t *ta, uint32_t line);
+
+text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font,
+	uint32_t width, uint32_t height, uint32_t x, uint32_t y)
+{
+#if HAVE_TTF
+	text_area_t *out = CALLOC(1, sizeof(text_area_t) + (width + 1) * height);
+	out->width = width;
+	out->height = height;
+	out->renderer = render;
+	out->fg = (SDL_Color) { 255, 255, 255, 255 };
+	out->font = font;
+	out->x = x;
+	out->y = y;
+	int xx, yy;
+	TTF_SizeText(out->font, "A", &xx, &yy);
+	out->rect = make_rect(x, y, xx * width, yy * height);
+	out->font_width = xx;
+	out->font_height = yy;
+	for (uint8_t i = 20; i < 128; i++)
+	{
+		out->glyphs[i - 20] = TTF_RenderGlyph_Blended(font, i, out->fg);
+		out->glyph_textures[i - 20] = SDL_CreateTextureFromSurface(out->renderer, out->glyphs[i - 20]);
+	}
+	for (uint32_t i = 0; i < height; i++)
+	{
+		memset(text_area_get_line(out, i), ' ', width);
+	}
+	return out;
+#else
+	return NULL;
+#endif
+}
 
 SDL_Rect make_rect(uint32_t xmin, uint32_t ymin, uint32_t width, uint32_t height)
 {
-    SDL_Rect out;
-    out.x  = xmin;
-    out.y  = ymin;
-    out.w  = width;
-    out.h  = height;
-    return out;
-}
-
-text_area_t *text_area_init(SDL_Renderer *render, TTF_Font *font,
-                            uint32_t width, uint32_t height, uint32_t x, uint32_t y)
-{
-#if HAVE_TTF
-    text_area_t *out = CALLOC(1, sizeof(text_area_t) + (width + 1) * height);
-    out->width       = width;
-    out->height      = height;
-    out->renderer    = render;
-    out->fg          = (SDL_Color){255, 255, 255, 255};
-    out->font        = font;
-    out->x           = x;
-    out->y           = y;
-    int xx, yy;
-    TTF_SizeText(out->font, "A", &xx, &yy);
-    out->rect        = make_rect(x, y, xx * width, yy * height);
-    out->font_width  = xx;
-    out->font_height = yy;
-    for(uint8_t i = 20; i < 128; i++)
-    {
-        out->glyphs[i - 20]         = TTF_RenderGlyph_Blended(font, i, out->fg);
-        out->glyph_textures[i - 20] = SDL_CreateTextureFromSurface(out->renderer, out->glyphs[i - 20]);
-    }
-    for(uint32_t i = 0; i < height; i++)
-    {
-        memset(text_area_get_line(out, i), ' ', width);
-    }
-    return out;
-#else
-    return NULL;
-#endif
+	SDL_Rect out;
+	out.x = xmin;
+	out.y = ymin;
+	out.w = width;
+	out.h = height;
+	return out;
 }
 
 char *text_area_get_line(text_area_t *ta, uint32_t line)
 {
 #if HAVE_TTF
-    if(line >= ta->height) return NULL;
-    return &ta->lines[(ta->width + 1) * line];
+	if (line >= ta->height) return NULL;
+	return &ta->lines[(ta->width + 1) * line];
 #else
-    return NULL;
+	return NULL;
 #endif
 }
 
 void text_area_printf(text_area_t *ta, int lineno, const char *format, ...)
 {
 #if HAVE_TTF
-    va_list ap;
-    va_start(ap, format);
-    char *line = text_area_get_line(ta, lineno);
-    vsnprintf(line, (ta->width + 1), format, ap);
-    line[ta->width] = '\0';
-    va_end(ap);
+	va_list ap;
+	va_start(ap, format);
+	char *line = text_area_get_line(ta, lineno);
+	vsnprintf(line, (ta->width + 1), format, ap);
+	line[ta->width] = '\0';
+	va_end(ap);
 #endif
 }
 
 void text_area_draw(text_area_t *ta)
 {
 #if HAVE_TTF
-    for(uint32_t i = 0; i < ta->height; i++)
-    {
-        char *line = text_area_get_line(ta, i);
-        bool end = false;
-        for(uint32_t j = 0; j < ta->width; j++)
-        {
-            SDL_Rect dest = make_rect(ta->x + (ta->font_width  * j),
-                             ta->y + (ta->font_height * i),
-                             ta->font_width,
-                             ta->font_height);
-            SDL_Texture *tex;
-            if(!end)
-            {
-                if(line[j] == '\0')
-                    end = true;
-                else
-                    tex = ta->glyph_textures[line[j] - 20];
-            }
+	for (uint32_t i = 0; i < ta->height; i++)
+	{
+		char *line = text_area_get_line(ta, i);
+		bool end = false;
+		for (uint32_t j = 0; j < ta->width; j++)
+		{
+			SDL_Rect dest = make_rect(ta->x + (ta->font_width  * j),
+				ta->y + (ta->font_height * i),
+				ta->font_width,
+				ta->font_height);
+			SDL_Texture *tex;
+			if (!end)
+			{
+				if (line[j] == '\0')
+					end = true;
+				else
+					tex = ta->glyph_textures[line[j] - 20];
+			}
 
-            if(end)
-            {
-                tex = ta->glyph_textures[' ' - 20];
-            }
-            SDL_RenderCopy(ta->renderer, tex, NULL, &dest);
-        }
-    }
+			if (end)
+			{
+				tex = ta->glyph_textures[' ' - 20];
+			}
+			SDL_RenderCopy(ta->renderer, tex, NULL, &dest);
+		}
+	}
 #endif
 }
 
 SDL_RWops *read_font(void)
 {
 #if 1
-    return SDL_RWFromMem(droid_font_array, droid_font_size);
+	return SDL_RWFromMem(droid_font_array, droid_font_size);
 #else
-    return SDL_RWFromFile("./data/fonts/DroidSansMono.ttf", "rb");
+	return SDL_RWFromFile("./data/fonts/DroidSansMono.ttf", "rb");
 #endif
 }
 
+
+display_t *display_init(cpu_state_t *state)
+{
+	display_t *display = CALLOC(1, sizeof(display_t));
+	display->state = state;
+	display->mem = state->memory;
+	PIXEL_SCALE = cmdline_args.scale;
+
+	display->pixel_buffer = display->buffers[display->cur_buffer];
+	display->draw_buffer = display->buffers[!display->cur_buffer];
+
+	SDL_CreateThread(display_thread, "Display Thread", display);
+	char *temp = header_data;
+	memset(white_buffer, 0xff, sizeof(white_buffer));
+#if CONTROLS
+	for (uint32_t i = 0; i < width * height; i++)
+	{
+		uint8_t pixel[3];
+		HEADER_PIXEL(temp, pixel);
+		control_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
+	}
+#endif
+
+	return display;
+}
+
+
+void display_delete(display_t *disp)
+{
+	SDL_DestroyWindow(disp->window);
+	free(disp);
+}
+
+
+void display_toggle_fullscreen(display_t *display)
+{
+	display->fullscreen = !display->fullscreen;
+	uint32_t flags = display->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
+	SDL_SetWindowFullscreen(display->window, flags);
+}
+
+#else
+
+struct display
+{
+	cpu_state_t  *state;
+	bool         curr_buffer;
+	bool         fullscreen;
+	uint32_t(*pixel_buffer)[DISPLAY_WIDTH];
+	uint32_t(*draw_buffer)[DISPLAY_WIDTH];
+	uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
+};
+
+display_t *display_init(cpu_state_t *cpu)
+{
+	display_t *out = CALLOC(1, sizeof(display_t));
+	out->fullscreen = false;
+	out->state = cpu;
+	out->pixel_buffer = out->buffers[0];
+	out->draw_buffer  = out->buffers[1];
+	return out;
+}
+#endif
 
 static uint8_t get_shade(const uint8_t *tile_data, int i)
 {
 	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
-static void write_framebuffer(display_t *display)
-{
-    SDL_Error(SDL_RenderClear(display->render) < 0);
-
-    // Write the framebuffer onto the the texture.
-    SDL_Rect screen   = {0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT};
-	// If the display is LCD is disabled display a white background.
-	if(display->mem->lcdc.enabled)
-	{
-        SDL_UpdateTexture(display->texture, &screen  , display->draw_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
-	}
-    else
-    {
-        SDL_UpdateTexture(display->texture, &screen, white_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
-    }
-
-#if CONTROLS
-    SDL_Rect controls = {0, DISPLAY_HEIGHT, DISPLAY_WIDTH, CONTROLS_HEIGHT};
-    SDL_UpdateTexture(display->texture, &controls, control_buffer, DISPLAY_WIDTH * sizeof(uint32_t));
-#endif
-
-    // Draw the framebuffer texture onto the screen.
-    SDL_Rect output = {0, 0, PIXEL_SCALE * DISPLAY_WIDTH, PIXEL_SCALE * (DISPLAY_HEIGHT + CONTROLS_HEIGHT)};
-    SDL_Error(SDL_RenderCopy(display->render, display->texture, NULL, &output) < 0);
-
-#if DEBUG_WINDOW
-    text_area_draw(display->text_area);
-#endif
-
-    SDL_RenderPresent(display->render);
-}
 
 static void draw_debug(display_t *display)
 {
@@ -266,6 +297,7 @@ static void draw_debug(display_t *display)
 
 static void display_init_(display_t *display)
 {
+#if PLATFORM_SDL
     SDL_Init(SDL_INIT_VIDEO);
     int fwidth  = 0;
     int fheight = 0;
@@ -314,6 +346,7 @@ static void display_init_(display_t *display)
     display->text_area  = text_area_init(display->render, font, text_width, text_height, PIXEL_SCALE * DISPLAY_WIDTH, 0);
 #endif
     display->fullscreen = false;
+#endif
 }
 
 static int display_thread(void *display_)
@@ -323,7 +356,7 @@ static int display_thread(void *display_)
 	g_state = display->state;
 	while(1)
 	{
-        SDL_Delay(17);
+		delay(17);
         draw_debug(display);
         write_framebuffer(display);
         handle_events(display->state);
@@ -331,36 +364,7 @@ static int display_thread(void *display_)
 	return 0;
 }
 
-display_t *display_init(cpu_state_t *state)
-{
-	display_t *display = CALLOC(1, sizeof(display_t));
-	display->state     = state;
-	display->mem       = state->memory;
-    PIXEL_SCALE        = cmdline_args.scale;
 
-    display->pixel_buffer = display->buffers[display->cur_buffer];
-    display->draw_buffer  = display->buffers[!display->cur_buffer];
-
-    SDL_CreateThread(display_thread, "Display Thread", display);
-    char *temp = header_data;
-    memset(white_buffer, 0xff, sizeof(white_buffer));
-#if CONTROLS
-    for(uint32_t i = 0; i < width * height; i++)
-    {
-        uint8_t pixel[3];
-        HEADER_PIXEL(temp, pixel);
-        control_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
-    }
-#endif
-
-	return display;
-}
-
-void display_delete(display_t *disp)
-{
-	SDL_DestroyWindow(disp->window);
-	free(disp);
-}
 
 static int get_sprite_shade(cpu_state_t *state, struct OAM_data *sprite, int x, int y)
 {
@@ -421,9 +425,9 @@ static uint8_t shade_table[4] =
 
 static void signal_draw_thread(display_t *display)
 {
-    display->cur_buffer   = !display->cur_buffer;
-    display->pixel_buffer = display->buffers[display->cur_buffer];
-    display->draw_buffer  = display->buffers[!display->cur_buffer];
+    display->curr_buffer   = !display->curr_buffer;
+    display->pixel_buffer = display->buffers[display->curr_buffer];
+    display->draw_buffer  = display->buffers[!display->curr_buffer];
 }
 
 static void set_mode(cpu_state_t *state)
@@ -438,12 +442,6 @@ static void set_mode(cpu_state_t *state)
     }
 }
 
-void display_toggle_fullscreen(display_t *display)
-{
-    display->fullscreen = !display->fullscreen;
-    uint32_t flags = display->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
-    SDL_SetWindowFullscreen(display->window, flags);
-}
 
 void display_output_framebuffer(display_t *display, const char *filename)
 {
@@ -468,7 +466,7 @@ void display_output_framebuffer(display_t *display, const char *filename)
 }
 
 //TODO: Properly comment this.
-#define MAKE_PIXEL(x) (x << 24 | x << 16 | x << 8 | 0xff)
+#define MAKE_PIXEL(x) (0xff << 24 | x << 16 | x << 8 | x << 0)
 #define GET_INDEX(n, x) ((x >> (2 * n)) & 0x3)
 #define GET_SHADE(n, x) MAKE_PIXEL(shade_table[GET_INDEX(n, x)])
 
@@ -562,4 +560,9 @@ void display_simulate(cpu_state_t *state)
         set_mode(state);
 		write_display(state, state->display);
 	}
+}
+
+uint32_t *display_get_framebuffer(display_t *display)
+{
+	return display->draw_buffer;
 }

@@ -13,6 +13,8 @@ find_package(GBEmu)
 
 include_directories(${GBEMU_INCLUDE_DIRS})
 
+return()
+
 foreach(NAME ${TEST_LIST})
 	set(URL http://slack.net/~ant/old/gb-tests/${NAME}.zip)
 	set(FILE ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.zip)

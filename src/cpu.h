@@ -1,4 +1,8 @@
 #pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "memory.h"
 #include "display.h"
 #include "types.h"
@@ -24,7 +28,7 @@ typedef struct cpu_state
 		reg16_t registers16[NUM_REGISTERS16];
 		struct
 		{
-            reg_t f;
+			reg_t f;
 			reg_t a;
 			reg_t c;
 			reg_t b;
@@ -54,18 +58,18 @@ typedef struct cpu_state
 	uint32_t  tima_counter;
 	uint32_t  div_counter;
 
-    bool  halt;
+	bool  halt;
 	bool  paused;
 	bool  step;
 	bool  frame_limit;
 	bool  slow;
 	bool  store_state;
-    bool  load_state;
-    bool  exit;
-    bool  cont;
-    float fps;
+	bool  load_state;
+	bool  exit;
+	bool  cont;
+	float fps;
 
-    struct opcode *op;
+	struct opcode *op;
 }cpu_state_t;
 
 cpu_state_t *cpu_init(void);
@@ -132,3 +136,8 @@ int     cpu_half_carry(cpu_state_t *state);
 int     cpu_subtract(cpu_state_t *state);
 int     cpu_carry(cpu_state_t *state);
 int     cpu_zero(cpu_state_t *state);
+
+
+#ifdef __cplusplus
+} // extern "C"
+#endif

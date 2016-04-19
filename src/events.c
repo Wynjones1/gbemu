@@ -1,6 +1,8 @@
 #include "events.h"
 #include "logging.h"
-#include "SDL.h"
+#include "platform.h"
+
+#if PLATFORM_SDL
 #define X(new, old) do{\
 					mem->dpad.new = down;\
 					if(down == 0 && mem->dpad.old == 0)\
@@ -158,3 +160,4 @@ int handle_events(cpu_state_t *state)
 	}
     return 0;
 }
+#endif
