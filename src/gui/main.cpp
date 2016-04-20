@@ -102,6 +102,16 @@ public:
 		if (wxGetKeyState(wxKeyCode('D'))) { X(right, left); }
 		if (wxGetKeyState(wxKeyCode('W'))) { X(up, down); }
 
+		if (wxGetKeyState(wxKeyCode('P')))
+		{
+			cpu->paused = !cpu->paused;
+		}
+
+		if (wxGetKeyState(wxKeyCode('Q')))
+		{
+			cpu->frame_limit = !cpu->frame_limit;
+		}
+
 		mem->buttons.a      = !wxGetKeyState(wxKeyCode('I'));
 		mem->buttons.b      = !wxGetKeyState(wxKeyCode('J'));
 		mem->buttons.start  = !wxGetKeyState(wxKeyCode('F'));
@@ -290,6 +300,19 @@ public:
 		PrintStatus(2, "Frame Limit: %s", cpu->frame_limit ? "Yes" : "No");
 	}
 
+	void OpenROM(wxCommandEvent &evt)
+	{
+		auto dialog = new wxFileDialog(this, wxString("Choose a ROM."),
+			wxEmptyString, wxEmptyString,
+			wxString("Rom files (*.gb)|*.gb"), wxFD_OPEN, wxDefaultPosition);
+		if (dialog->ShowModal() == wxID_OK)
+		{
+			cmdline_args.in = dialog->GetPath();
+			// Load the rom.
+		}
+		dialog->Destroy();
+	}
+
 	DECLARE_EVENT_TABLE();
 
 private:
@@ -301,6 +324,7 @@ private:
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 	EVT_TIMER(UI_TIMER_ID, MainFrame::UpdateUI)
+	EVT_MENU(wxID_OPEN, MainFrame::OpenROM)
 END_EVENT_TABLE()
 
 

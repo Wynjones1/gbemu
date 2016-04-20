@@ -251,9 +251,9 @@ static void frame_limit(int clk)
 #if SPINLOCK
         do
         {
-            delay = (sample_time - (get_ticks()- last_time));
+			delay_time = (sample_time - (get_ticks()- last_time));
         }
-        while(delay > 0);
+        while(delay_time > 0);
 #else
 		delay_time = sample_time - (get_ticks()- last_time);
 		if (delay_time > 0)
