@@ -1,6 +1,7 @@
 #ifndef PIXEL_DISPLAY_H
 #define PIXEL_DISPLAY_H
 #include <array>
+#include "keys.h"
 
 int OPENGL_SETTINGS[] = {
     WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0
@@ -51,27 +52,52 @@ public:
 
     void key_pressed(wxKeyEvent &ev)
     {
-        static int v;
-        switch(v)
-        {
-        case 0:
-            colour = {1, 0, 0};
-            break;
-        case 1:
-            colour = {0, 1, 0};
-            break;
-        default:
-            colour = {0, 0, 1};
-            break;
-        }
-        v = (v + 1) % 3;
+        if(ev.GetKeyCode() == 'W')
+            key_state[KEY_W] = true;
+        else if(ev.GetKeyCode() == 'A')
+            key_state[KEY_A] = true;
+        else if(ev.GetKeyCode() == 'S')
+            key_state[KEY_S] = true;
+        else if(ev.GetKeyCode() == 'D')
+            key_state[KEY_D] = true;
+        else if(ev.GetKeyCode() == 'I')
+            key_state[KEY_I] = true;
+        else if(ev.GetKeyCode() == 'J')
+            key_state[KEY_J] = true;
+        else if(ev.GetKeyCode() == 'F')
+            key_state[KEY_F] = true;
+        else if(ev.GetKeyCode() == 'G')
+            key_state[KEY_G] = true;
+        else if(ev.GetKeyCode() == WXK_SPACE)
+            key_state[KEY_SPACE] = true;
+
     }
 
     void key_released(wxKeyEvent &ev)
-    {}
+    {
+        if(ev.GetKeyCode() == 'W')
+            key_state[KEY_W] = false;
+        else if(ev.GetKeyCode() == 'A')
+            key_state[KEY_A] = false;
+        else if(ev.GetKeyCode() == 'S')
+            key_state[KEY_S] = false;
+        else if(ev.GetKeyCode() == 'D')
+            key_state[KEY_D] = false;
+        else if(ev.GetKeyCode() == 'I')
+            key_state[KEY_I] = false;
+        else if(ev.GetKeyCode() == 'J')
+            key_state[KEY_J] = false;
+        else if(ev.GetKeyCode() == 'F')
+            key_state[KEY_F] = false;
+        else if(ev.GetKeyCode() == 'G')
+            key_state[KEY_G] = false;
+        else if(ev.GetKeyCode() == WXK_SPACE)
+            key_state[KEY_SPACE] = false;
+    }
 
     wxGLContext context;
     std::array<float, 3> colour;
+    std::array<bool, NUM_KEYS> key_state;
 
     DECLARE_EVENT_TABLE();
 };

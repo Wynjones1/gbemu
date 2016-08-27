@@ -5,6 +5,7 @@
 enum GUI_ID
 {
     GUI_ID_HELLO = 0,
+    GUI_TIMER_0,
 };
 
 #include "pixel_display.h"
