@@ -7,8 +7,8 @@ int OPENGL_SETTINGS[] = {
     WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0
 };
 
-constexpr unsigned int W = 10;
-constexpr unsigned int H = 10;
+constexpr unsigned int W = 160;
+constexpr unsigned int H = 144;
 
 class PixelDisplay : public wxGLCanvas
 {
@@ -39,6 +39,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, W, H, 0, GL_RGB, GL_UNSIGNED_BYTE, (GLvoid*)framebuffer.data());
+        resize();
 
     }
 
@@ -49,6 +50,8 @@ public:
         setup();
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, texture);
+
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
         glBegin(GL_TRIANGLE_FAN);
             glColor3f(1,1,1);
@@ -66,9 +69,22 @@ public:
         Refresh(false);
     }
 
-    void resize(wxSizeEvent &ev)
+    void resize(wxSizeEvent &ev = wxSizeEvent())
     {
-        glViewport(0, 0, GetSize().x, GetSize().y);
+        auto x = GetSize().x;
+        auto y = GetSize().y;
+        auto scale_x = (double)x / (double)W;
+        auto scale_y = (double)y / (double)H;
+        if (scale_x > scale_y)
+        {
+            auto x_new = W * scale_y;
+            glViewport((x - x_new)/2, 0, x_new, y);
+        }
+        else
+        {
+            auto y_new = H * scale_x;
+            glViewport(0, (y - y_new) / 2, x, y_new);
+        }
     }
 
     void key_pressed(wxKeyEvent &ev)
@@ -155,6 +171,7 @@ wxBEGIN_EVENT_TABLE(PixelDisplay, wxGLCanvas)
     EVT_KEY_UP(PixelDisplay::key_released)
     EVT_KEY_DOWN(PixelDisplay::key_pressed)
     EVT_IDLE(PixelDisplay::idle)
+    EVT_SIZE(PixelDisplay::resize)
 wxEND_EVENT_TABLE()
 
 #endif
