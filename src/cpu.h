@@ -137,7 +137,6 @@ int     cpu_half_carry(cpu_state_t *state);
 int     cpu_subtract(cpu_state_t *state);
 int     cpu_carry(cpu_state_t *state);
 int     cpu_zero(cpu_state_t *state);
-
 #ifdef __cplusplus
 }
 #endif

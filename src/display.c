@@ -15,6 +15,7 @@
 #if PLATFORM_SDL
 #include "SDL.h"
 #include "SDL_ttf.h"
+#endif
 
 static const int PIXEL_SIZE  = 4;
 static const int NUMBER_OF_OAM_ELEMENTS = 40;
@@ -27,6 +28,7 @@ static uint8_t get_shade(const uint8_t *tile_data, int i);
 #endif 
 uint32_t white_buffer[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
+#if PLATFORM_SDL
 typedef struct
 {
 #if HAVE_TTF
@@ -44,17 +46,21 @@ typedef struct
     uint32_t reserved;
 #endif
 }text_area_t;
+#endif
 
 struct display
 {
+#if PLATFORM_SDL
 	SDL_Window   *window;
 	SDL_Renderer *render;
 	SDL_Texture  *texture;
+    text_area_t  *text_area;
+	SDL_Surface *surface;
+#endif
+
 	cpu_state_t  *state;
 	memory_t     *mem;
-    text_area_t  *text_area;
 
-	SDL_Surface *surface;
     bool         cur_buffer;
     bool         fullscreen;
     uint32_t   (*pixel_buffer)[DISPLAY_WIDTH];
@@ -62,6 +68,7 @@ struct display
     uint32_t     buffers[2][DISPLAY_HEIGHT][DISPLAY_WIDTH];
 };
 
+#if PLATFORM_SDL
 char *text_area_get_line(text_area_t *ta, uint32_t line);
 
 SDL_Rect make_rect(uint32_t xmin, uint32_t ymin, uint32_t width, uint32_t height)
@@ -167,12 +174,6 @@ SDL_RWops *read_font(void)
 #else
     return SDL_RWFromFile("./data/fonts/DroidSansMono.ttf", "rb");
 #endif
-}
-
-
-static uint8_t get_shade(const uint8_t *tile_data, int i)
-{
-	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
 static void write_framebuffer(display_t *display)
@@ -333,6 +334,8 @@ static int display_thread(void *display_)
 	return 0;
 }
 
+#endif
+
 display_t *display_init(cpu_state_t *state)
 {
 	display_t *display = CALLOC(1, sizeof(display_t));
@@ -343,6 +346,7 @@ display_t *display_init(cpu_state_t *state)
     display->pixel_buffer = display->buffers[display->cur_buffer];
     display->draw_buffer  = display->buffers[!display->cur_buffer];
 
+#if PLATFORM_SDL
     SDL_CreateThread(display_thread, "Display Thread", display);
     char *temp = header_data;
     memset(white_buffer, 0xff, sizeof(white_buffer));
@@ -354,14 +358,22 @@ display_t *display_init(cpu_state_t *state)
         control_buffer[i] = pixel[0] << 24 | pixel[1] << 16 | pixel[0] << 8 | 255;
     }
 #endif
+#endif
 
 	return display;
 }
 
 void display_delete(display_t *disp)
 {
+#if PLATFORM_SDL
 	SDL_DestroyWindow(disp->window);
+#endif
 	free(disp);
+}
+
+static uint8_t get_shade(const uint8_t *tile_data, int i)
+{
+	return ((tile_data[1] >> (7 - (i))) & 0x1) << 1 | ((tile_data[0] >> (7 - (i))) & 0x1);
 }
 
 static int get_sprite_shade(cpu_state_t *state, struct OAM_data *sprite, int x, int y)
@@ -442,9 +454,11 @@ static void set_mode(cpu_state_t *state)
 
 void display_toggle_fullscreen(display_t *display)
 {
+#if SDL_PLATFORM
     display->fullscreen = !display->fullscreen;
     uint32_t flags = display->fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0;
     SDL_SetWindowFullscreen(display->window, flags);
+#endif
 }
 
 void display_output_framebuffer(display_t *display, const char *filename)
@@ -469,8 +483,17 @@ void display_output_framebuffer(display_t *display, const char *filename)
 	}
 }
 
+void * display_framebuffer(display_t * display)
+{
+    return display->draw_buffer;
+}
+
 //TODO: Properly comment this.
+#if PLATFORM
 #define MAKE_PIXEL(x) (x << 24 | x << 16 | x << 8 | 0xff)
+#else
+#define MAKE_PIXEL(x) (0xff000000 | x << 16 | x << 8 | x)
+#endif
 #define GET_INDEX(n, x) ((x >> (2 * n)) & 0x3)
 #define GET_SHADE(n, x) MAKE_PIXEL(shade_table[GET_INDEX(n, x)])
 
@@ -565,16 +588,3 @@ void display_simulate(cpu_state_t *state)
 		write_display(state, state->display);
 	}
 }
-#else
-
-display_t *display_init(cpu_state_t *state)
-{}
-void       display_delete(display_t *disp)
-{}
-void       display_simulate(cpu_state_t *state)
-{}
-void       display_toggle_fullscreen(display_t *display)
-{}
-void       display_output_framebuffer(display_t *display, const char *filename)
-{}
-#endif

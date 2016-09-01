@@ -33,3 +33,4 @@ void       display_delete(display_t *disp);
 void       display_simulate(cpu_state_t *state);
 void       display_toggle_fullscreen(display_t *display);
 void       display_output_framebuffer(display_t *display, const char *filename);
+void      *display_framebuffer(display_t *display);

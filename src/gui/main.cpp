@@ -9,8 +9,6 @@ enum GUI_ID
     GUI_TIMER_0,
 };
 
-#include "emu_thread.h"
-#include "pixel_display.h"
 #include "frame.h"
 
 #include "SDL.h"
