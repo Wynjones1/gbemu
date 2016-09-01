@@ -71,7 +71,8 @@ public:
         Refresh(false);
     }
 
-    void resize(wxSizeEvent &ev = wxSizeEvent())
+
+    void resize()
     {
         auto x = GetSize().x;
         auto y = GetSize().y;
@@ -87,6 +88,11 @@ public:
             auto y_new = H * scale_x;
             glViewport(0, (y - y_new) / 2, x, y_new);
         }
+    }
+
+    void resize(wxSizeEvent &ev)
+    {
+        resize();
     }
     
     void key_pressed(wxKeyEvent &ev)

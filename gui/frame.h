@@ -1,8 +1,10 @@
 #ifndef GUI_FRAME_H
 #define GUI_FRAME_H
+#undef min
+#undef max
+#include <iomanip>
 #include "cpu.h"
 #include <sstream>
-#include <iomanip>
 #include "pixel_display.h"
 
 class MainFrame : public wxFrame
