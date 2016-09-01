@@ -8,6 +8,13 @@
 #include <string.h>
 #include "SDL.h"
 
+#if 0
+#ifdef AUDIO
+#undef AUDIO
+#endif
+#define AUDIO 0
+#endif
+
 // Parameters for the SDL audio device.
 #define NUM_CHANNELS 2
 #define NUM_SAMPLES  1024
@@ -350,7 +357,7 @@ static inline void envelope_channel(uint8_t en, uint8_t period, uint8_t add_mode
     }
 }
 
-void envelope(audio_t *a)
+static void envelope(audio_t *a)
 {
     #define X(FIELD, BIT) envelope_channel(                \
                            a->FIELD.en,                    \
@@ -364,7 +371,7 @@ void envelope(audio_t *a)
     #undef X
 }
 
-void frame_sequencer(audio_t *audio, int clk)
+static void frame_sequencer(audio_t *audio, int clk)
 {
     const uint32_t period = CPU_CLOCK_SPEED / 512;
     audio->frame_sequencer_count += clk;

@@ -11,6 +11,8 @@
 #include "controls_image.h"
 #include "embedded_font.h"
 #include "instruction_strings.h"
+
+#if PLATFORM_SDL
 #include "SDL.h"
 #include "SDL_ttf.h"
 
@@ -563,3 +565,16 @@ void display_simulate(cpu_state_t *state)
 		write_display(state, state->display);
 	}
 }
+#else
+
+display_t *display_init(cpu_state_t *state)
+{}
+void       display_delete(display_t *disp)
+{}
+void       display_simulate(cpu_state_t *state)
+{}
+void       display_toggle_fullscreen(display_t *display)
+{}
+void       display_output_framebuffer(display_t *display, const char *filename)
+{}
+#endif

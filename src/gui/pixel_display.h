@@ -2,6 +2,7 @@
 #define PIXEL_DISPLAY_H
 #include <array>
 #include "keys.h"
+#include "cpu.h"
 
 int OPENGL_SETTINGS[] = {
     WX_GL_RGBA, WX_GL_DOUBLEBUFFER, WX_GL_DEPTH_SIZE, 16, 0
@@ -150,6 +151,8 @@ public:
         
         ExitCode Entry()
         {
+            auto cpu = cpu_init();
+            cpu_start(cpu);
             while (1)
             {
                 for (auto &x : parent->framebuffer)

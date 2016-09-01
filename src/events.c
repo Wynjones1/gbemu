@@ -1,5 +1,7 @@
 #include "events.h"
 #include "logging.h"
+
+#if PLATFORM_SDL
 #include "SDL.h"
 #define X(new, old) do{\
 					mem->dpad.new = down;\
@@ -123,9 +125,11 @@ static void key(SDL_Keysym sym, int down, cpu_state_t *state)
 	if(down == 0) SET_N(state->memory->IF, JOYPAD_BIT);
 }
 #undef X
+#endif
 
 int handle_events(cpu_state_t *state)
 {
+#if PLATFORM_SDL
 	SDL_Event event;
 	while(SDL_PollEvent(&event))
 	{
@@ -156,5 +160,6 @@ int handle_events(cpu_state_t *state)
 				break;
 		}
 	}
+#endif
     return 0;
 }

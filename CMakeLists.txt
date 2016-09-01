@@ -57,9 +57,12 @@ if(MSVC)
 	set(SDL_DEBUG_LIBS No CACHE BOOL "Set if the debug builds of SDL2 should be used.")
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+foreach(CONFIG RELEASE DEBUG RELWITHDEBINFO)
+	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/lib)
+	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/lib)
+	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/bin)
+endforeach()
 
 #Use these options to include the boot_rom + rom in the executable
 DEFADD(EMBEDDED_FILES      No "Embbed all files in binary")

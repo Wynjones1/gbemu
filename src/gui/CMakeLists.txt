@@ -2,12 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 
 find_package(OpenGL REQUIRED)
+find_package(GBEmu REQUIRED)
 
-foreach(CONFIG RELEASE DEBUG RELWITHDEBINFO)
-	set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/lib)
-	set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/lib)
-	set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${CONFIG} ${CMAKE_BINARY_DIR}/bin)
-endforeach()
 
 
 if(MSVC)
@@ -21,6 +17,8 @@ else()
 	include(${wxWidgets_USE_FILE})
 endif()
 
+include_directories(${GBEMU_INCLUDE_DIRS})
+
 add_executable(gui WIN32 main.cpp)
 
 if(MSVC)
@@ -28,8 +26,7 @@ else()
 	target_link_libraries(gui ${wxWidgets_LIBRARIES})
 endif()
 
-
-target_link_libraries(gui ${OPENGL_LIBRARIES})
+target_link_libraries(gui ${OPENGL_LIBRARIES} ${GBEMU_LIBRARIES})
 
 foreach(FILE ${WX_DLLS})
 	execute_process(

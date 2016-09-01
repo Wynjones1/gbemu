@@ -75,7 +75,7 @@ set(ALL_HEADER ${HEADER} ${HEADER_INSTRUCTIONS} ${HEADER_PREFIX_CB})
 set(LIB_SRC ${ALL_SRC})
 list(REMOVE_ITEM LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/main.c)
 
-add_library(gbemu_lib ${LIB_SRC} ${ALL_HEADER})
+add_library(gbemu_lib ${LIB_SRC} ${ALL_HEADER} FindGBEmu.cmake)
 
 if(EMBEDDED_FILES)
     target_link_libraries(gbemu_lib embedded_files)
@@ -84,7 +84,7 @@ endif()
 target_link_libraries(gbemu_lib ${SDL2_LIBRARIES})
 target_link_libraries(gbemu_lib ${SDL2_TTF_LIBRARIES})
 
-add_executable(gbemu main.c)
+add_executable(gbemu main.c FindGBEmu.cmake)
 target_link_libraries(gbemu ${GBEMU_LIBRARIES})
 
 if(MSVC)

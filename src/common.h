@@ -9,13 +9,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-//#include "SDL.h"
-//#if HAVE_TTF
-//    #include "SDL_ttf.h"
-//#else
-//    typedef void *TTF_Font;
-//#endif
-
 #ifndef OUTPUT_ERRORS
 	#define OUTPUT_ERRORS   1
 #endif

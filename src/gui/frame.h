@@ -32,14 +32,10 @@ public:
         SetAutoLayout(true);
     }
 
-    void OnHello(wxCommandEvent &event)
-    {}
-
     wxDECLARE_EVENT_TABLE();
 };
 
 wxBEGIN_EVENT_TABLE(MainFrame, wxFrame)
-    EVT_MENU(GUI_ID_HELLO, MainFrame::OnHello)
 wxEND_EVENT_TABLE()
 
 #endif
