@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iomanip>
 #include "pixel_display.h"
+#include "dissassembly.h"
+#include "register_window.h"
 
 class MainFrame : public wxFrame
 {
@@ -15,7 +17,6 @@ public:
     {
         // Create the menu bar.
         auto file_menu = new wxMenu();
-        file_menu->Append(GUI_ID_HELLO, "&Open", "Help string");
         file_menu->AppendSeparator();
         file_menu->Append(wxID_EXIT);
 
@@ -28,18 +29,21 @@ public:
         CreateStatusBar();
         SetStatusText("Hello");
 
-
         auto display = new PixelDisplay(this, cpu);
         display->Show(true);
 
-        text = new wxStaticText(this, 0, wxString("Hello"));
-        text->Show(true);
+        auto register_window = new RegisterWindow(this, cpu);
+        register_window->Show(true);
+
+        auto disassembly = new DisassemblyWindow(this, cpu);
+        disassembly->Show(true);
 
         auto sizer = new wxBoxSizer(wxHORIZONTAL);
-        sizer->Add(display, 9, wxEXPAND);
-        sizer->Add(text, 1, wxEXPAND);
+        sizer->Add(display, 1, wxEXPAND);
+        sizer->Add(register_window, 1, wxEXPAND);
+        sizer->Add(disassembly, 1, wxEXPAND);
 
-        timer.Start(200);
+        timer.Start(20);
 
         SetSizer(sizer);
         SetAutoLayout(true);
@@ -51,21 +55,10 @@ public:
         std::stringstream ss;
         ss << "%:" << cpu->fps;
         SetStatusText(ss.str().c_str());
-
-        {
-            std::stringstream ss;
-            ss << "AF : 0x" << std::hex << std::setw(4) << std::setfill('0') << cpu->af << std::endl
-               << "BC : 0x" << std::hex << std::setw(4) << std::setfill('0') << cpu->bc << std::endl
-               << "DE : 0x" << std::hex << std::setw(4) << std::setfill('0') << cpu->de << std::endl
-               << "SP : 0x" << std::hex << std::setw(4) << std::setfill('0') << cpu->sp;
-
-            text->SetLabelText(wxString(ss.str().c_str()));
-        }
     }
 
     cpu_state_t *cpu;
     wxTimer timer;
-    wxStaticText *text;
 
     wxDECLARE_EVENT_TABLE();
 };

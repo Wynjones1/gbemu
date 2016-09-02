@@ -4,7 +4,8 @@ cmake_minimum_required(VERSION 2.8)
 find_package(OpenGL REQUIRED)
 find_package(GBEmu REQUIRED)
 
-
+file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
+file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 
 if(MSVC)
 	include(DownloadWxWidgets.cmake)
@@ -19,7 +20,7 @@ endif()
 
 include_directories(${GBEMU_INCLUDE_DIRS})
 
-add_executable(gui WIN32 main.cpp)
+add_executable(gui WIN32 ${SOURCES} ${HEADERS})
 
 if(MSVC)
 else()

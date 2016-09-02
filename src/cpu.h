@@ -70,6 +70,8 @@ typedef struct cpu_state
     bool  cont;
     float fps;
 
+    uint32_t target_percent;
+
     struct opcode *op;
 }cpu_state_t;
 
@@ -137,6 +139,30 @@ int     cpu_half_carry(cpu_state_t *state);
 int     cpu_subtract(cpu_state_t *state);
 int     cpu_carry(cpu_state_t *state);
 int     cpu_zero(cpu_state_t *state);
+
+// External Interface
+
+enum BUTTON
+{
+    BUTTON_A,
+    BUTTON_B,
+    BUTTON_START,
+    BUTTON_SELECT,
+    BUTTON_DPAD_UP,
+    BUTTON_DPAD_DOWN,
+    BUTTON_DPAD_LEFT,
+    BUTTON_DPAD_RIGHT,
+};
+
+enum BUTTON_STATE
+{
+    BUTTON_STATE_ON = 0,
+    BUTTON_STATE_OFF = 1
+};
+
+void cpu_set_input(cpu_state_t *state, enum BUTTON button, enum BUTTON_STATE value);
+void cpu_set_target_percent(cpu_state_t *state, uint32_t target_percent);
+
 #ifdef __cplusplus
 }
 #endif

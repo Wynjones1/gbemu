@@ -22,6 +22,7 @@ cpu_state_t *cpu_init()
 	out->memory      = memory_init(out, cmdline_args.boot_rom, cmdline_args.in);
 	out->display     = display_init(out);
     out->frame_limit = true;
+    out->target_percent = 100;
     // If we don't pass in a boot file we use some default values.
     if(cmdline_args.boot_rom == NULL)
     {
@@ -103,6 +104,59 @@ int cpu_carry(cpu_state_t *state)
 int cpu_zero(cpu_state_t *state)
 {
     return BIT_N(state->f, ZERO_BIT);
+}
+
+void cpu_set_input(cpu_state_t *state, enum BUTTON button, enum BUTTON_STATE value)
+{
+    switch(button)
+    {
+    case BUTTON_A:
+        state->memory->buttons.a = value;
+        break;
+    case BUTTON_B:
+        state->memory->buttons.b = value;
+        break;
+    case BUTTON_START:
+        state->memory->buttons.start = value;
+        break;
+    case BUTTON_SELECT:
+        state->memory->buttons.select = value;
+        break;
+    case BUTTON_DPAD_UP:
+        state->memory->dpad.up = value;
+        if(value == BUTTON_STATE_ON)
+        {
+            state->memory->dpad.down = BUTTON_STATE_OFF;
+        }
+        break;
+    case BUTTON_DPAD_DOWN:
+        state->memory->dpad.down = value;
+        if(value == BUTTON_STATE_ON)
+        {
+            state->memory->dpad.up = BUTTON_STATE_OFF;
+        }
+        break;
+    case BUTTON_DPAD_LEFT:
+        state->memory->dpad.left = value;
+        if(value == BUTTON_STATE_ON)
+        {
+            state->memory->dpad.right = BUTTON_STATE_OFF;
+        }
+        break;
+    case BUTTON_DPAD_RIGHT:
+        state->memory->dpad.right = value;
+        if(value == BUTTON_STATE_ON)
+        {
+            state->memory->dpad.left = BUTTON_STATE_OFF;
+        }
+        break;
+
+    }
+}
+
+void cpu_set_target_percent(cpu_state_t * state, uint32_t target_percent)
+{
+    state->target_percent = target_percent;
 }
 
 int cpu_half_carry(cpu_state_t *state)
@@ -236,9 +290,8 @@ static int check_for_interrupts(cpu_state_t *state)
 }
 #undef X
 
-static void frame_limit(int clk)
+static void frame_limit(int clk, uint32_t target_percent)
 {
-    uint32_t        target_percent= 100;
 	uint32_t        sample_time   = 17; //Sample time in milliseconds
 	uint32_t        sample_clocks = (uint32_t)(target_percent * sample_time * CPU_CLOCKS_PER_MS / 100);
     uint32_t        min_wait      = 2;
@@ -446,7 +499,7 @@ void cpu_start(cpu_state_t *state)
         audio_simulate(state->memory->audio, clk);
 		if(state->frame_limit)
 		{
-			frame_limit(clk);
+			frame_limit(clk, state->target_percent);
 		}
         record_clock_speed(clk);
 		display_simulate(state);

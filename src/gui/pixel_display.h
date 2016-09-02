@@ -93,39 +93,35 @@ public:
     {
         if(ev.GetKeyCode() == 'W')
         {
-            cpu->memory->dpad.up   = 0;
-            cpu->memory->dpad.down = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_UP, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'A')
         {
-            cpu->memory->dpad.left  = 0;
-            cpu->memory->dpad.right = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_LEFT, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'S')
         {
-            cpu->memory->dpad.down = 0;
-            cpu->memory->dpad.up   = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_DOWN, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'D')
         {
-            cpu->memory->dpad.right = 0;
-            cpu->memory->dpad.left  = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_RIGHT, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'I')
         {
-            cpu->memory->buttons.a = 0;
+            cpu_set_input(cpu, BUTTON_A, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'J')
         {
-            cpu->memory->buttons.b = 0;
+            cpu_set_input(cpu, BUTTON_B, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'F')
         {
-            cpu->memory->buttons.select = 0;
+            cpu_set_input(cpu, BUTTON_SELECT, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == 'G')
         {
-            cpu->memory->buttons.start = 0;
+            cpu_set_input(cpu, BUTTON_START, BUTTON_STATE_ON);
         }
         else if(ev.GetKeyCode() == WXK_ESCAPE)
         {
@@ -137,35 +133,35 @@ public:
     {
         if(ev.GetKeyCode() == 'W')
         {
-            cpu->memory->dpad.up   = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_UP, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'A')
         {
-            cpu->memory->dpad.left  = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_LEFT, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'S')
         {
-            cpu->memory->dpad.down = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_DOWN, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'D')
         {
-            cpu->memory->dpad.right = 1;
+            cpu_set_input(cpu, BUTTON_DPAD_RIGHT, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'I')
         {
-            cpu->memory->buttons.a = 1;
+            cpu_set_input(cpu, BUTTON_A, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'J')
         {
-            cpu->memory->buttons.b = 1;
+            cpu_set_input(cpu, BUTTON_B, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'F')
         {
-            cpu->memory->buttons.select = 1;
+            cpu_set_input(cpu, BUTTON_SELECT, BUTTON_STATE_OFF);
         }
         else if(ev.GetKeyCode() == 'G')
         {
-            cpu->memory->buttons.start = 1;
+            cpu_set_input(cpu, BUTTON_START, BUTTON_STATE_OFF);
         }
     }
 

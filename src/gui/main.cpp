@@ -3,11 +3,6 @@
 #include <wx/glcanvas.h>
 #include "cpu.h"
 
-enum GUI_ID
-{
-    GUI_ID_HELLO = 0,
-    GUI_TIMER_0,
-};
 
 #include "frame.h"
 
@@ -23,7 +18,7 @@ public:
             printf("\n");
         }
         cmdline_args.in = "C:\\Users\\stuar\\Dropbox\\GameBoy\\roms\\mario.gb";
-        auto frame = new MainFrame("Hello", wxPoint(0, 0), wxSize(640, 480));
+        auto frame = new MainFrame("Hello", wxPoint(0, 0), wxSize(1300, 1000));
         frame->Show(true);
         return true;
     }
