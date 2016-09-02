@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(OpenGL REQUIRED)
 find_package(GBEmu REQUIRED)
+find_package(SDL2 REQUIRED)
 
 file(GLOB_RECURSE HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
@@ -14,11 +15,14 @@ if(MSVC)
 	link_directories(${WX_LINK_DIRS})
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
-	find_package(wxWindows COMPONENTS gl core base REQUIRED)
+	find_package(wxWidgets COMPONENTS gl core base REQUIRED)
 	include(${wxWidgets_USE_FILE})
 endif()
 
-include_directories(${GBEMU_INCLUDE_DIRS})
+include_directories(
+    ${GBEMU_INCLUDE_DIRS}
+    ${SDL2_INCLUDE_DIRS}
+)
 
 add_executable(gui WIN32 ${SOURCES} ${HEADERS})
 

@@ -97,5 +97,3 @@ if(MSVC)
 		COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SDL2_TTF_LIBRARY_PATH}/zlib1.dll         $<TARGET_FILE_DIR:gbemu>/zlib1.dll
 	)
 endif()
-
-add_subdirectory(gui)

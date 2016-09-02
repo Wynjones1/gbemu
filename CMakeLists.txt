@@ -82,6 +82,7 @@ else()
 endif()
 
 add_subdirectory(src)
+add_subdirectory(gui)
 #add_subdirectory(deps)
 add_subdirectory(data/roms)
 if(TESTING)
