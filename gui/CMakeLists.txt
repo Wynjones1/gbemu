@@ -15,7 +15,7 @@ if(MSVC)
 	link_directories(${WX_LINK_DIRS})
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
-	find_package(wxWidgets COMPONENTS gl core base REQUIRED)
+	find_package(wxWidgets COMPONENTS adv gl core base REQUIRED)
 	include(${wxWidgets_USE_FILE})
 endif()
 

@@ -46,7 +46,7 @@ DEFADD(SPINLOCK            No   "Use busy wait to framelimit.")
 DEFADD(INTRO_ONLY          No   "Only run the nintendo intro.")
 DEFADD(CONTROLS            No   "Display GameBoy controls")
 DEFADD(LOG_INSTRUCTIONS    No   "Log each instruction executed")
-DEFADD(HAVE_TTF            Yes  "Have TTF Support")
+DEFADD(HAVE_TTF            No   "Have TTF Support")
 
 set(TESTING     Yes                       CACHE BOOL    "Enable Testing")
 set(COVERAGE    No                        CACHE BOOL    "Generate coverage data")
