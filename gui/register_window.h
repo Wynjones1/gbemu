@@ -15,11 +15,11 @@ class RegisterWindow : public wxGrid
 {
 public:
     RegisterWindow(wxWindow *parent, cpu_state_t *cpu_)
-    : wxGrid(parent, 0, wxPoint(0, 0), wxSize(300, 300))
+    : wxGrid(parent, wxID_ANY)
     , render_timer(this, 0)
     , cpu(cpu_)
     {
-        CreateGrid(6, 2);
+        CreateGrid(30, 2);
         HideRowLabels();
         
         SetColLabelValue(0, "Register");
@@ -37,12 +37,34 @@ public:
 
     void Render(wxTimerEvent &ev)
     {
-        RenderRegister(0, "AF", cpu->af);
-        RenderRegister(1, "BC", cpu->bc);
-        RenderRegister(2, "DE", cpu->de);
-        RenderRegister(3, "HL", cpu->hl);
-        RenderRegister(4, "SP", cpu->sp);
-        RenderRegister(5, "PC", cpu->pc);
+        int idx = 0;
+        RenderRegister(idx++, "AF"    , cpu->af);
+        RenderRegister(idx++, "BC"    , cpu->bc);
+        RenderRegister(idx++, "DE"    , cpu->de);
+        RenderRegister(idx++, "HL"    , cpu->hl);
+        RenderRegister(idx++, "SP"    , cpu->sp);
+        RenderRegister(idx++, "PC"    , cpu->pc);
+        RenderRegister(idx++, "SCX"   , cpu->memory->scx);
+        RenderRegister(idx++, "SCY"   , cpu->memory->scy);
+        RenderRegister(idx++, "WX"    , cpu->memory->wx);
+        RenderRegister(idx++, "WY"    , cpu->memory->wy);
+        RenderRegister(idx++, "LY"    , cpu->memory->ly);
+        RenderRegister(idx++, "LYC"   , cpu->memory->lyc);
+        RenderRegister(idx++, "IF"    , cpu->memory->IF);
+        RenderRegister(idx++, "IE"    , cpu->memory->IE);
+        RenderRegister(idx++, "IME"   , cpu->memory->IME);
+        RenderRegister(idx++, "DIV"   , cpu->memory->div);
+        RenderRegister(idx++, "TIMA"  , cpu->memory->tima);
+        RenderRegister(idx++, "TMA"   , cpu->memory->tma);
+        RenderRegister(idx++, "TAC.cs", cpu->memory->tac.clock_select);
+        RenderRegister(idx++, "TAC.en", cpu->memory->tac.enable);
+        RenderRegister(idx++, "STAT.mode"    , cpu->memory->stat.mode);
+        RenderRegister(idx++, "STAT.coin"    , cpu->memory->stat.coincidence);
+        RenderRegister(idx++, "STAT.hblnk"   , cpu->memory->stat.h_blank_int);
+        RenderRegister(idx++, "STAT.vblnk"   , cpu->memory->stat.v_blank_int);
+        RenderRegister(idx++, "STAT.oam"     , cpu->memory->stat.oam_int);
+        RenderRegister(idx++, "STAT.coin_int", cpu->memory->stat.coincidence_int);
+        AutoSize();
     }
 
     wxTimer render_timer;

@@ -40,14 +40,18 @@ public:
         auto disassembly = new DisassemblyWindow(this, cpu);
         disassembly->Show(true);
 
-        auto sizer = new wxBoxSizer(wxHORIZONTAL);
-        sizer->Add(display, 1, wxEXPAND);
-        sizer->Add(register_window, 1, wxEXPAND);
-        sizer->Add(disassembly, 1, wxEXPAND);
+        auto main_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+        auto debug_sizer = new wxFlexGridSizer(1, 2, 4, 4);
+        debug_sizer->Add(register_window, 0, wxEXPAND);
+        debug_sizer->Add(disassembly, 0, wxEXPAND);
+
+        main_sizer->Add(display, 1, wxEXPAND);
+        main_sizer->Add(debug_sizer, 1, wxEXPAND);
 
         timer.Start(20);
 
-        SetSizer(sizer);
+        SetSizer(main_sizer);
         SetAutoLayout(true);
     }
 

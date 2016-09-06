@@ -17,7 +17,11 @@ public:
         {
             printf("\n");
         }
+#if _MSC_VER
         cmdline_args.in = "C:\\Users\\stuar\\Dropbox\\GameBoy\\roms\\mario.gb";
+#else
+        cmdline_args.in = "/home/stuart/Dropbox/GameBoy/roms/mario.gb";
+#endif
         auto frame = new MainFrame("Hello", wxPoint(0, 0), wxSize(1300, 1000));
         frame->Show(true);
         return true;

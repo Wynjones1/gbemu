@@ -14,18 +14,17 @@ class DisassemblyWindow : public wxGrid
 {
 public:
     DisassemblyWindow(wxWindow *parent, cpu_state_t *cpu_)
-    : wxGrid(parent, 0, wxPoint(0, 0), wxSize(400, 300))
+    : wxGrid(parent, wxID_ANY)
     , render_timer(this, 0)
     , num_rows(25)
     , cpu(cpu_)
     {
         CreateGrid(num_rows, 5);
         HideRowLabels();
-        SetColLabelValue(0, "break");
-        SetColLabelValue(1, "address");
-        SetColLabelValue(2, "opcode");
-        SetColLabelValue(3, "instruction");
-        SetColLabelValue(4, "arg 0");
+        SetColLabelValue(0, "address");
+        SetColLabelValue(1, "opcode");
+        SetColLabelValue(2, "instruction");
+        SetColLabelValue(3, "arg 0");
 
         render_timer.Start(100);
 
@@ -41,16 +40,16 @@ public:
         {
             auto address = format_hex(offset);
             auto x       = memory_load8(cpu->memory, offset);
-            auto opcode  = format_hex(x, 1);
-            SetCellValue(wxGridCellCoords(r, 1), wxString(address));
-            SetCellValue(wxGridCellCoords(r, 2), opcode);
+            auto opcode  = format_hex(x, 0);
+            SetCellValue(wxGridCellCoords(r, 0), wxString(address));
+            SetCellValue(wxGridCellCoords(r, 1), opcode);
             if (last_cb)
             {
-                SetCellValue(wxGridCellCoords(r, 3), instruction_strings_cb[x]);
+                SetCellValue(wxGridCellCoords(r, 2), instruction_strings_cb[x]);
             }
             else
             {
-                SetCellValue(wxGridCellCoords(r, 3), instruction_strings[x]);
+                SetCellValue(wxGridCellCoords(r, 2), instruction_strings[x]);
             }
 
             last_cb = (!last_cb && x == 0xcb);

@@ -12,7 +12,7 @@ CXX          := clang++
 COVERAGE         ?= No
 SPINLOCK         ?= No
 MINGW            ?= No
-EXE              := gbemu
+EXE              := gui
 CHECK            ?= No
 TESTING          ?= No
 AUDIO            ?= Yes
@@ -38,7 +38,7 @@ mingw: MINGW := Yes EXE
 mingw: all
 
 run: all
-	./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
+	./build/bin/$(EXE) -i $(ROM_DIR)/$(ROM)
 
 gdb: all
 	cgdb --args ./build/src/$(EXE) -i $(ROM_DIR)/$(ROM)
