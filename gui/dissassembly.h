@@ -40,7 +40,7 @@ public:
         {
             auto address = format_hex(offset);
             auto x       = memory_load8(cpu->memory, offset);
-            auto opcode  = format_hex(x, 0);
+            auto opcode  = format_hex(x);
             SetCellValue(wxGridCellCoords(r, 0), wxString(address));
             SetCellValue(wxGridCellCoords(r, 1), opcode);
             if (last_cb)

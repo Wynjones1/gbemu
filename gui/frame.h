@@ -34,17 +34,20 @@ public:
         auto display = new PixelDisplay(this, cpu);
         display->Show(true);
 
-        auto register_window = new RegisterWindow(this, cpu);
-        register_window->Show(true);
 
-        auto disassembly = new DisassemblyWindow(this, cpu);
-        disassembly->Show(true);
 
         auto main_sizer = new wxBoxSizer(wxHORIZONTAL);
 
         auto debug_sizer = new wxFlexGridSizer(1, 2, 4, 4);
+
+        
+        //auto disassembly = new DisassemblyWindow(this, cpu);
+        //disassembly->Show(true);
+        //debug_sizer->Add(disassembly, 0, wxEXPAND);
+        
+        auto register_window = new RegisterWindow(this, cpu);
+        register_window->Show(true);
         debug_sizer->Add(register_window, 0, wxEXPAND);
-        debug_sizer->Add(disassembly, 0, wxEXPAND);
 
         main_sizer->Add(display, 1, wxEXPAND);
         main_sizer->Add(debug_sizer, 1, wxEXPAND);

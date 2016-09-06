@@ -77,54 +77,43 @@ static uint8_t wave(float t, audio_t *audio)
 	return value;
 }
 
-static uint32_t noise_freq(audio_t *audio)
+uint32_t noise_clk_count(audio_t *audio)
 {
 	/* Information found here:
 	   http://belogic.com/gba/channel4.shtml
 	*/
 	const uint32_t noise_divisor_table[15][8] =
 	{
-#define X(SHIFT) {                                 \
-		(CPU_CLOCK_SPEED / (8 / 2)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 1)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 2)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 3)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 4)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 5)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 6)) >> (SHIFT + 1),\
-		(CPU_CLOCK_SPEED / (8 * 7)) >> (SHIFT + 1)},
+#define X(SHIFT) {         \
+		(8 / 2) << (SHIFT),\
+		(8 * 1) << (SHIFT),\
+		(8 * 2) << (SHIFT),\
+		(8 * 3) << (SHIFT),\
+		(8 * 4) << (SHIFT),\
+		(8 * 5) << (SHIFT),\
+		(8 * 6) << (SHIFT),\
+		(8 * 7) << (SHIFT)},
 
-		X(0)  X(1)  X(2)
-		X(3)  X(4)  X(5)
-		X(6)  X(7)  X(8)
-		X(9)  X(10) X(11)
-		X(12) X(13) X(14)
+		X(1)  X(2)  X(3)
+		X(4)  X(5)  X(6)
+		X(7)  X(8)  X(9)
+		X(10) X(11) X(12)
+		X(13) X(14) X(15)
 #undef X
 	};
 
-	uint32_t freq = noise_divisor_table[audio->noise.clock_shift][audio->noise.divisor];
-	return freq;
+	return noise_divisor_table[audio->noise.clock_shift][audio->noise.divisor];
+};
+
+uint32_t noise_freq(audio_t *audio)
+{
+    return CPU_CLOCK_SPEED / noise_clk_count(audio);
 }
 
 static inline uint8_t sample_noise(float t, uint32_t freq, const uint8_t *data, size_t data_size)
 {
-#if 0
-	uint32_t idx = (uint32_t)(t * freq * data_size);
-	uint32_t num_samples = freq / FREQUENCY;
-	int32_t out = 0;
-	if (num_samples == 0) num_samples = 1;
-	int32_t sum = 0;
-	for (int i = 0; i < num_samples; i++)
-	{
-		int j = idx - num_samples / 2 + i;
-		sum += (data[j % data_size] ? INT16_MAX : INT16_MIN);
-	}
-	out = sum / num_samples;
-	return out;
-#else
-	uint32_t idx = (uint32_t)(t * freq * data_size);
+	uint32_t idx = (uint32_t)(t * freq);
 	return data[idx % data_size];
-#endif
 }
 
 static uint8_t noise(float t, audio_t *audio)
@@ -158,7 +147,7 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         int16_t val_l = 0;
         int16_t val_r = 0;
         uint8_t channels[4];
-#if 1
+
         if(audio->sq1.en)
         {
             channels[0] = square1(t, audio);
@@ -173,14 +162,11 @@ static void fill_audio(void *udata, Uint8 *stream, int len)
         {
             channels[2] = wave(t, audio);
         }
-#endif
 
-#if 1
-		if (audio->noise.en)
-		{
-			channels[3] = noise(t, audio);
-		}
-#endif
+        if (audio->noise.en)
+        {
+            channels[3] = noise(t, audio);
+        }
 
         for(int i = 0; i < 4; i++)
         {

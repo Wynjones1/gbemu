@@ -152,4 +152,5 @@ void     audio_simulate(audio_t *audio, int clk);
 void     audio_store(audio_t *audio, reg16_t addr, reg_t data);
 void     audio_store_wave_sample(audio_t *audio, uint8_t idx, reg_t samples);
 void     audio_delete(audio_t *audio);
-
+uint32_t noise_freq(audio_t *audio);
+uint32_t noise_clk_count(audio_t *audio);

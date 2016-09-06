@@ -4,10 +4,11 @@
 #include <wx/grid.h>
 #include "cpu.h"
 
-std::string format_hex(uint32_t value, uint8_t bytes=2)
+template<typename T>
+std::string format_hex(T value)
 {
     std::stringstream ss;
-    ss << "0x" << std::hex << std::setfill('0') << std::setw(bytes * 2) << value;
+    ss << "0x" << std::hex << std::setfill('0') << std::setw(sizeof(T) * 2) << +value;
     return ss.str();
 }
 
@@ -29,7 +30,8 @@ public:
         SetDefaultCellFont(wxFontInfo(12).Bold().FaceName("Consolas"));
     }
 
-    void RenderRegister(int row, const std::string &name, uint16_t value)
+    template<typename T>
+    void RenderRegister(int row, const std::string &name, T value)
     {
         SetCellValue(wxGridCellCoords(row, 0), wxString(name));
         SetCellValue(wxGridCellCoords(row, 1), wxString(format_hex(value)));
@@ -64,6 +66,9 @@ public:
         RenderRegister(idx++, "STAT.vblnk"   , cpu->memory->stat.v_blank_int);
         RenderRegister(idx++, "STAT.oam"     , cpu->memory->stat.oam_int);
         RenderRegister(idx++, "STAT.coin_int", cpu->memory->stat.coincidence_int);
+        RenderRegister(idx++, "noise freq", noise_freq(cpu->memory->audio));
+        RenderRegister(idx++, "noise clk", noise_clk_count(cpu->memory->audio));
+
         AutoSize();
     }
 

@@ -1,4 +1,4 @@
-set(SDL2_PREFIX       ${CMAKE_CURRENT_SOURCE_DIR}/deps/SDL2)
+set(SDL2_PREFIX       ${CMAKE_SOURCE_DIR}/deps/SDL2)
 set(SDL2_FOUND        True)
 set(SDL2_INCLUDE_DIRS "")
 set(SDL2_LIBRARIES    "")
