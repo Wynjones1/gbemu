@@ -345,7 +345,7 @@ static void record_clock_speed(int clk)
 static void increment_div(cpu_state_t *state, int clk)
 {
 	state->div_counter += clk;
-	if(state->div_counter >= 256)
+	while(state->div_counter >= 256)
 	{
 		state->memory->div++;
 		state->div_counter -= 256;
@@ -367,7 +367,7 @@ static void increment_tima(cpu_state_t *state, int clk)
 		state->tima_counter += clk;
 		uint16_t n = tac_values[state->memory->tac.clock_select];
 
-		if(state->tima_counter >= n)
+		while(state->tima_counter >= n)
 		{
 			state->tima_counter -= n;
 			state->memory->tima++;
